@@ -148,7 +148,7 @@ function sensRadar(v, size = 180) {
   return `<svg class="sens-radar" viewBox="-24 0 248 200" width="${size}" height="${size}" role="img" aria-label="Perfil sensorial: ${AX.map((a, k) => a + ' ' + (v[k] || 0)).join(', ')}">
     <g fill="none" stroke="var(--line-strong)">${[1, 2, 3, 4, 5].map(k => `<polygon points="${ring(70 * k / 5)}" ${k < 5 ? 'opacity=".55"' : ''}/>`).join('')}${AX.map((_, k) => `<line x1="100" y1="100" x2="${pt(k, 70)[0]}" y2="${pt(k, 70)[1]}" opacity=".55"/>`).join('')}</g>
     <polygon points="${poly}" fill="var(--accent)" fill-opacity=".45" stroke="var(--terra)" stroke-width="2"/>
-    <g font-size="10" fill="var(--muted)" text-anchor="middle">${AX.map((a, k) => { const [x, y] = pt(k, 88); return `<text x="${x}" y="${+y + 3}">${a}</text>` }).join('')}</g></svg>`;
+    <g font-size="11" fill="var(--ink)" text-anchor="middle">${AX.map((a, k) => { const [x, y] = pt(k, 88); return `<text x="${x}" y="${+y + 3}">${a}</text>` }).join('')}</g></svg>`;
 }
 function recSensInner() {
   const v = S.recSens, any = v.some(x => x);

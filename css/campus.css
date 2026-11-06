@@ -783,7 +783,7 @@ textarea.ti { min-height: 96px; padding: 10px 12px }
 /* Laboratorio · perfil sensorial del registro (versión simple del radar del módulo Sensorial) */
 .rec-sens { margin: 18px 0 6px; padding-top: 14px; border-top: 1px solid var(--line) }
 .rec-sens .field-hint { margin: 2px 0 10px }
-.rec-sens-grid { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 18px; align-items: center }
+.rec-sens-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 380px); gap: 24px; align-items: center }
 .rec-sens-rows { display: grid; gap: 6px }
 .sens-row { display: grid; grid-template-columns: 96px auto 1fr; align-items: center; gap: 10px }
 .sens-name { font-size: .9rem; font-weight: 600 }
@@ -793,12 +793,13 @@ textarea.ti { min-height: 96px; padding: 10px 12px }
 .sens-dot[aria-checked=true] { background: var(--primary); border-color: var(--primary); color: #fff }
 .sens-val { font-size: .8rem; color: var(--muted) }
 .rec-sens-chart { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center }
-.rec-sens-chart .sens-radar { width: 210px; height: auto }
+.rec-sens-chart .sens-radar { width: 100%; max-width: 360px; height: auto }
 .rec-sens-chart .m { margin: 0; font-size: .78rem }
 .rec-sens-mini { float: right; margin: -6px 0 6px 12px }
 .rec-sens-mini .sens-radar { width: 140px; height: auto }
 @media (max-width: 650px) {
   .rec-sens-grid { grid-template-columns: 1fr }
+  .rec-sens-chart .sens-radar { max-width: 260px }
   .rec-sens-chart { order: -1 }
   .sens-row { grid-template-columns: 1fr auto; gap: 4px 10px }
   .sens-val { display: none }
