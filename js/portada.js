@@ -2,8 +2,8 @@
    Portada
    Cambia según el avance guardado en este navegador:
    · nueva     (nunca abriste una estación): presentación del campus y "Empezá por…"
-   · en curso  (1 a 5 estaciones): panel personal — seguir, tu recorrido y
-               sugerencias para reforzar lo aprendido
+   · en curso  (1 a 5 estaciones): panel personal — seguir donde lo dejaste y
+               sugerencias para reforzar lo aprendido (el mapa de estaciones está en la Academia)
    · completa  (6 de 6): felicitación, desafíos pendientes y cursos presenciales
    ============================================================ */
 
@@ -19,10 +19,7 @@ function personalHome(mode) {
   const first = mode === 'complete' ? list.find(x => x.a === 'openChallenge') : null;
   return `<section class="me-head"><div class="k">${mode === 'complete' ? 'Recorrido completo' : 'Hola de nuevo'}</div><h1>${h}</h1>
     <div class="menu-progress"><div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${done}" aria-label="Estaciones completas"><i style="width:${Math.round(done / n * 100)}%"></i></div><span>${done} de ${n} estaciones completas</span></div></section>
-  <div class="me-grid">
-    <div class="me-main">${mode === 'complete' ? completeCard(first) : homeResume()}${pathMap()}</div>
-    <div class="me-side">${suggestHTML(first ? list.filter(x => x !== first) : list, mode)}${courseTeaser(mode)}</div>
-  </div>
+  <div class="me-stack">${mode === 'complete' ? completeCard(first) : homeResume()}${suggestHTML(first ? list.filter(x => x !== first) : list, mode)}${courseTeaser(mode)}</div>
   ${spacesRow()}`;
 }
 
@@ -43,16 +40,6 @@ function completeCard(first) {
     <h2 id="resume-h">${first ? first.t : 'Seguí formándote en persona'}</h2>
     <p class="m">${first ? first.s : 'Ya respondiste todos los desafíos. Los cursos presenciales son el siguiente nivel.'}</p></div>
     ${first ? `<a class="b p" href="#/desafios" data-a="openChallenge" data-v="${first.v}">Ir al desafío →</a>` : `<a class="b p" href="#/capacitarse">Ver cursos →</a>`}</section>`;
-}
-
-/* Tu recorrido: las 6 estaciones con su estado; cada una lleva a donde la dejaste. */
-function pathMap() {
-  const next = suggestedStation();
-  return `<section class="me-path" aria-labelledby="path-h"><h2 id="path-h" class="me-h">Tu recorrido</h2><ol>${SC.map((c, i) => {
-    const d = stDone(i), cur = i === next, st = startedSt(i);
-    const sub = d ? 'Completada' : st ? `${stepsDone(c)} de ${c.steps.length} pasos` : 'Sin empezar';
-    return `<li><a class="me-st ${d ? 'is-done' : cur ? 'is-current' : 'is-pending'}" href="#${stepPath(i)}" ${cur ? 'aria-current="step"' : ''}><span class="me-ico" aria-hidden="true">${d ? '✓' : cur ? '●' : i + 1}</span><span><b>${c.mt}</b><small>${sub}${cur ? ' · estás acá' : ''}</small></span></a></li>`;
-  }).join('')}</ol><a class="link-btn" href="#/academia">Ver el mapa de la Academia →</a></section>`;
 }
 
 /* Para reforzar lo que viste: armado con lo que ya completaste.
