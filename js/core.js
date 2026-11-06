@@ -14,6 +14,9 @@ const mix = (st, t) => {
   return 'rgb(' + a.map((v, k) => Math.round(v + (b[k] - v) * f)).join() + ')';
 };
 
+/* Número con coma decimal, como se escribe en castellano: num(18.6) → "18,6". */
+const num = (n, d = 1) => (+n).toFixed(d).replace('.', ',');
+
 /* ---------- Progreso persistente (este navegador) ---------- */
 let P = { max: 0 };
 try { P = JSON.parse(localStorage.getItem('cl2')) || P } catch (e) {}
@@ -42,6 +45,54 @@ const QA = {
    doIt('Tocá cada capa', '2 de 5') dibuja la instrucción del paso justo encima del control
    que hay que usar, con el avance opcional. Así la consigna y la acción quedan juntas. */
 const doIt = (text, prog = '') => `<p class="do-it">${text}${prog ? ` <span class="do-it-n">· ${prog}</span>` : ''}</p>`;
+
+/* ---------- Llevar el visor a la vista (solo en el celu) ----------
+   Al tocar los controles de un visualizado, la pantalla sube hasta dejarlo justo debajo
+   del encabezado: así entran el gráfico, sus botones y la explicación que sigue.
+   Si ya está en su lugar no se mueve, para que tocar varias veces no haga saltar la vista. */
+function bringIntoView(sel) {
+  if (!matchMedia('(max-width: 650px)').matches) return;
+  const el = typeof sel === 'string' ? $(sel) : sel, hd = $('#hd'); if (!el) return;
+  const top = el.getBoundingClientRect().top - (hd ? hd.offsetHeight : 0) - 8;
+  if (Math.abs(top) < 12) return;
+  window.scrollTo({ top: top + window.scrollY, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+}
+
+/* Deslizadores: al soltarlos (no mientras se arrastran, para que la barra no se corra debajo
+   del dedo), la vista sube hasta lo que muestran. id del deslizador → qué llevar a la vista. */
+const SCROLL_ON_RELEASE = [
+  [/^rt4$/, '.roast-stage'],          // Tueste · Curva: la curva y el grano
+  [/^al$/, '.alt-stage'],             // Fruto · Altitud: la montaña y la zona
+  [/^mp$/, '.mad-pick'],              // Fruto · Madurez: el fruto y los azúcares
+  [/^gr5$/, '.grind-explorer'],       // Molienda: el gráfico y la lectura
+  [/^w[123]$/, '.tds-stage'],         // Medir: el gráfico y el resultado
+  [/^(p|e)_/, '.lab-result']          // Receta: la lectura del ratio
+];
+document.addEventListener('change', e => {
+  const id = e.target && e.target.id, hit = id && SCROLL_ON_RELEASE.find(([re]) => re.test(id));
+  if (hit) bringIntoView(hit[1]);
+});
+
+/* ---------- Visor ‹ › (solo en el celu) ----------
+   viewerNav('accion', i, n, 'Nombre', 'Etapa', vistos) dibuja: ‹  nombre · puntitos · "Etapa 2 de 5"  ›.
+   Cada flecha dispara la acción con el índice de destino; en los extremos se apaga.
+   viewerFocus(el, '.caja') después de redibujar: acomoda la vista y devuelve el foco a la flecha. */
+const VIEWER_PATH = { prev: 'M15 5l-7 7 7 7', next: 'M9 5l7 7-7 7' };
+/* then (opcional): qué hace › en la última opción, en lugar de apagarse.
+   { act, v, name } → la flecha dispara esa acción y debajo se lee "Sigue: name". */
+function viewerNav(act, i, n, name, unit, seen = [], then = null) {
+  const arrow = (dir, j) => {
+    const cont = dir === 'next' && j >= n && then;
+    return `<button type="button" class="b viewer-arrow" data-a="${cont ? then.act : act}" data-v="${cont ? then.v : j}" data-dir="${dir}" aria-label="${cont ? 'Seguir con ' + then.name : unit + ' ' + (dir === 'prev' ? 'anterior' : 'siguiente')}" ${!cont && (j < 0 || j >= n) ? 'disabled' : ''}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${VIEWER_PATH[dir]}"/></svg></button>`;
+  };
+  return `<div class="viewer-nav">${arrow('prev', i - 1)}<div class="viewer-now" aria-live="polite"><span>${name}</span><div class="dots" aria-hidden="true">${Array.from({ length: n }, (_, j) => `<i class="${seen.includes(j) ? 's' : ''} ${j === i ? 'c' : ''}"></i>`).join('')}</div>${i >= 0 ? `<small>${unit} ${i + 1} de ${n}</small>` : ''}${then && i === n - 1 ? `<small class="viewer-then">Sigue: ${then.name}</small>` : ''}</div>${arrow('next', i + 1)}</div>`;
+}
+function viewerFocus(el, box) {
+  bringIntoView(box);
+  const dir = el && el.dataset.dir; if (!dir) return;
+  const q = d => $(`${box} [data-dir=${d}]`), b = q(dir), t = b && !b.disabled ? b : q(dir === 'next' ? 'prev' : 'next');
+  if (t) t.focus({ preventScroll: true });
+}
 
 /* ---------- Profundizá ----------
    Cada paso muestra primero lo esencial; el resto queda plegado acá.

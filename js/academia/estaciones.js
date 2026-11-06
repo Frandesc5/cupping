@@ -13,7 +13,7 @@
    steps: k clave interna · slug dirección · label nombre · view() contenido (la consigna va adentro, con doIt())
           need() tareas del paso: true si está hecha o el texto de lo que falta */
 /* Lo que falta mientras el desafío del paso no se respondió. */
-const QUIZ_MISS = 'Respondé el desafío: aparece al tocar el botón para avanzar.', QUIZ_LATER = 'Después vas a responder un desafío.';
+const QUIZ_MISS = 'Falta el desafío: se abre con el botón de abajo.', QUIZ_LATER = 'Después vas a responder un desafío.';
 const SC = [
   { n: 'Fruto', slug: 'fruto', mt: 'La planta y el fruto', md: 'Botánica, anatomía de la cereza y especies.', t: 'La planta y el fruto',
     goal: 'Conocé de dónde viene el café: las especies, cómo influyen la altitud y la madurez, y qué capas tiene el fruto.',
@@ -53,7 +53,8 @@ const SC = [
     steps: [
       { k: 'fs', slug: 'fases', label: 'Fases', view: fas,
         quiz: 'r', need: () => [S.qa.r != null || QUIZ_MISS] },
-      { k: 'cu', slug: 'curva', label: 'Curva', view: cur },
+      { k: 'cu', slug: 'curva', label: 'Curva', view: cur,
+        need: () => [S.hitMedio || 'Elegí cuándo sacarlo para lograr un tueste medio.'] },
       { k: 'gr', slug: 'grados', label: 'Grados', view: gra,
         need: () => [S.gro.length >= 3 || 'Ordená los tres granos del más claro al más oscuro.'] },
       { k: 'fa', slug: 'fallas', label: 'Fallas', view: fal }
@@ -109,7 +110,7 @@ if (!Array.isArray(P.done)) {
   if (m > 0) { P.v = [...Array(Math.min(m + 1, SC.length)).keys()]; P.last = Math.min(m, SC.length - 1) }
   sv();
 }
-const PROGRESS_KEYS = ['t1', 't1v', 'seen', 'postTab', 'postTabsSeen', 'pv', 't3', 't3v', 'sy', 't4', 't4v', 't5', 't5v', 'hitV60', 'hitEsp', 't6', 't6v', 'qa', 'gro', 'sb'];
+const PROGRESS_KEYS = ['t1', 't1v', 'seen', 'postTab', 'postTabsSeen', 'pv', 't3', 't3v', 'sy', 't4', 't4v', 't5', 't5v', 'hitV60', 'hitEsp', 't6', 't6v', 'qa', 'gro', 'sb', 'hitMedio'];
 if (P.st) for (const k of PROGRESS_KEYS) if (P.st[k] != null) S[k] = P.st[k];
 function saveProgress() { P.st = {}; for (const k of PROGRESS_KEYS) P.st[k] = S[k]; sv() }
 
@@ -147,7 +148,7 @@ function quizDlgHTML() {
       : c.ok() ? `<a class="b p" href="#${recapPath(S.i)}">Ver lo que aprendiste</a>`
       : others.length ? stepLink(c, others[0], 'b p', `Completar lo que falta: ${others[0].label}`) : '';
   }
-  return `<div class="k">Desafío · ${s.label}</div><h3 id="quiz-dlg-title">${z.q}</h3><div class="quiz-dlg-opts">${z.o.map((o, i) => `<button type="button" class="opt ${d ? (i === z.a ? 'ok' : i === p ? 'no' : '') : ''}" data-a="quizAns" data-v="${i}" ${d ? 'disabled' : ''}>${o}</button>`).join('')}</div>${d ? `<p class="quiz-dlg-fb" tabindex="-1"><b>${p === z.a ? '¡Bien!' : 'Revisemos.'}</b> ${z.e[p]}</p>` : ''}<div class="bar">${cont}<button type="button" class="b" data-a="quizClose">${d ? 'Quedarme en este paso' : 'Volver al paso'}</button></div>`;
+  return `<div class="k">Desafío · ${s.label}</div><h3 id="quiz-dlg-title">${z.q}</h3><div class="quiz-dlg-opts">${z.o.map((o, i) => `<button type="button" class="opt ${d ? (i === z.a ? 'ok' : i === p ? 'no' : '') : ''}" data-a="quizAns" data-v="${i}" ${d ? 'disabled' : ''}>${o}</button>`).join('')}</div>${d ? `<p class="quiz-dlg-fb" tabindex="-1"><b>${p === z.a ? '¡Bien!' : 'No es esa.'}</b> ${z.e[p]}</p>` : ''}<div class="bar">${cont}<button type="button" class="b" data-a="quizClose">${d ? 'Quedarme en este paso' : 'Volver al paso'}</button></div>`;
 }
 function quizDlg() {
   let dl = $('#quiz-dlg');
@@ -166,8 +167,8 @@ function stepFootHTML(c) {
   const ok = c.ok(), nextSt = SC[S.i + 1], pending = c.steps.filter(x => !stepDone(c, x));
   const status = miss.length
     ? `<div class="step-status is-pending"><b>Para completar este paso:</b><ul>${miss.map(m => `<li>${m}</li>`).join('')}</ul></div>`
-    : `<div class="step-status is-done"><b>✓ Paso completo.</b>${ok ? ' Completaste toda la estación.' : next ? ' Cuando termines de explorar, seguí con el próximo paso.' : ''}</div>`;
-  const back = prev ? stepLink(c, prev, 'b', '← ' + prev.label) : '<span></span>';
+    : `<div class="step-status is-done"><b><span class="tick ${S.tickDone.has(footKey()) ? '' : 'pop'}" aria-hidden="true">✓</span> Paso completo.</b>${ok ? ' Completaste toda la estación.' : ''}</div>`;
+  const back = prev ? stepLink(c, prev, 'b', 'Paso anterior: ' + prev.label) : '<span></span>';
   /* Acción principal: avanzar de paso; en el último, ir al cierre de la estación (y desde ahí a la próxima).
      Si el último paso está a medias, no se saca a la persona de ahí: la tarea es completarlo. */
   const others = pending.filter(x => x !== s);
@@ -184,6 +185,58 @@ function stepFootHTML(c) {
 
 /* Se vuelve a llamar cada vez que algo puede completar un paso (deslizadores,
    desafíos, bandeja...). Actualiza pasos, progreso y pie sin redibujar el contenido. */
+/* ---------- Pie del paso: aparece cuando la persona baja ----------
+   El recuadro con "Paso completo" y los botones queda oculto hasta que la persona baja a propósito
+   (dedo, rueda del mouse o teclado) y llega a verlo; ahí aparece con una animación corta.
+   Los movimientos automáticos de la vista (bringIntoView, cambio de paso) no lo destapan.
+   Si el paso es corto y el recuadro ya se ve al abrirlo, aparece igual (no hay nada que bajar).
+   Ya visto en este paso, no se vuelve a animar al redibujar. El ✓ rebota una sola vez por paso. */
+const footKey = () => S.i + ':' + curStep(SC[S.i]).k;
+let userScrollAt = 0;
+/* El gesto de bajar también cuenta aunque la página ya no pueda moverse (si quedó al fondo por un movimiento automático). */
+const markUserScroll = () => { userScrollAt = Date.now(); requestAnimationFrame(checkFoot) };
+addEventListener('wheel', markUserScroll, { passive: true });
+addEventListener('touchmove', markUserScroll, { passive: true });
+addEventListener('keydown', e => { if (/^(Arrow(Up|Down)|Page(Up|Down)|Home|End| )$/.test(e.key)) markUserScroll() });
+/* El recuadro "se ve" cuando su parte de arriba entra en la pantalla (por encima de la barra de abajo del celu). */
+const footInView = ft => { const r = ft.getBoundingClientRect(), nb = $('#nb'), bottom = nb && nb.offsetParent ? nb.getBoundingClientRect().top : innerHeight; return r.top < bottom - 40 && r.bottom > 0 };
+function showFoot() {
+  const p = revealFoot.pending; if (!p) return;
+  revealFoot.pending = null; p.ft.classList.add('is-in'); S.footIn.add(p.key); celebrateAtFoot();
+}
+function revealFoot() {
+  revealFoot.pending = null;
+  const ft = $('#step-foot'); if (!ft) return;
+  const key = footKey();
+  if (S.footIn.has(key) || matchMedia('(prefers-reduced-motion: reduce)').matches) { ft.classList.add('is-in'); S.footIn.add(key); return }
+  ft.classList.add('will-reveal');
+  revealFoot.pending = { ft, key };
+  /* Se mira en el cuadro siguiente: al cambiar de paso, la página primero sube al comienzo del paso. */
+  /* Y otra vez un instante después, cuando la página terminó de acomodarse, si la vista no se movió. */
+  const initial = () => { const p = revealFoot.pending; if (p && p.ft === ft && ft.isConnected && footInView(ft)) showFoot() };
+  requestAnimationFrame(() => requestAnimationFrame(() => { initial(); const y = scrollY; setTimeout(() => { if (scrollY === y) initial() }, 350) }));
+}
+function checkFoot() {
+  const p = revealFoot.pending; if (!p) return;
+  if (!p.ft.isConnected) { revealFoot.pending = null; return }
+  if (Date.now() - userScrollAt < 1500 && footInView(p.ft)) showFoot();
+}
+addEventListener('scroll', checkFoot, { passive: true });
+document.addEventListener('animationend', e => { if (e.target.classList && e.target.classList.contains('tick') && S.sp === 'ac' && S.i >= 0 && S.i < SC.length) { S.tickDone.add(footKey()); e.target.classList.remove('pop') } });
+Object.assign(S, { footIn: new Set(), tickDone: new Set() });
+
+/* Aviso "Estación completa": sale junto con el recuadro del pie (o, si el recuadro ya está a la vista,
+   en el momento en que se completa). Si hay un desafío abierto, espera a que se cierre. */
+function celebrateAtFoot() {
+  const ft = $('#step-foot'), dl = $('#quiz-dlg');
+  if (S.celebrate !== S.i || !ft || !ft.classList.contains('is-in') || !footInView(ft) || (dl && dl.open)) return;
+  S.celebrate = null;
+  toast('✓ Estación completa');
+  const b = ft.querySelector('.b.p'); if (b) b.classList.add('rdy');
+  try { navigator.vibrate && navigator.vibrate([12, 40, 12]) } catch (e) {}
+}
+document.addEventListener('close', e => { if (e.target.id === 'quiz-dlg') celebrateAtFoot() }, true);
+
 function bar() {
   if (S.sp !== 'ac' || S.i < 0 || S.i >= SC.length) return;
   const c = SC[S.i], ok = c.ok();
@@ -195,11 +248,7 @@ function bar() {
   if (tab) tab.classList.toggle('d', ok || doneSt(S.i));
   if (ok && !doneSt(S.i)) { P.done = (P.done || []).concat(S.i) }
   saveProgress();
-  if (ok && !S.dn[S.i]) {
-    S.dn[S.i] = 1; toast('✓ Estación completa');
-    const b = ft && ft.querySelector('.b.p'); if (b) b.classList.add('rdy');
-    try { navigator.vibrate && navigator.vibrate([12, 40, 12]) } catch (e) {}
-  }
+  if (ok && !S.dn[S.i]) { S.dn[S.i] = 1; S.celebrate = S.i; celebrateAtFoot() }
 }
 
 function stationView() {
@@ -219,6 +268,7 @@ function stationView() {
 /* Cierre de la estación (#/academia/<estación>/repaso): las palabras clave para llevarse,
    el apunte para seguir leyendo y el paso a la próxima estación. */
 function recapView() {
+  if (S.celebrate === S.i) S.celebrate = null; /* la pantalla de cierre ya festeja: el aviso no hace falta */
   const c = SC[S.i], nx = SC[S.i + 1], n = doneCount();
   return `${strip()}
   <header class="station-head"><div class="k">Estación ${S.i + 1} de ${SC.length} · completa</div><h2>Lo que aprendiste</h2><p class="station-goal">Terminaste «${c.t}». Estas son las ideas clave para llevarte. Llevás ${n} de ${SC.length} estaciones.</p></header>
@@ -271,7 +321,7 @@ function academiaAfter() {
   if (S.i < 0 || S.i >= SC.length || S.recap) return;
   S.pl = 0;
   const c = SC[S.i]; if (c.after) c.after();
-  bar();
+  revealFoot(); bar(); celebrateAtFoot();
   /* La dirección siempre muestra el paso actual: #/academia/<estación>/<paso>. */
   const p = stepPath(S.i);
   if (hashPath() !== p) { try { history.replaceState(history.state, '', '#' + p) } catch (e) {} shownPath = p }
@@ -300,7 +350,7 @@ const SOON = [
   ['De la molienda a la taza', [['Espresso', 'Máquina, receta, calibración y servicio.'], ['Filtrados', 'V60, Origami, AeroPress y otros métodos.'], ['Agua y molienda', 'Minerales, dureza, alcalinidad y granulometría.'], ['Análisis sensorial', 'Cata, protocolos y evaluación de café.']]]
 ];
 function moduleState(i) {
-  if (stDone(i)) return ['done', '✓ Completado · repasar'];
+  if (stDone(i)) return ['done', '✓ Completa · repasar'];
   if (startedSt(i)) return ['started', `En curso · ${stepsDone(SC[i])} de ${SC[i].steps.length} pasos`];
   return ['new', 'Empezar'];
 }
@@ -312,14 +362,14 @@ function suggestedStation() {
 }
 function resumeCard() {
   const i = suggestedStation();
-  if (i < 0) return `<section class="resume-card is-done"><div><div class="k">Recorrido completo</div><h3>Completaste las ${SC.length} estaciones</h3><p class="m">Repasá cualquier módulo o poné a prueba lo que aprendiste en Desafíos.</p></div><a class="b p" href="#/desafios">Ir a Desafíos</a></section>`;
+  if (i < 0) return `<section class="resume-card is-done"><div><div class="k">Recorrido completo</div><h3>Completaste las ${SC.length} estaciones</h3><p class="m">Repasá cualquier estación o poné a prueba lo que aprendiste en Desafíos.</p></div><a class="b p" href="#/desafios">Ir a Desafíos</a></section>`;
   const c = SC[i], s = curStep(c), started = startedSt(i);
   return `<section class="resume-card"><div><div class="k">${started ? 'Seguí donde lo dejaste' : i === 0 ? 'Empezá por acá' : 'Tu próxima estación'}</div><h3>Estación ${i + 1} · ${c.t}</h3><p class="m">${started ? `Paso ${stepIdx(c) + 1} de ${c.steps.length}: ${s.label} · ${stepsDone(c)} de ${c.steps.length} pasos completos.` : c.goal}</p></div><a class="b p" href="#${stepPath(i)}">${started ? 'Continuar' : 'Empezar'}</a></section>`;
 }
 function academyMenu() {
   const done = SC.filter((_, i) => stDone(i)).length, soonCount = SOON.reduce((n, g) => n + g[1].length, 0), next = suggestedStation();
   return `<div class="academy-menu">
-  <div class="academy-menu-head"><h2>Explorá los módulos.</h2><p class="m">Un recorrido de ${SC.length} estaciones para comprender el café desde su origen hasta la taza. Cada estación se hace por pasos y tu avance se guarda en este dispositivo.</p>
+  <div class="academy-menu-head"><h2>Recorré las estaciones.</h2><p class="m">Un recorrido de ${SC.length} estaciones para comprender el café desde su origen hasta la taza. Cada estación se hace por pasos y tu avance se guarda en este dispositivo.</p>
     <div class="menu-progress"><div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="${SC.length}" aria-valuenow="${done}" aria-label="Estaciones completas"><i style="width:${Math.round(done / SC.length * 100)}%"></i></div><span>${done} de ${SC.length} estaciones completas</span></div></div>
   ${resumeCard()}
   <section class="academy-group"><h3>El recorrido, en orden</h3><ol class="academy-grid academy-path">${SC.map((c, i) => {
@@ -327,7 +377,7 @@ function academyMenu() {
     return `<li><a class="academy-module active is-${st} ${i === next ? 'is-next' : ''}" href="#${stepPath(i)}"><span class="mod-no">Estación ${i + 1}${i === next ? ' · sugerida' : ''}</span><span><strong>${c.mt}</strong><small>${c.md}</small></span><span class="mod-foot">${label}</span></a></li>`;
   }).join('')}</ol></section>
   <details class="academy-soon"><summary>Próximamente · ${soonCount} módulos en preparación</summary>${SOON.map(g => `<h4>${g[0]}</h4><ul>${g[1].map(m => `<li><b>${m[0]}</b> <span class="m">${m[1]}</span></li>`).join('')}</ul>`).join('')}</details>
-  <section class="academy-resources"><div class="resource-head"><h2>Consultá y profundizá.</h2><p class="m">Dos espacios complementarios para acompañar tu recorrido.</p></div><div class="academy-grid"><button class="academy-module active" data-a="glossary"><span class="mod-no">Consulta rápida</span><span><strong>Glosario cafetero</strong><small>Definiciones y vocabulario técnico, con buscador.</small></span><span class="mod-foot">Abrir</span></button><button class="academy-module active" data-a="theory"><span class="mod-no">Biblioteca</span><span><strong>Apuntes y profundizaciones</strong><small>Lecturas para ir más allá de cada módulo.</small></span><span class="mod-foot">Leer</span></button></div></section>
+  <section class="academy-resources"><div class="resource-head"><h2>Consultá y profundizá.</h2><p class="m">Dos espacios complementarios para acompañar tu recorrido.</p></div><div class="academy-grid"><button class="academy-module active" data-a="glossary"><span class="mod-no">Consulta rápida</span><span><strong>Glosario cafetero</strong><small>Definiciones y vocabulario técnico, con buscador.</small></span><span class="mod-foot">Abrir</span></button><button class="academy-module active" data-a="theory"><span class="mod-no">Biblioteca</span><span><strong>Apuntes y profundizaciones</strong><small>Lecturas para ir más allá de cada estación.</small></span><span class="mod-foot">Leer</span></button></div></section>
 </div>`;
 }
 
