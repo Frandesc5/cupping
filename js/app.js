@@ -105,7 +105,7 @@ function navLinks(withHome) {
     SPACES.map(([k, name, slug]) => `<a href="#/${slug}" ${S.sp === k ? 'aria-current="page"' : ''}>${withHome ? `<span class="nb-ico" aria-hidden="true">${SPACE_ICONS[k]}</span>` : ''}${name}</a>`).join('');
 }
 function renderChrome() {
-  $('#hd').innerHTML = `<a class="brand" href="#/" aria-label="Ir al inicio de .campus"><img src="${LOGO}" alt="Academia de Baristas" width="436" height="405"><span class="brand-caption"><span>Formación en café</span><b>.campus</b></span></a><nav class="main-nav" aria-label="Espacios del campus">${navLinks()}</nav>`;
+  $('#hd').innerHTML = `<a class="brand" href="#/" aria-label="Ir al inicio de .campus"><img src="${LOGO}" alt="Academia de Baristas" width="436" height="405"><span class="brand-caption"><span>Formación en café</span><b translate="no">.campus</b></span></a><nav class="main-nav" aria-label="Espacios del campus">${navLinks()}</nav>`;
   $('#nb').innerHTML = navLinks(true);
 }
 
@@ -172,7 +172,7 @@ function campusHome() {
     <div class="action-row"><a class="b p" href="#/academia">Entrar a la Academia →</a><a class="b" href="#/capacitarse">Ver capacitaciones</a></div>
     <div class="hero-signature">TEORÍA <span>+</span> PRÁCTICA <span>+</span> ACOMPAÑAMIENTO</div>
   </div>
-  <figure class="hero-photo-wrap"><img class="hero-photo" src="${HERO_PHOTO}" alt="Equipo de Academia de Baristas"><figcaption class="photo-note"><b>APASIONADOS EN LA MATERIA.</b><span>Aprender café también es compartirlo.</span></figcaption><div class="photo-index">.CAMPUS</div></figure>
+  <figure class="hero-photo-wrap"><img class="hero-photo" src="${HERO_PHOTO}" alt="Equipo de Academia de Baristas" fetchpriority="high" decoding="async"><figcaption class="photo-note"><b>APASIONADOS EN LA MATERIA.</b><span>Aprender café también es compartirlo.</span></figcaption><div class="photo-index">.CAMPUS</div></figure>
   <div class="hero-footer"><span>.CAMPUS · ACADEMIA DE BARISTAS</span><span>CAFÉ DE ESPECIALIDAD · FORMACIÓN CONTINUA</span></div>
 </section>
 ${nextStep()}

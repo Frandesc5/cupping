@@ -60,8 +60,6 @@ document.addEventListener('keydown', e => {
     e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click', { bubbles: true }));
   }
 });
-/* Respuesta háptica suave al tocar botones (si el dispositivo la soporta). */
-document.addEventListener('click', e => { if (e.target.closest('button')) { try { navigator.vibrate && navigator.vibrate(8) } catch (x) {} } });
 
 on({ ans: v => { const [id, i] = v.split(':'); S.qa[id] = +i; R(0) } });
 
