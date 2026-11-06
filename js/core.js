@@ -63,8 +63,19 @@ document.addEventListener('keydown', e => {
 
 on({ ans: v => { const [id, i] = v.split(':'); S.qa[id] = +i; R(0) } });
 
-/* ---------- Aviso breve ---------- */
-function toast(m) {
-  const t = $('#tt'); t.textContent = m; t.classList.add('show');
-  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 1900);
+/* ---------- Aviso breve ----------
+   toast('Texto')                       aviso simple (3,5 s)
+   toast('Texto', 'Deshacer', fn)       aviso con un botón de acción (7 s) */
+function toast(m, label, fn) {
+  const t = $('#tt');
+  t.textContent = m;
+  t.classList.toggle('has-action', !!fn);
+  if (fn) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = label;
+    b.onclick = () => { clearTimeout(toast.t); t.classList.remove('show', 'has-action'); fn() };
+    t.append(' ', b);
+  }
+  t.classList.add('show');
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show', 'has-action'), fn ? 7000 : 3500);
 }
