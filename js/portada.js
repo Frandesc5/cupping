@@ -17,7 +17,7 @@ function personalHome(mode) {
   const h = mode === 'complete' ? `Completaste las ${n} estaciones`
     : P.last == null ? 'Seguí practicando' : done === 0 ? 'Ya empezaste el recorrido' : done < n / 2 ? 'Buen comienzo' : done === n / 2 ? 'Vas por la mitad del recorrido' : 'Te falta poco para terminar';
   const first = mode === 'complete' ? list.find(x => x.a === 'openChallenge') : null;
-  return `<section class="me-head"><div class="k">${mode === 'complete' ? 'Recorrido completo' : 'Hola de nuevo'}</div><h1>${h}</h1>
+  return heroHTML() + `<section class="me-head"><div class="k">${mode === 'complete' ? 'Recorrido completo' : 'Hola de nuevo'}</div><h2>${h}</h2>
     <div class="menu-progress"><div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${done}" aria-label="Estaciones completas"><i style="width:${Math.round(done / n * 100)}%"></i></div><span>${done} de ${n} estaciones completas</span></div></section>
   <div class="me-stack">${mode === 'complete' ? completeCard(first) : homeResume()}${lastTestCard()}${suggestHTML(first ? list.filter(x => x !== first) : list, mode)}${courseTeaser(mode)}</div>
   ${spacesRow()}`;
@@ -151,13 +151,8 @@ function nextStep() {
   }
   return `<section class="next-step" aria-label="Tu próximo paso"><div><div class="k">${k}</div><h2>${h}</h2><p class="m">${p}</p></div><a class="b p" href="${href}">${cta}</a></section>`;
 }
-function campusHome() {
-  const cards = [
-    ['academia', 'Academia', 'Explorá los módulos de formación, desde el origen hasta la taza.', '01', '◉'],
-    ['laboratorio', 'Laboratorio', 'Diseñá pruebas, ajustá variables y analizá resultados.', '02', '⌁'],
-    ['desafios', 'Desafíos', 'Poné a prueba tu criterio profesional.', '03', '◇'],
-    ['capacitarse', 'Cursos', 'Capacitaciones online y presenciales para seguir formándote.', '04', '▤']
-  ];
+/* Presentación del campus: la ven todos, tengan avance o no. */
+function heroHTML() {
   return `<section class="home-hero">
   <div class="hero-copy">
     <div class="hero-eyebrow"><span>ACADEMIA DE BARISTAS</span><i></i><span>PLATAFORMA DE APRENDIZAJE</span></div>
@@ -169,7 +164,17 @@ function campusHome() {
   </div>
   <figure class="hero-photo-wrap"><img class="hero-photo" src="${HERO_PHOTO}" alt="Equipo de Academia de Baristas" fetchpriority="high" decoding="async"><figcaption class="photo-note"><b>APASIONADOS EN LA MATERIA.</b><span>Aprender café también es compartirlo.</span></figcaption><div class="photo-index">.CAMPUS</div></figure>
   <div class="hero-footer"><span>.CAMPUS · ACADEMIA DE BARISTAS</span><span>CAFÉ DE ESPECIALIDAD · FORMACIÓN CONTINUA</span></div>
-</section>
+</section>`;
+}
+
+function campusHome() {
+  const cards = [
+    ['academia', 'Academia', 'Explorá los módulos de formación, desde el origen hasta la taza.', '01', '◉'],
+    ['laboratorio', 'Laboratorio', 'Diseñá pruebas, ajustá variables y analizá resultados.', '02', '⌁'],
+    ['desafios', 'Desafíos', 'Poné a prueba tu criterio profesional.', '03', '◇'],
+    ['capacitarse', 'Cursos', 'Capacitaciones online y presenciales para seguir formándote.', '04', '▤']
+  ];
+  return heroHTML() + `
 ${nextStep()}
 <section class="home-spaces" aria-label="Los cuatro espacios del campus">
 <div class="section-intro"><div><div class="k">.campus</div><h2>Un recorrido.<br>Cuatro espacios.</h2></div><p class="m">Aprendé en la Academia, probá en el Laboratorio, poné a prueba tu criterio en Desafíos y seguí formándote con los Cursos.</p></div>

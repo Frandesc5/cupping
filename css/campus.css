@@ -300,8 +300,8 @@ textarea.ti { min-height: 96px; padding: 10px 12px }
 .next-step .b { flex: none }
 
 /* Portada personal (cuando ya empezaste el recorrido) */
-.me-head { margin: 22px 0 20px }
-.me-head h1 { margin: 8px 0 6px; font-size: clamp(2rem, 4.6vw, 3.2rem); line-height: 1 }
+.me-head { margin: 36px 0 20px }
+.me-head h2 { margin: 8px 0 6px; font-size: clamp(2rem, 4.6vw, 3.2rem); line-height: 1 }
 .me-head .menu-progress { margin-top: 12px }
 .me-stack { display: grid; gap: 26px; min-width: 0 }
 .me-h { margin: 0 0 10px; font-size: 1.05rem }
