@@ -22,6 +22,8 @@ const SITE = 'https://academiadebaristas.com.ar/';
 /* Los cuatro espacios del campus: [clave, nombre, dirección] */
 const SPACES = [['ac', 'Academia', 'academia'], ['lb', 'Laboratorio', 'laboratorio'], ['de', 'Desafíos', 'desafios'], ['ca', 'Capacitarse', 'capacitarse']];
 
+const SPACE_ICONS = { ac: '◉', lb: '⌁', de: '◇', ca: '▤' };
+
 /* ---------- Rutas ---------- */
 function applyPath(path) {
   const [a, b] = path.split('/').filter(Boolean).map(decodeURIComponent);
@@ -74,8 +76,18 @@ function showRoute(restore) {
   const y = restore && history.state && history.state.y;
   R(y ? 0 : undefined);
   if (y) window.scrollTo(0, y);
+  if (showRoute.booted) focusHeading();
+  showRoute.booted = true;
   const v = $('#v'); v.classList.remove('enter'); void v.offsetWidth; v.classList.add('enter');
   clearTimeout(showRoute.t); showRoute.t = setTimeout(() => v.classList.remove('enter'), 900);
+}
+/* Al cambiar de pantalla, el foco va al título: así el teclado y los lectores
+   de pantalla empiezan a leer la pantalla nueva y no quedan en un botón que ya no existe. */
+function focusHeading() {
+  const h = $('#v h1, #v h2');
+  if (!h) return;
+  h.setAttribute('tabindex', '-1');
+  try { h.focus({ preventScroll: true }) } catch (e) { h.focus() }
 }
 window.addEventListener('popstate', () => showRoute(true));
 window.addEventListener('hashchange', () => { if (hashPath() !== shownPath) showRoute(false) });
@@ -88,12 +100,13 @@ document.addEventListener('click', e => {
 history.scrollRestoration = 'manual';
 
 /* ---------- Encabezado y navegación ---------- */
-function navLinks() {
-  return SPACES.map(([k, name, slug]) => `<a href="#/${slug}" ${S.sp === k ? 'aria-current="page"' : ''}>${name}</a>`).join('');
+function navLinks(withHome) {
+  return (withHome ? `<a href="#/" ${S.sp === 'home' ? 'aria-current="page"' : ''}><span class="nb-ico" aria-hidden="true">⌂</span>Inicio</a>` : '') +
+    SPACES.map(([k, name, slug]) => `<a href="#/${slug}" ${S.sp === k ? 'aria-current="page"' : ''}>${withHome ? `<span class="nb-ico" aria-hidden="true">${SPACE_ICONS[k]}</span>` : ''}${name}</a>`).join('');
 }
 function renderChrome() {
   $('#hd').innerHTML = `<a class="brand" href="#/" aria-label="Ir al inicio de .campus"><img src="${LOGO}" alt="Academia de Baristas" width="436" height="405"><span class="brand-caption"><span>Formación en café</span><b>.campus</b></span></a><nav class="main-nav" aria-label="Espacios del campus">${navLinks()}</nav>`;
-  $('#nb').innerHTML = navLinks();
+  $('#nb').innerHTML = navLinks(true);
 }
 
 /* Migas de pan: dónde estás y cómo subir un nivel. */
