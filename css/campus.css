@@ -785,13 +785,9 @@ textarea.ti { min-height: 96px; padding: 10px 12px }
 .rec-sens .field-hint { margin: 2px 0 10px }
 .rec-sens-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 380px); gap: 24px; align-items: center }
 .rec-sens-rows { display: grid; gap: 6px }
-.sens-row { display: grid; grid-template-columns: 96px auto 1fr; align-items: center; gap: 10px }
+.sens-row { display: grid; grid-template-columns: 100px minmax(0, 1fr) 96px; align-items: center; gap: 14px; min-height: 40px }
 .sens-name { font-size: .9rem; font-weight: 600 }
-.sens-scale { display: flex; gap: 6px }
-.sens-dot { width: 40px; height: 40px; border: 1px solid var(--line-strong); border-radius: 50%; background: var(--surface); color: var(--muted); font-weight: 600; font-variant-numeric: tabular-nums; transition: background-color .15s, border-color .15s }
-.sens-dot:hover { border-color: var(--sage) }
-.sens-dot[aria-checked=true] { background: var(--primary); border-color: var(--primary); color: #fff }
-.sens-val { font-size: .8rem; color: var(--muted) }
+.sens-val { font-size: .8rem; color: var(--muted); font-variant-numeric: tabular-nums }
 .rec-sens-chart { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center }
 .rec-sens-chart .sens-radar { width: 100%; max-width: 360px; height: auto }
 .rec-sens-chart .m { margin: 0; font-size: .78rem }
@@ -801,8 +797,17 @@ textarea.ti { min-height: 96px; padding: 10px 12px }
   .rec-sens-grid { grid-template-columns: 1fr }
   .rec-sens-chart .sens-radar { max-width: 260px }
   .rec-sens-chart { order: -1 }
-  .sens-row { grid-template-columns: 1fr auto; gap: 4px 10px }
-  .sens-val { display: none }
-  .sens-dot { width: 38px; height: 38px }
+  .sens-row { grid-template-columns: 1fr auto; gap: 0 10px; min-height: 0 }
+  input[type=range].sens-range { grid-column: 1 / -1; grid-row: 2 }
   .rec-sens-mini { float: none; margin: 8px 0 }
 }
+
+/* Deslizador minimalista: línea fina que se rellena hasta el valor y un punto chico */
+input[type=range].sens-range { -webkit-appearance: none; appearance: none; width: 100%; height: 28px; margin: 0; background: transparent; cursor: pointer; --p: 0% }
+input[type=range].sens-range:focus-visible { outline-offset: 2px }
+input[type=range].sens-range::-webkit-slider-runnable-track { height: 2px; border-radius: 2px; background: linear-gradient(to right, var(--primary) var(--p), var(--line-strong) var(--p)) }
+input[type=range].sens-range::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; margin-top: -6px; border: 2px solid var(--primary); border-radius: 50%; background: var(--surface); box-shadow: none; transition: transform .15s }
+input[type=range].sens-range:active::-webkit-slider-thumb { transform: scale(1.25) }
+input[type=range].sens-range::-moz-range-track { height: 2px; border-radius: 2px; background: var(--line-strong) }
+input[type=range].sens-range::-moz-range-progress { height: 2px; border-radius: 2px; background: var(--primary) }
+input[type=range].sens-range::-moz-range-thumb { width: 12px; height: 12px; border: 2px solid var(--primary); border-radius: 50%; background: var(--surface) }

@@ -150,19 +150,27 @@ function sensRadar(v, size = 180) {
     <polygon points="${poly}" fill="var(--accent)" fill-opacity=".45" stroke="var(--terra)" stroke-width="2"/>
     <g font-size="11" fill="var(--ink)" text-anchor="middle">${AX.map((a, k) => { const [x, y] = pt(k, 88); return `<text x="${x}" y="${+y + 3}">${a}</text>` }).join('')}</g></svg>`;
 }
-function recSensInner() {
+function recSensChart() {
   const v = S.recSens, any = v.some(x => x);
-  return `<div class="rec-sens-grid"><div class="rec-sens-rows">${AX.map((a, i) => `<div class="sens-row"><span class="sens-name" id="sn${i}">${a}</span><div class="sens-scale" role="radiogroup" aria-labelledby="sn${i}">${[1, 2, 3, 4, 5].map(n => `<button type="button" class="sens-dot" role="radio" aria-checked="${v[i] === n}" aria-label="${n}: ${SW[n]}" data-a="recSens" data-v="${i}:${n}">${n}</button>`).join('')}</div><span class="sens-val">${v[i] ? SW[v[i]] : '—'}</span></div>`).join('')}</div>
-    <div class="rec-sens-chart">${sensRadar(v)}${any ? `<button type="button" class="link-btn" data-a="recSensClear">Borrar perfil</button>` : `<p class="m">Tocá un número en cada atributo para ver el perfil.</p>`}</div></div>`;
+  return sensRadar(v) + (any ? '<button type="button" class="link-btn" data-a="recSensClear">Borrar perfil</button>' : '<p class="m">Mové un deslizador para ver el perfil.</p>');
 }
-const recSensBlock = () => `<section class="rec-sens" aria-labelledby="rec-sens-h"><div class="k" id="rec-sens-h">Perfil sensorial <span class="m">(opcional)</span></div><p class="field-hint">1 = muy suave · 5 = muy intensa. Marcá solo lo que percibiste.</p><div id="rec-sens">${recSensInner()}</div></section>`;
+const sensLabel = n => n ? n + ' · ' + SW[n] : '—';
+function recSensInner() {
+  const v = S.recSens;
+  return `<div class="rec-sens-grid"><div class="rec-sens-rows">${AX.map((a, i) => `<div class="sens-row"><label class="sens-name" for="rs${i}">${a}</label><input type="range" class="sens-range" id="rs${i}" data-rs="${i}" min="0" max="5" step="1" value="${v[i]}" style="--p:${v[i] * 20}%" aria-valuetext="${sensLabel(v[i])}"><span class="sens-val" id="rsv${i}">${sensLabel(v[i])}</span></div>`).join('')}</div>
+    <div class="rec-sens-chart" id="rec-sens-chart">${recSensChart()}</div></div>`;
+}
+const recSensBlock = () => `<section class="rec-sens" aria-labelledby="rec-sens-h"><div class="k" id="rec-sens-h">Perfil sensorial <span class="m">(opcional)</span></div><p class="field-hint">0 = no lo evaluaste · 1 = muy suave · 5 = muy intensa.</p><div id="rec-sens">${recSensInner()}</div></section>`;
 /* Se redibuja solo este bloque: lo escrito en el resto del formulario no se toca. */
-function recSensUpdate(focusV) {
-  const box = $('#rec-sens'); if (!box) return;
-  box.innerHTML = recSensInner();
-  if (focusV) { const b = box.querySelector(`[data-v="${focusV}"]`); if (b) b.focus({ preventScroll: true }) }
-}
+function recSensUpdate() { const box = $('#rec-sens'); if (box) box.innerHTML = recSensInner() }
+/* Al deslizar solo cambian el valor y el radar (el deslizador no se redibuja, así el arrastre sigue fluido). */
+onInput((t, d) => {
+  if (d.rs == null) return;
+  const i = +d.rs, n = +t.value; S.recSens[i] = n;
+  t.style.setProperty('--p', n * 20 + '%'); t.setAttribute('aria-valuetext', sensLabel(n));
+  const l = $('#rsv' + i); if (l) l.textContent = sensLabel(n);
+  const c = $('#rec-sens-chart'); if (c) c.innerHTML = recSensChart();
+});
 on({
-  recSens: v => { const [i, n] = v.split(':').map(Number); S.recSens[i] = S.recSens[i] === n ? 0 : n; recSensUpdate(v) },
   recSensClear: () => { S.recSens = [0, 0, 0, 0, 0, 0]; recSensUpdate() }
 });
