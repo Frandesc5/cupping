@@ -25,10 +25,11 @@ js/academia/
 js/laboratorio.js          simuladores, nuevo registro y bitácora
 js/desafios.js             banco de preguntas
 js/capacitarse.js          cursos (para agregar uno, sumarlo a CRS)
-js/app.js                  encabezado, navegación, portada y rutas (#/...)
+js/portada.js              portada: presentación o panel personal según el avance
+js/app.js                  encabezado, navegación, migas de pan y rutas (#/...)
 ```
 
-Cada pantalla tiene su dirección (por ejemplo `#/academia/tueste` o `#/laboratorio/bitacora`), así funcionan el botón atrás, recargar y compartir enlaces. La lista completa está al principio de `js/app.js`.
+Cada pantalla tiene su dirección (por ejemplo `#/academia/tueste/fases` o `#/laboratorio/bitacora`), así funcionan el botón atrás, recargar y compartir enlaces. La lista completa está al principio de `js/app.js`.
 
 El progreso y la bitácora se guardan solo en el navegador de cada persona (`localStorage`).
 

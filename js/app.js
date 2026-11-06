@@ -144,54 +144,7 @@ function pageTitle() {
   return crumbTrail().slice(1).map(x => x[1]).reverse().join(' · ') + ' · .campus';
 }
 
-/* ---------- Portada ---------- */
-/* Próximo paso sugerido: empezar, continuar o pasar a Desafíos. */
-function nextStep() {
-  const done = doneCount();
-  let k, h, p, href, cta;
-  if (P.last == null) {
-    k = '¿Primera vez en .campus?'; h = 'Empezá por ' + SC[0].t.toLowerCase();
-    p = 'Te sugerimos este orden: Academia para aprender, Laboratorio para probar y Desafíos para poner a prueba tu criterio. Tu avance se guarda en este dispositivo.';
-    href = '#/academia/' + SC[0].slug; cta = 'Empezar el recorrido →';
-  } else if (done >= SC.length) {
-    k = 'Recorrido completo'; h = 'Poné a prueba lo que aprendiste';
-    p = 'Completaste las ' + SC.length + ' estaciones. En Desafíos hay casos de nivel básico a avanzado.';
-    href = '#/desafios'; cta = 'Ir a Desafíos →';
-  } else {
-    const i = doneSt(P.last) ? SC.findIndex((_, j) => !doneSt(j)) : P.last;
-    k = 'Continuá donde lo dejaste'; h = 'Estación ' + (i + 1) + ' · ' + SC[i].t;
-    p = done + ' de ' + SC.length + ' estaciones completas.';
-    href = '#/academia/' + SC[i].slug; cta = 'Continuar →';
-  }
-  return `<section class="next-step" aria-label="Tu próximo paso"><div><div class="k">${k}</div><h2>${h}</h2><p class="m">${p}</p></div><a class="b p" href="${href}">${cta}</a></section>`;
-}
-function campusHome() {
-  const cards = [
-    ['academia', 'Academia', 'Explorá los módulos de formación, desde el origen hasta la taza.', '01', '◉'],
-    ['laboratorio', 'Laboratorio', 'Diseñá pruebas, ajustá variables y analizá resultados.', '02', '⌁'],
-    ['desafios', 'Desafíos', 'Poné a prueba tu criterio profesional.', '03', '◇'],
-    ['capacitarse', 'Cursos', 'Capacitaciones online y presenciales para seguir formándote.', '04', '▤']
-  ];
-  return `<section class="home-hero">
-  <div class="hero-copy">
-    <div class="hero-eyebrow"><span>ACADEMIA DE BARISTAS</span><i></i><span>PLATAFORMA DE APRENDIZAJE</span></div>
-    <div class="k">FORMACIÓN EN CAFÉ DE ESPECIALIDAD</div>
-    <h1>Aprendé.<br><em>Experimentá.</em><br>Crecé.</h1>
-    <p>Un espacio para incorporar conocimientos, desarrollar criterio, practicar y construir tu recorrido profesional en el café.</p>
-    <div class="action-row"><a class="b p" href="#/academia">Entrar a la Academia →</a><a class="b" href="#/capacitarse">Ver cursos</a></div>
-    <div class="hero-signature">TEORÍA <span>+</span> PRÁCTICA <span>+</span> ACOMPAÑAMIENTO</div>
-  </div>
-  <figure class="hero-photo-wrap"><img class="hero-photo" src="${HERO_PHOTO}" alt="Equipo de Academia de Baristas" fetchpriority="high" decoding="async"><figcaption class="photo-note"><b>APASIONADOS EN LA MATERIA.</b><span>Aprender café también es compartirlo.</span></figcaption><div class="photo-index">.CAMPUS</div></figure>
-  <div class="hero-footer"><span>.CAMPUS · ACADEMIA DE BARISTAS</span><span>CAFÉ DE ESPECIALIDAD · FORMACIÓN CONTINUA</span></div>
-</section>
-${nextStep()}
-<section class="home-spaces" aria-label="Los cuatro espacios del campus">
-<div class="section-intro"><div><div class="k">.campus</div><h2>Un recorrido.<br>Cuatro espacios.</h2></div><p class="m">Aprendé en la Academia, probá en el Laboratorio, poné a prueba tu criterio en Desafíos y seguí formándote con los Cursos.</p></div>
-<div class="section-grid">${cards.map(c => `<a class="section-card" href="#/${c[0]}"><span class="card-top"><span class="section-icon" aria-hidden="true">${c[4]}</span></span><span><strong>${c[1]}</strong><small>${c[2]}</small><span class="card-link">EXPLORAR <b>→</b></span></span></a>`).join('')}</div>
-</section>
-<div class="learning-banner"><div class="learning-mark" aria-hidden="true">AB<span>.</span></div><div><div class="k">APRENDER HACIENDO</div><h3>La teoría cobra sentido<br>cuando pasa por tus manos.</h3><p>Un campus para acompañar tu formación y conectar el conocimiento con la práctica.</p></div><a class="b" href="#/capacitarse">Conocé los cursos →</a></div>`;
-}
-
+/* La portada (nueva o personal) está en js/portada.js. */
 function siteFooter() {
   return `<footer class="site-foot"><img src="${LOGO}" alt="Academia de Baristas" width="436" height="405"><span>UN CAMPUS PARA SEGUIR CRECIENDO.</span><a href="${SITE}" target="_blank" rel="noopener">academiadebaristas.com.ar ↗</a></footer>`;
 }
@@ -204,7 +157,7 @@ function R(top) {
   document.body.dataset.space = S.sp;
   document.title = pageTitle();
   const v = $('#v');
-  if (S.sp === 'home') v.innerHTML = campusHome() + siteFooter();
+  if (S.sp === 'home') v.innerHTML = homeView() + siteFooter();
   else v.innerHTML = crumbs() + ({ ac: academiaView, lb: lab, de: des, ca: cap })[S.sp]() + siteFooter();
   if (S.sp === 'ac') academiaAfter();
   else if (S.sp === 'lb') labAfter();
