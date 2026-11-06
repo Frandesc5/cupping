@@ -41,6 +41,9 @@ const ask = id => {
   return `<div class="panel quiz"><div class="k">Desafío</div><h3>${z.q}</h3>${z.o.map((o, i) => `<button class="opt ${d ? (i === z.a ? 'ok' : i === p ? 'no' : '') : ''}" data-a="ans" data-v="${id}:${i}" ${d ? 'disabled' : ''}>${o}</button>`).join('')}${d ? `<p><b>${p === z.a ? '' : 'Revisemos. '}</b>${z.e[p]}</p>` : ''}</div>`;
 };
 
+/* Desafío que todavía no se puede responder: se muestra igual, con lo que falta para habilitarlo. */
+const lockedQuiz = msg => `<div class="panel quiz is-locked"><div class="k">Desafío · todavía bloqueado</div><p>${msg}</p></div>`;
+
 /* ---------- Acciones (data-a) y controles (input) ----------
    on({nombre: (valor, elemento) => ...}) registra acciones de clic.
    onInput(fn) registra un manejador para cualquier <input>. */
@@ -51,7 +54,10 @@ document.addEventListener('click', e => {
   const el = e.target.closest('[data-a]');
   if (!el) return;
   const fn = ACTIONS[el.dataset.a];
-  if (fn) { if (el.tagName === 'A') e.preventDefault(); fn(el.dataset.v, el, e); }
+  if (!fn) return;
+  /* Un enlace con acción abierto con Ctrl/Cmd/Shift o clic del medio sigue siendo un enlace normal (nueva pestaña). */
+  if (el.tagName === 'A') { if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return; e.preventDefault() }
+  fn(el.dataset.v, el, e);
 });
 document.addEventListener('input', e => { for (const fn of INPUTS) fn(e.target, e.target.dataset) });
 /* Elementos SVG con role=button: Enter y espacio equivalen a un clic. */

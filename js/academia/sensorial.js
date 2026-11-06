@@ -86,18 +86,13 @@ const CP=[
 let cupTimer=null,cupRemaining=0,cupRunning=false;
 function fmtCup(n){n=Math.max(0,Math.floor(n));return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')}
 function cupTimerMarkup(){const preset=CP[S.cp6][2],secs=preset.split(':').reduce((a,v)=>a*60+Number(v),0);return `<div class="cup-timer"><div class="k">CRONÓMETRO DE CATA</div><div class="cup-clock" id="cup-clock">${fmtCup(cupRemaining||secs)}</div><div class="cup-timer-caption" id="cup-timer-caption">${cupRunning?'En marcha':CP[S.cp6][3]}</div><div class="cup-timer-actions"><button class="b p" data-a="cup-start">${cupRunning?'Pausar':'Iniciar'}</button><button class="b" data-a="cup-reset">Reiniciar</button></div><p class="m" style="font-size:.76rem">Temporizador independiente: podés iniciar, pausar y reiniciar mientras consultás los pasos.</p></div>`}
-function cat(){const c=CP[S.cp6],preset=c[2].split(':').reduce((a,v)=>a*60+Number(v),0);if(!cupRunning&&cupRemaining===0)cupRemaining=preset;return `<p class="m">Guía práctica de cupping. Seleccioná cada etapa para leer las indicaciones y usá el cronómetro sin salir de la sección.</p><div class="cup-step-list">${CP.map((x,i)=>`<button class="chip" aria-pressed="${S.cp6===i}" data-a="cp" data-v="${i}">${i+1}. ${x[0]}</button>`).join('')}</div><div class="panel"><div class="k">PASO ${S.cp6+1} / ${CP.length}</div><h3>${c[0]}</h3><p>${c[1]}</p><p class="m">${c[3]}</p></div>${cupTimerMarkup()}<div class="cup-nav"><button class="b" data-a="cp-prev" ${S.cp6===0?'disabled':''}>Paso anterior</button><button class="b p" data-a="cp-next" ${S.cp6===CP.length-1?'disabled':''}>Siguiente paso</button></div>`}
+function cat(){const c=CP[S.cp6],preset=c[2].split(':').reduce((a,v)=>a*60+Number(v),0);if(!cupRunning&&cupRemaining===0)cupRemaining=preset;return `<p class="m">Guía práctica de cupping. Seleccioná cada etapa para leer las indicaciones y usá el cronómetro sin salir de la sección.</p><div class="cup-step-list">${CP.map((x,i)=>`<button class="chip" aria-pressed="${S.cp6===i}" data-a="cp" data-v="${i}">${i+1}. ${x[0]}</button>`).join('')}</div><div class="panel"><div class="k">ETAPA ${S.cp6+1} DE ${CP.length}</div><h3>${c[0]}</h3><p>${c[1]}</p><p class="m">${c[3]}</p></div>${cupTimerMarkup()}<div class="cup-nav"><button class="b" data-a="cp-prev" ${S.cp6===0?'disabled':''}>← Etapa anterior</button><button class="b p" data-a="cp-next" ${S.cp6===CP.length-1?'disabled':''}>Etapa siguiente →</button></div>`}
 function ses(){return `<div class=panel><h3>Descriptiva y afectiva</h3><p>La evaluación <b>descriptiva</b> pregunta qué intensidad tiene cada atributo; la <b>afectiva</b> pregunta cuánto te gusta. No son lo mismo.</p></div><div class=panel><h3>Tipos de acidez</h3><p>Ejemplos habituales: cítrica (limón), málica (manzana) y fosfórica (jugosa). No toda acidez es agria.</p></div><div class=panel><h3>Prueba triangular</h3><p>Se sirven tres tazas: dos iguales y una distinta. Hay que encontrar la distinta. Sirve para entrenar y calibrar.</p></div><div class=panel><h3>Sesgos</h3><p>Saber el origen o el precio, el orden de las muestras, la fatiga y comentar antes de puntuar cambian lo que percibimos. Probá a ciegas y punteá antes de hablar.</p></div>`}
 function cupRenderClock(){const el=document.getElementById('cup-clock');if(el)el.textContent=fmtCup(cupRemaining);const cap=document.getElementById('cup-timer-caption');if(cap)cap.textContent=cupRunning?'En marcha':(cupRemaining===0?'Tiempo cumplido':CP[S.cp6][3]);}
 
 /* ---------- Estado y acciones del módulo ---------- */
 Object.assign(S, { sv6: [3, 3, 2, 3, 3, 3], cc: -1, t6: 'pf', t6v: ['pf'], wc: -1, ws: -1, cp6: 0 });
 
-const T6 = [['pf', 'Perfil'], ['ru', 'Rueda'], ['ca', 'Cata'], ['sb', 'Sesgos']];
-function sensStation() {
-  return T6.map(t => `<button class=chip aria-pressed='${S.t6 === t[0]}' data-a=t6 data-v='${t[0]}'>${t[1]}</button>`).join('') +
-    (S.t6 == 'pf' ? sens3() : ({ ru: rue, ca: cat, sb: ses })[S.t6]());
-}
 function sensAfter() { if (S.t6 == 'pf') qu() }
 
 /* Cronómetro de cata */
@@ -108,7 +103,6 @@ function cupSyncButton() { const b = document.querySelector('[data-a="cup-start"
 
 on({
   ch: v => { S.cc = +v; S.sv6 = CH6[S.cc][2].slice(); R(0) },
-  t6: v => { S.t6 = v; if (!S.t6v.includes(v)) S.t6v.push(v); R(0) },
   wc: v => { S.wc = +v; S.ws = -1; R(0) },
   ws: (v, el) => { if (el.dataset.family != null) S.wc = +el.dataset.family; S.ws = +v; R(0) },
   cp: v => cupGoTo(+v),

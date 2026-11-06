@@ -5,8 +5,6 @@
 const RC=['#9BAA73','#C9BE72','#C49A55','#A66A3D','#68402A','#26140F'];
 const BT=[[0,195],[.5,125],[1,95],[2,127],[3,148],[4,163],[5,175],[6,185],[7,193],[8,200],[9,206],[10,211],[11,215],[12,218],[13,221],[14,224]],ML=[[0,0],[3,1.5],[5,4],[7.43,9.5],[9,12],[10,14],[12,16.5],[14,19]],MO=[[0,11],[3,8.5],[5,6],[7.43,3.5],[10,2],[14,1]];
 const ip=(a,t)=>{for(let i=1;i<a.length;i++)if(t<=a[i][0]){const[x0,y0]=a[i-1],[x1,y1]=a[i];return y0+(y1-y0)*(t-x0)/(x1-x0)}return a[a.length-1][1]},ror=t=>(ip(BT,t+.5)-ip(BT,Math.max(0,t-.5)))/((t+.5)-Math.max(0,t-.5)),FC=7.43,F150=3.13,mmss=t=>{const s=Math.round(t*60);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
-const T4=[['cu','Curva'],['fs','Fases'],['gr','Grados'],['fa','Fallas']];
-function t4(){return T4.map(t=>`<button class=chip aria-pressed='${S.t4===t[0]}' data-a=t4 data-v='${t[0]}'>${t[1]}</button>`).join('')+({cu:cur,fs:fas,gr:gra,fa:fal})[S.t4]()}
 function cur(){return `<p class=m>Un tueste de ejemplo (tambor, perfil medio-claro). Mové el tiempo y la descarga.</p><div class='stage dark' style='padding:6px'><div id=c4 class=roast-curve-visual></div></div><label for=rt4>Tiempo<span id=rtl></span></label><input type=range id=rt4 data-rt=1 min=0 max='${S.rd}' step=.05 value='${S.rtm}'><label for=rd4>Descarga (fin del tueste)<span id=rdl></span></label><input type=range id=rd4 data-rd=1 min=8.5 max=14 step=.1 value='${S.rd}'><div id=r4></div><p class=m style='font-size:.8rem'>Curva ilustrativa con valores típicos de referencia. La masa y la humedad son estimaciones didácticas. Los valores reales dependen de la máquina, la carga, la sonda y el café.</p>`}
 function c4(){const t=S.rtm,d=S.rd,X=m=>34+m/14*276,Y=b=>162-(b-60)/170*150,YR=r=>162-Math.max(0,r)/32*150,bt=ip(BT,t),r=ror(t);let p='',q='',pf='';for(let m=0;m<=d+.01;m+=.1)pf+=(pf?'L':'M')+X(m).toFixed(1)+' '+Y(ip(BT,m)).toFixed(1);for(let m=0;m<=t+.01;m+=.05)p+=(p?'L':'M')+X(m).toFixed(1)+' '+Y(ip(BT,m)).toFixed(1);for(let m=1.2;m<=t;m+=.1)q+=(q?'L':'M')+X(m).toFixed(1)+' '+YR(ror(m)).toFixed(1);
 const ph=t<F150?'Secado':t<FC?'Maillard':'Desarrollo',dev=t>FC?(t-FC)/t*100:0,db=ip(BT,d),dd=(d-FC)/d*100,gr=db<209?'Claro':db<220?'Medio':'Oscuro',pc=t<1?0:Math.min(1,Math.max(0,(bt-100)/124)),sc=1+.45*Math.min(1,Math.max(0,(bt-150)/70));
@@ -30,7 +28,6 @@ Object.assign(S, { t4: 'cu', t4v: ['cu'], rtm: 0, rd: 10, ph: 1, fa: 0 });
 function tuesteAfter() { if (S.t4 == 'cu') c4() }
 
 on({
-  t4: v => { S.t4 = v; if (!S.t4v.includes(v)) S.t4v.push(v); R(0) },
   ph: v => { S.ph = +v; R(0) },
   fa: v => { S.fa = +v; R(0) }
 });

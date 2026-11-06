@@ -55,6 +55,7 @@ body {
   font: 16px/1.6 var(--font); letter-spacing: .005em;
   -webkit-tap-highlight-color: transparent;
 }
+a, button, input, select, summary { touch-action: manipulation }
 h1, h2, h3 { font-family: var(--display); font-weight: 600; line-height: 1.12; letter-spacing: -.02em; text-transform: uppercase; margin: 0 0 .4em; color: var(--ink) }
 h1 { font-size: 2.8rem }
 h2 { font-size: 1.9rem }
@@ -149,7 +150,6 @@ th { color: var(--hl); font-weight: 600; letter-spacing: .02em }
 .panel p { line-height: 1.65 }
 .panel > svg { max-width: 560px }
 
-.gd { border-left: 2px solid var(--terra); padding: 2px 0 2px 14px; margin: 6px 0 14px; color: #344331; font-weight: 500 }
 .dato { border-left: 3px solid var(--terra); padding-left: 12px; margin: 12px 0 }
 .tech { display: none; margin-top: 10px; padding: 12px; background: var(--soft); border: 1px solid var(--line); border-radius: 12px }
 .tech.show { display: block }
@@ -312,21 +312,86 @@ textarea.ti { min-height: 96px; padding: 10px 12px }
 
 /* Tira de estaciones */
 .strip { display: flex; gap: 6px; margin: 0 0 18px }
-.strip button {
+.strip a {
+  display: flex; align-items: flex-start; justify-content: center; text-align: center; text-decoration: none;
   flex: 1; min-height: 46px; padding: 8px 2px 0; background: none; border: 0; border-top: 3px solid var(--line);
   font-size: .75rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
 }
-.strip button:hover:not(:disabled) { color: var(--ink) }
+.strip a:hover { color: var(--ink) }
 .strip .d { border-color: var(--sage); color: var(--sage) }
 .strip .d::after { content: ' ✓' }
 .strip .c { border-color: var(--terra); color: var(--ink) }
-.strip button:disabled { opacity: .45; cursor: default }
 
 /* Navegación entre estaciones (al final de cada estación) */
-.station-nav { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 26px 0 0; padding-top: 18px; border-top: 1px solid var(--line) }
-.station-nav .b.p { min-width: min(100%, 300px) }
 
 .quiz h3 { text-transform: none; font-family: var(--font); font-weight: 600; font-size: 1.05rem; letter-spacing: 0 }
+
+/* Recorrido guiado: cabecera de estación, pasos, consigna y pie con el próximo paso */
+.station-head { margin: 4px 0 0 }
+.station-head h2 { margin: .25em 0 .3em }
+.station-goal { max-width: 720px; margin: 0; color: var(--muted); font-size: 1rem; line-height: 1.6 }
+.station-progress { display: flex; align-items: center; gap: 12px; margin-top: 12px; font-size: .85rem; color: var(--muted) }
+.station-progress .progress { flex: 1; max-width: 280px; margin: 0 }
+
+.stepper { list-style: none; margin: 18px 0 0; padding: 0; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 8px; scroll-margin-top: calc(var(--header-h) + 12px) }
+.step-pill {
+  text-decoration: none;
+  display: flex; align-items: center; gap: 10px; width: 100%; height: 100%; min-height: 56px; padding: 8px 12px;
+  border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--muted);
+  font-size: .9rem; font-weight: 600; text-align: left; line-height: 1.2; transition: border-color .2s, background-color .2s;
+}
+.step-pill:hover { border-color: var(--sage); color: var(--ink) }
+.step-n { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1.5px solid var(--line-strong); border-radius: 50%; font-size: .85rem; font-variant-numeric: tabular-nums }
+.step-pill.is-done { color: var(--sage) }
+.step-pill.is-done .step-n { background: var(--sage); border-color: var(--sage); color: #fff }
+.step-pill.is-current { border-color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary); color: var(--ink) }
+.step-pill.is-current .step-n { background: var(--primary); border-color: var(--primary); color: #fff }
+
+.step-head { margin: 14px 0 12px; padding: 16px 18px; border-left: 3px solid var(--terra); border-radius: 0 12px 12px 0; background: var(--surface) }
+.step-head h3 { margin: 4px 0 6px; font-size: 1.35rem }
+.step-task { margin: 0; color: #3d423b; line-height: 1.55 }
+.step-task b { color: var(--hl) }
+
+.step-foot { margin: 28px 0 0; padding: 18px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--soft) }
+.step-status b { display: block }
+.step-status.is-done b { color: var(--sage) }
+.step-status ul { margin: 6px 0 0; padding-left: 20px; color: #3d423b }
+.step-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 14px }
+.step-actions .b.p { min-width: min(100%, 320px) }
+.station-done-note { margin: 12px 0 0; font-size: .92rem; color: var(--sage); font-weight: 600 }
+.station-done-note.is-pending { color: var(--muted); font-weight: 400 }
+.link-btn { min-height: 24px; padding: 0; border: 0; background: none; color: var(--hl); font-weight: 600; text-decoration: underline; text-underline-offset: 3px }
+.link-btn:hover { color: var(--terra) }
+
+.quiz.is-locked { border-style: dashed; background: #f8f7f3; box-shadow: none }
+.quiz.is-locked .k { color: var(--muted) }
+.quiz.is-locked p { margin: 6px 0 0; color: var(--muted) }
+.hint-btn { margin-top: 10px; min-height: 40px; font-size: .88rem }
+
+/* Menú: próximo paso sugerido y recorrido en orden */
+.resume-card { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px 22px; border-radius: var(--radius); background: var(--primary); color: #fff }
+.resume-card .k { color: #c9d4c3 }
+.resume-card h3 { margin: 6px 0 4px; color: #fff; font-size: 1.3rem }
+.resume-card .m { margin: 0; color: #d6ddd2 }
+.resume-card .b.p { flex: none; background: var(--gold-on-dark); border-color: var(--gold-on-dark); color: var(--ink) }
+.resume-card .b.p:hover { background: #f0dca3 }
+.academy-path { list-style: none; margin: 0; padding: 0 }
+.academy-path > li { display: flex }
+.academy-path > li > .academy-module { flex: 1; text-decoration: none }
+.academy-module.is-next { border-color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary) }
+.academy-module.is-next .mod-no { color: var(--primary) }
+
+@media (max-width: 650px) {
+  .stepper { gap: 6px }
+  .step-pill { flex-direction: column; justify-content: flex-start; gap: 5px; min-height: 68px; padding: 8px 4px; font-size: .75rem; text-align: center }
+  .step-head { padding: 14px }
+  .step-head h3 { font-size: 1.2rem }
+  .step-foot { padding: 14px }
+  .step-actions { flex-direction: column-reverse; align-items: stretch }
+  .step-actions > span:empty { display: none }
+  .resume-card { flex-direction: column; align-items: stretch }
+  .station-progress .progress { max-width: none }
+}
 
 /* Glosario y apuntes */
 .resource-head { margin-bottom: 18px }
@@ -564,6 +629,9 @@ textarea.ti { min-height: 96px; padding: 10px 12px }
   .learning-banner .b { grid-column: 2; justify-self: start }
 }
 @media (max-width: 899px) {
+  /* En celular los cuatro espacios ya están en la barra inferior: la portada no los repite. */
+  .home-spaces { display: none }
+  .home-spaces + .learning-banner { margin-top: 28px }
   :root { --gutter: 18px; --header-h: 64px }
   .main-nav { display: none }
   #nb {
@@ -620,7 +688,7 @@ textarea.ti { min-height: 96px; padding: 10px 12px }
   .lab-tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) }
   .lab-tool:last-child { grid-column: 1 / -1; min-height: 0 }
   .strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 6px }
-  .strip button { font-size: .72rem; letter-spacing: .03em }
+  .strip a { font-size: .72rem; letter-spacing: .03em }
   .post-tabs { gap: 6px }
   .post-tabs button { padding: 8px 5px; font-size: .75rem }
   .post-card { padding: 16px }
@@ -629,8 +697,6 @@ textarea.ti { min-height: 96px; padding: 10px 12px }
   .form-grid .wide { grid-column: auto }
   .grind-intro, .grind-concepts, .grind-factor-grid { grid-template-columns: 1fr }
   .grind-stat { min-height: 75px }
-  .station-nav { flex-direction: column-reverse; align-items: stretch }
-  .station-nav > span:empty { display: none }
   .defect-catalog-grid { gap: 5px !important }
   .defect-catalog-grid button { padding: 4px 2px !important; font-size: .68rem !important; letter-spacing: 0 !important }
   .panel { padding: 15px }

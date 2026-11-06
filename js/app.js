@@ -6,7 +6,7 @@
    botón "atrás" del navegador, recargar la página y compartir enlaces:
      #/                                 Inicio
      #/academia                         Mapa de módulos
-     #/academia/<estación>              fruto, poscosecha, cafe-verde, tueste, preparacion, sensorial
+     #/academia/<estación>/<paso>       fruto/especies, tueste/curva... (ver SC en js/academia/estaciones.js)
      #/academia/recorrido-completo
      #/academia/glosario  ·  #/academia/apuntes
      #/laboratorio/<herramienta>        filtrado, espresso, agua, molienda, tds
@@ -26,7 +26,7 @@ const SPACE_ICONS = { ac: '◉', lb: '⌁', de: '◇', ca: '▤' };
 
 /* ---------- Rutas ---------- */
 function applyPath(path) {
-  const [a, b] = path.split('/').filter(Boolean).map(decodeURIComponent);
+  const [a, b, c] = path.split('/').filter(Boolean).map(decodeURIComponent);
   if (!a) { S.sp = 'home'; return true }
   if (a === 'academia') {
     S.sp = 'ac';
@@ -35,7 +35,7 @@ function applyPath(path) {
     if (b === 'apuntes') { S.i = -3; return true }
     if (b === 'recorrido-completo') { enterStation(SC.length); return true }
     const k = SC.findIndex(s => s.slug === b);
-    if (k >= 0) { enterStation(k); return true }
+    if (k >= 0) { enterStation(k, c); return true }
     return false;
   }
   if (a === 'laboratorio') {
@@ -185,8 +185,10 @@ function campusHome() {
   <div class="hero-footer"><span>.CAMPUS · ACADEMIA DE BARISTAS</span><span>CAFÉ DE ESPECIALIDAD · FORMACIÓN CONTINUA</span></div>
 </section>
 ${nextStep()}
+<section class="home-spaces" aria-label="Los cuatro espacios del campus">
 <div class="section-intro"><div><div class="k">.campus</div><h2>Un recorrido.<br>Cuatro espacios.</h2></div><p class="m">Aprendé en la Academia, probá en el Laboratorio, poné a prueba tu criterio en Desafíos y seguí formándote con los Cursos.</p></div>
 <div class="section-grid">${cards.map(c => `<a class="section-card" href="#/${c[0]}"><span class="card-top"><span class="section-icon" aria-hidden="true">${c[4]}</span></span><span><strong>${c[1]}</strong><small>${c[2]}</small><span class="card-link">EXPLORAR <b>→</b></span></span></a>`).join('')}</div>
+</section>
 <div class="learning-banner"><div class="learning-mark" aria-hidden="true">AB<span>.</span></div><div><div class="k">APRENDER HACIENDO</div><h3>La teoría cobra sentido<br>cuando pasa por tus manos.</h3><p>Un campus para acompañar tu formación y conectar el conocimiento con la práctica.</p></div><a class="b" href="#/capacitarse">Conocé los cursos →</a></div>`;
 }
 

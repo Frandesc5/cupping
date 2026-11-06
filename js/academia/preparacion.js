@@ -28,13 +28,8 @@ Object.assign(S, {
   t5: 're', t5v: ['re'], gh: 70, ak: 40, gr5: 3, hitV60: false, hitEsp: false
 });
 
-const T5 = [['re', 'Receta'], ['ag', 'Agua'], ['mo', 'Molienda'], ['me', 'Medir']];
 function prepRecipe() {
   return `<button class=chip aria-pressed='${S.mode == 'f'}' data-a=md data-v=f>Filtrado (V60)</button><button class=chip aria-pressed='${S.mode == 'e'}' data-a=md data-v=e>Espresso</button>` + (S.mode == 'f' ? prep3() : esp());
-}
-function prepStation() {
-  return T5.map(t => `<button class=chip aria-pressed='${S.t5 === t[0]}' data-a=t5 data-v='${t[0]}'>${t[1]}</button>`).join('') +
-    (S.t5 == 're' ? prepRecipe() : ({ ag: agua, mo: mol, me: med })[S.t5]());
 }
 function prepAfter() {
   if (S.t5 == 're') { if (S.mode == 'e') pe(); else pu() }
@@ -42,8 +37,7 @@ function prepAfter() {
 }
 
 on({
-  md: v => { S.mode = v; R(0) },
-  t5: v => { S.t5 = v; if (!S.t5v.includes(v)) S.t5v.push(v); R(0) }
+  md: v => { S.mode = v; R(0) }
 });
 onInput((t, d) => {
   const v = +t.value;
