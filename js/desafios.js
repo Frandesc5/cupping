@@ -5,7 +5,6 @@
 
 Object.assign(S, { chModule: 'Fruto', chLevel: 'Básico', chAnswers: {} });
 /* Las respuestas se guardan en este navegador para no perder el avance al recargar. */
-try { S.chAnswers = JSON.parse(localStorage.getItem('cl-ch')) || {} } catch (e) {}
 const chSave = () => { try { localStorage.setItem('cl-ch', JSON.stringify(S.chAnswers)) } catch (e) {} };
 
 const CHBANK={
@@ -34,7 +33,17 @@ const CHBANK={
 ['Intermedio','Evaluación','¿Qué busca reducir una cata a ciegas?',['Sesgos por información previa','La acidez de la bebida','La variación natural del café'],0,'Ocultar origen, precio o marca reduce algunas expectativas y sesgos.'],
 ['Avanzado','Interpretación','Dos cafés tienen el mismo TDS pero se perciben distintos. ¿Qué explicación es más sólida?',['TDS no describe por sí solo composición ni percepción','Uno de los refractómetros necesariamente está roto','El proceso siempre explica toda la diferencia'],0,'TDS mide sólidos disueltos totales; no identifica qué compuestos están presentes ni cómo se perciben.']]
 };
-function des(){let names=Object.keys(CHBANK),arr=CHBANK[S.chModule],q=arr.find(x=>x[0]===S.chLevel),key=S.chModule+'|'+S.chLevel,ans=S.chAnswers[key],done=Object.keys(S.chAnswers).length,offset=(names.indexOf(S.chModule)+['Básico','Intermedio','Avanzado'].indexOf(S.chLevel))%3,opts=q[3].map((_,i)=>q[3][(i+offset)%3]),correct=(q[4]-offset+3)%3;return `<div class=k>Desafíos</div><h2>Entrená tu criterio</h2><p class=m>Casos y preguntas organizados por módulo. Empezá por fundamentos y avanzá hacia decisiones profesionales.</p><div class=workspace-tabs>${names.map(n=>`<button data-a=chmodule data-v="${n}" aria-pressed="${S.chModule===n}">${n}</button>`).join('')}</div><div class=level-tabs>${['Básico','Intermedio','Avanzado'].map(n=>`<button class=chip data-a=chlevel data-v="${n}" aria-pressed="${S.chLevel===n}">${n}</button>`).join('')}</div><div class=challenge-meta><span>${S.chModule}</span><span>${S.chLevel}</span><span>${done} ${done===1?'respuesta realizada':'respuestas realizadas'}</span></div><div class="panel quiz"><div class=k>${q[1]}</div><h3>${q[2]}</h3>${opts.map((o,i)=>`<button class="opt ${ans!=null?(i===correct?'ok':i===ans?'no':''):''}" data-a=chanswer data-v="${i}" ${ans!=null?'disabled':''}>${o}</button>`).join('')}${ans!=null?`<p><b>${ans===correct?'Correcto.':'Revisemos el criterio.'}</b> ${q[5]}</p><button class="b p" data-a=chreset>Volver a intentar</button>`:`<p class=m>Elegí una respuesta para ver la explicación.</p>`}</div><div class=panel><div class=k>Tu recorrido</div><div class=challenge-progress><i style="width:${Math.round(done/18*100)}%"></i></div><p class=m>${done} de 18 combinaciones módulo / nivel respondidas. Podés volver a cada una cuando quieras.</p></div>`}
+/* Respuestas guardadas: solo se conservan las que corresponden a preguntas que existen. */
+try {
+  const saved = JSON.parse(localStorage.getItem('cl-ch'));
+  if (saved && typeof saved === 'object' && !Array.isArray(saved))
+    for (const [k, v] of Object.entries(saved)) {
+      const [m, l] = k.split('|');
+      if (CHBANK[m] && CHBANK[m].some(q => q[0] === l) && Number.isInteger(v) && v >= 0 && v < 3) S.chAnswers[k] = v;
+    }
+} catch (e) {}
+const CH_TOTAL = Object.values(CHBANK).reduce((n, qs) => n + qs.length, 0);
+function des(){let names=Object.keys(CHBANK),arr=CHBANK[S.chModule],q=arr.find(x=>x[0]===S.chLevel),key=S.chModule+'|'+S.chLevel,ans=S.chAnswers[key],done=Object.keys(S.chAnswers).length,offset=(names.indexOf(S.chModule)+['Básico','Intermedio','Avanzado'].indexOf(S.chLevel))%3,opts=q[3].map((_,i)=>q[3][(i+offset)%3]),correct=(q[4]-offset+3)%3;return `<div class=k>Desafíos</div><h2>Entrená tu criterio</h2><p class=m>Casos y preguntas organizados por módulo. Empezá por fundamentos y avanzá hacia decisiones profesionales.</p><div class=workspace-tabs>${names.map(n=>`<button data-a=chmodule data-v="${n}" aria-pressed="${S.chModule===n}">${n}</button>`).join('')}</div><div class=level-tabs>${['Básico','Intermedio','Avanzado'].map(n=>`<button class=chip data-a=chlevel data-v="${n}" aria-pressed="${S.chLevel===n}">${n}</button>`).join('')}</div><div class=challenge-meta><span>${S.chModule}</span><span>${S.chLevel}</span><span>${done} ${done===1?'respuesta realizada':'respuestas realizadas'}</span></div><div class="panel quiz"><div class=k>${q[1]}</div><h3>${q[2]}</h3>${opts.map((o,i)=>`<button class="opt ${ans!=null?(i===correct?'ok':i===ans?'no':''):''}" data-a=chanswer data-v="${i}" ${ans!=null?'disabled':''}>${o}</button>`).join('')}${ans!=null?`<p><b>${ans===correct?'Correcto.':'Revisemos el criterio.'}</b> ${q[5]}</p><button class="b p" data-a=chreset>Volver a intentar</button>`:`<p class=m>Elegí una respuesta para ver la explicación.</p>`}</div><div class=panel><div class=k>Tu recorrido</div><div class=challenge-progress><i style="width:${Math.round(done/CH_TOTAL*100)}%"></i></div><p class=m>${done} de ${CH_TOTAL} combinaciones módulo / nivel respondidas. Podés volver a cada una cuando quieras.</p></div>`}
 
 on({
   chmodule: v => { S.chModule = v; R(0) },

@@ -70,6 +70,7 @@ td, th { padding: 9px 10px; border-bottom: 1px solid var(--line); text-align: le
 th { color: var(--hl); font-weight: 600; letter-spacing: .02em }
 :focus-visible { outline: 3px solid var(--terra); outline-offset: 3px }
 [hidden] { display: none !important }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap }
 
 #v { max-width: var(--wrap); margin: 0 auto; padding: 8px var(--gutter) 40px; overflow-x: hidden }
 
@@ -308,8 +309,6 @@ textarea.ti { min-height: 96px; padding: 10px 12px }
 .academy-soon h4 { margin: 14px 0 6px; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; color: var(--hl) }
 .academy-soon ul { margin: 0; padding-left: 18px }
 .academy-soon li { margin: 4px 0; font-size: .9rem }
-.strip-hint { margin: -10px 0 14px; font-size: .8rem; color: var(--muted) }
-.strip-hint a { color: var(--sage); font-weight: 600 }
 
 /* Tira de estaciones */
 .strip { display: flex; gap: 6px; margin: 0 0 18px }

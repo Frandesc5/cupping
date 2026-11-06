@@ -65,17 +65,25 @@ on({ ans: v => { const [id, i] = v.split(':'); S.qa[id] = +i; R(0) } });
 
 /* ---------- Aviso breve ----------
    toast('Texto')                       aviso simple (3,5 s)
-   toast('Texto', 'Deshacer', fn)       aviso con un botón de acción (7 s) */
+   toast('Texto', 'Deshacer', fn)       aviso con un botón de acción (7 s).
+   El foco pasa al botón (el elemento que se tocó ya no existe), y el aviso
+   no se cierra mientras el botón tenga el foco o el puntero encima. */
 function toast(m, label, fn) {
   const t = $('#tt');
+  const hide = () => { t.classList.remove('show'); clearTimeout(toast.h); toast.h = setTimeout(() => { t.classList.remove('has-action'); t.textContent = '' }, 350) };
+  const arm = ms => { clearTimeout(toast.t); toast.t = setTimeout(hide, ms) };
+  clearTimeout(toast.h);
   t.textContent = m;
   t.classList.toggle('has-action', !!fn);
   if (fn) {
     const b = document.createElement('button');
     b.type = 'button'; b.textContent = label;
-    b.onclick = () => { clearTimeout(toast.t); t.classList.remove('show', 'has-action'); fn() };
+    b.onclick = () => { clearTimeout(toast.t); hide(); fn() };
+    b.onfocus = b.onmouseenter = () => clearTimeout(toast.t);
+    b.onblur = b.onmouseleave = () => arm(3000);
     t.append(' ', b);
-  }
-  t.classList.add('show');
-  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show', 'has-action'), fn ? 7000 : 3500);
+    t.classList.add('show');
+    b.focus({ preventScroll: true });
+  } else t.classList.add('show');
+  arm(fn ? 7000 : 3500);
 }

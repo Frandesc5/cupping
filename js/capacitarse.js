@@ -17,7 +17,7 @@ const COURSES_URL = 'https://academiadebaristas.com.ar/talleres-y-cursos/';
 function cap() {
   if (S.cu < 0) return `<div class="k">Cursos</div><h2>Cursos y formación</h2><p class="m">Elegí cómo seguir formándote: un recorrido online a tu ritmo o capacitaciones presenciales con el equipo de la Academia.</p>
     <div class="course-list">${CRS.map(c => `<a class="course-card" href="#/capacitarse/${c.slug}"><span class="course-mode">${c.m}</span><strong>${c.t}</strong><span class="course-meta">${c.d}${c.s ? ' · ' + c.s : ''}</span><span class="card-link">VER DETALLE <b>→</b></span></a>`).join('')}</div>`;
-  const c = CRS[S.cu], pr = Math.round(Math.min(P.max, 6) / 6 * 100);
+  const c = CRS[S.cu], pr = Math.round(doneCount() / SC.length * 100);
   return `<div class="k">${c.m}</div><h2>${c.t}</h2><p>Nivel: ${c.n} · Duración: ${c.d}${c.s ? ' · Sede: ' + c.s : ''}</p>` +
     (c.on
       ? `<div class="panel"><div class="k">Programa</div><div class="program-list">${SC.map((x, i) => `<button class="program-item" data-a="go" data-v="${i}"><span class="num">0${i + 1}</span><b>${x.t}</b><span aria-hidden="true">→</span></button>`).join('')}</div><div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pr}" aria-label="Progreso del recorrido"><i style="width:${pr}%"></i></div><p class="m">Progreso en este dispositivo: ${pr} %</p></div>`

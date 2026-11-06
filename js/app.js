@@ -40,6 +40,7 @@ function applyPath(path) {
   }
   if (a === 'laboratorio') {
     S.sp = 'lb';
+    if (b !== 'nuevo-registro') S.be = '';
     if (!b) { S.workMode = 'experiment'; return true }
     if (b === 'nuevo-registro') { S.workMode = 'record'; return true }
     if (b === 'bitacora') { S.workMode = 'history'; return true }
@@ -74,19 +75,27 @@ function showRoute(restore) {
   if (!applyPath(path)) { history.replaceState(null, '', '#/'); applyPath('/') }
   shownPath = hashPath();
   const y = restore && history.state && history.state.y;
-  R(y ? 0 : undefined);
+  /* Cambio dentro de la misma página (otra herramienta del laboratorio, otro término):
+     se mantiene la posición y el foco vuelve al mismo control. */
+  const page = pageKey(), samePage = showRoute.booted && page === showRoute.page;
+  const a = document.activeElement, ctl = samePage && a && a.dataset && a.dataset.a ? [a.dataset.a, a.dataset.v] : null;
+  R(y || samePage ? 0 : undefined);
   if (y) window.scrollTo(0, y);
-  if (showRoute.booted) focusHeading();
-  showRoute.booted = true;
+  if (ctl) { const el = [...document.querySelectorAll('#v [data-a]')].find(e => e.dataset.a === ctl[0] && e.dataset.v === ctl[1]); if (el) el.focus({ preventScroll: true }) }
+  else if (showRoute.booted && !samePage) focusHeading();
+  showRoute.booted = true; showRoute.page = page;
   const v = $('#v'); v.classList.remove('enter'); void v.offsetWidth; v.classList.add('enter');
   clearTimeout(showRoute.t); showRoute.t = setTimeout(() => v.classList.remove('enter'), 900);
 }
 /* Al cambiar de pantalla, el foco va al título: así el teclado y los lectores
    de pantalla empiezan a leer la pantalla nueva y no quedan en un botón que ya no existe. */
+/* Identifica la página sin contar cambios internos (herramienta del laboratorio, término abierto). */
+const pageKey = () => S.sp + '|' + (S.sp === 'ac' ? S.i : S.sp === 'lb' ? (S.workMode === 'experiment' ? 'x' : S.workMode) : S.sp === 'ca' ? S.cu : '');
 function focusHeading() {
-  const h = $('#v h1, #v h2');
+  /* Si la pantalla abre un término o apunte puntual, el foco va ahí; si no, al título. */
+  const h = $('#v .glossary-entry[open] summary') || $('#v .theory-card.open button') || $('#v h1, #v h2');
   if (!h) return;
-  h.setAttribute('tabindex', '-1');
+  if (h.matches('h1, h2')) h.setAttribute('tabindex', '-1');
   try { h.focus({ preventScroll: true }) } catch (e) { h.focus() }
 }
 window.addEventListener('popstate', () => showRoute(true));
@@ -138,7 +147,7 @@ function pageTitle() {
 /* ---------- Portada ---------- */
 /* Próximo paso sugerido: empezar, continuar o pasar a Desafíos. */
 function nextStep() {
-  const done = SC.filter((_, i) => doneSt(i)).length;
+  const done = doneCount();
   let k, h, p, href, cta;
   if (P.last == null) {
     k = '¿Primera vez en .campus?'; h = 'Empezá por ' + SC[0].t.toLowerCase();

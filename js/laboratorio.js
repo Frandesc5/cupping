@@ -24,12 +24,13 @@ const LB=[['f','Filtrado'],['e','Espresso'],['a','Agua'],['m','Molienda'],['t','
    Cada campo tiene un lugar para su propio mensaje de error (e_<id>). */
 const fi=(id,l,t,x)=>`<div class=field><label for='b_${id}'>${l}</label><input class=ti id='b_${id}' type='${t||'text'}' ${t==='number'?'inputmode=decimal':''} autocomplete=off aria-describedby='e_${id}' ${x||''}><span class=field-error id='e_${id}'></span></div>`,sel=(id,l,o)=>`<div class=field><label for='b_${id}'>${l}</label><select class=ti id='b_${id}'>${o.map(v=>`<option>${v}</option>`).join('')}</select></div>`;
 /* Ids de todos los campos, para limpiar y deshacer. */
+const FORM_DEFAULTS = ['V60', 'Lavado', 'Sin remoción'];
 const FORM_IDS = ['n','o','v','p','m','d','w','t','g','cl','s','f','pc','bl','ew','a','x','y','z'];
 const formSnapshot = () => Object.fromEntries(FORM_IDS.map(k => [k, (document.getElementById('b_' + k) || {}).value || '']));
 const bv=id=>document.getElementById('b_'+id).value.trim();
 function workTabs(){return `<div class="workspace-tabs"><button data-a="wm" data-v="experiment" aria-pressed="${S.workMode==='experiment'}"><b>Simulador</b><small>Probá y ajustá variables</small></button><button data-a="wm" data-v="record" aria-pressed="${S.workMode==='record'}"><b>Nuevo registro</b><small>Guardá una preparación</small></button><button data-a="wm" data-v="history" aria-pressed="${S.workMode==='history'}"><b>Mi bitácora (${BIT.length})</b><small>Historial y comparaciones</small></button></div>`}
 function lab(){return `<div class=k>Espacio de experimentación</div><h2>Laboratorio</h2><p class=m>Acá no archivás resultados: trabajás con ellos. Modificá parámetros, aislá variables y observá cómo se relacionan. Cuando termines, podés guardar la prueba en tu Bitácora.</p>${workTabs()}${S.workMode==='experiment'?`<div class="lab-intro-grid"><div class="lab-purpose"><span class=k>QUÉ HACÉS ACÁ</span><h3>Experimentar con intención.</h3><p>Elegí una preparación, definí qué querés investigar y cambiá una variable por vez. El simulador muestra relaciones y cálculos; no reemplaza la preparación real ni predice el sabor.</p></div><div class="lab-method"><span class=k>PROTOCOLO BREVE</span><ol><li>Elegí una receta de referencia.</li><li>Identificá una variable para modificar.</li><li>Mantené las demás constantes.</li><li>Prepará, medí y evaluá.</li><li>Guardá el resultado si querés conservarlo.</li></ol></div></div><div class="lab-tool-head"><div><span class=k>HERRAMIENTAS</span><h3>¿Qué querés explorar?</h3></div><p class=m>Seleccioná un área. Cada una trabaja una familia distinta de variables.</p></div><div class="lab-tool-grid">${LB.map((t,i)=>`<button class="lab-tool ${S.lb===t[0]?'active':''}" aria-pressed="${S.lb===t[0]}" data-a=lb data-v="${t[0]}"><b>${t[1]}</b><small>${({f:'Dosis, agua, temperatura y vertido',e:'Dosis, bebida, tiempo y presión',a:'Dureza y alcalinidad',m:'Distribución y tamaño de partícula',t:'TDS y rendimiento de extracción'})[t[0]]}</small><i>Explorar →</i></button>`).join('')}</div><div class="lab-variable-panel"><div class="lab-current"><span class=k>ÁREA SELECCIONADA</span><h3>${LB.find(t=>t[0]===S.lb)[1]}</h3><p class=m>${({f:'Configurá la receta y el comportamiento del vertido.',e:'Ajustá la relación entre dosis, bebida y tiempo.',a:'Observá por separado dureza y alcalinidad.',m:'Explorá cómo cambia la distribución de partículas.',t:'Relacioná la concentración medida con el rendimiento calculado.'})[S.lb]}</p></div><div class="lab-controls">${({f:prep3,e:esp,a:agua,m:mol,t:med})[S.lb]()}</div></div><div class="bar"><button class="b p" data-a="openlog">Guardar esta prueba en Bitácora →</button></div>`:S.workMode==='record'?recordForm():recordHistory()}`}
-function recordForm(){const p=S.prefill||{},adv=Object.keys(p).some(k=>!['n','m','d','w','z'].includes(k)&&p[k]!==''&&p[k]!=null);return `<div class=panel><div class=k>Nuevo registro</div><h3>Guardá una preparación</h3><p class=m>Solo los campos con * son obligatorios. El resto podés sumarlo ahora o más adelante.</p>
+function recordForm(){const p=S.prefill||{},adv=Object.keys(p).some(k=>!['n','m','d','w','z'].includes(k)&&p[k]!==''&&p[k]!=null&&!FORM_DEFAULTS.includes(p[k]));return `<div class=panel><div class=k>Nuevo registro</div><h3>Guardá una preparación</h3><p class=m>Solo los campos con * son obligatorios. El resto podés sumarlo ahora o más adelante.</p>
 <div class=form-grid>${fi('n','Nombre del café *')}${sel('m','Método',['V60','Espresso','AeroPress','Prensa francesa','Otro'])}${fi('d','Dosis de café (g) *','number','min=0.1 step=.1')}${fi('w','Agua o bebida (g) *','number','min=1 step=1')}</div>
 <details class=more-fields ${adv?'open':''}><summary>Más detalles <span class=m>(origen, temperatura, molienda, tiempos, TDS…)</span></summary><div class=form-grid>${fi('o','Origen')}${fi('v','Variedad')}${sel('p','Proceso',['Lavado','Natural','Honey','Anaeróbico','Otro'])}${fi('t','Temperatura (°C)','number','min=60 max=100 step=.5')}${fi('g','Molienda / ajuste')}${fi('cl','Clics del molino (0–150)','number','min=0 max=150 step=1')}${fi('s','Tiempo total (segundos)','number','min=1')}${fi('f','Caudal de vertido (g/s)','number','min=0 step=.1')}${fi('pc','Cantidad de vertidos','number','min=1 step=1')}${fi('bl','Bloom (veces la dosis)','number','min=0 step=.5')}${fi('ew','Espera del bloom (segundos)','number','min=0 step=1')}${sel('a','Agitación',['Sin remoción','Suave','Moderada','Intensa'])}${fi('x','TDS (%)','number','min=0 max=20 step=.01')}${fi('y','Masa de bebida (g)','number','min=1')}</div></details>
 <div class="form-grid"><div class="wide"><label for=b_z>Notas sensoriales y observaciones</label><textarea class=ti id=b_z placeholder="Aroma, acidez, dulzor, cuerpo, balance, cambios que probaste…"></textarea><div class=field-hint>Escribí libremente. No hace falta completar todos los atributos.</div></div></div><div id=berr class="form-error" role="alert">${S.be||''}</div><div class=bar><button class="b p" data-a=quickSave>Guardar registro</button><button class=b data-a=clearform>Limpiar</button></div><p class=m>${S.bm||'Se guarda en este navegador y dispositivo.'}</p></div>`}
@@ -83,12 +84,20 @@ on({
   lb: v => routeTo('/laboratorio/' + LAB_SLUG[v]),
   wm: v => { S.be = ''; routeTo('/laboratorio/' + (LAB_MODE_SLUG[v] || LAB_SLUG[S.lb])) },
   openlog: () => { S.prefill = prefillFromLab(); S.be = ''; S.bm = ''; routeTo('/laboratorio/nuevo-registro') },
-  editRecord: v => { const b = BIT.find(x => x.id == v); if (b) { S.prefill = prefillFromRecord(b); routeTo('/laboratorio/nuevo-registro') } },
+  editRecord: v => { const b = BIT.find(x => x.id == v); if (b) { S.prefill = prefillFromRecord(b); S.be = ''; S.bm = ''; routeTo('/laboratorio/nuevo-registro') } },
   clearform: () => {
     const before = formSnapshot();
     S.prefill = null; S.be = ''; S.bm = ''; R(0);
-    if (Object.values(before).some(v => v && !['V60', 'Lavado', 'Sin remoción'].includes(v)))
-      toast('Formulario limpio', 'Deshacer', () => { S.prefill = before; R(0) });
+    if (Object.values(before).some(v => v && !FORM_DEFAULTS.includes(v)))
+      toast('Formulario limpio', 'Deshacer', () => {
+        /* Solo repone los campos que siguen vacíos: no pisa lo escrito después de limpiar. */
+        for (const [k, v] of Object.entries(before)) {
+          const el = document.getElementById('b_' + k);
+          if (!el || !v) continue;
+          const untouched = el.tagName === 'SELECT' ? el.selectedIndex === 0 : !el.value;
+          if (untouched) { el.value = v; const det = el.closest('details'); if (det && !FORM_DEFAULTS.includes(v)) det.open = true }
+        }
+      });
   },
   quickSave: () => {
     const n = bv('n'), d = +bv('d'), w = +bv('w'), t = +bv('t') || 0, x = +bv('x') || 0, y = +bv('y') || 0;
@@ -110,7 +119,15 @@ on({
   bcmp: v => { const id = +v, i = S.cmp.indexOf(id); if (i >= 0) S.cmp.splice(i, 1); else { S.cmp.push(id); if (S.cmp.length > 2) S.cmp.shift() } R(0) },
   bdel: v => {
     const i = BIT.findIndex(b => b.id == v); if (i < 0) return;
-    const [gone] = BIT.splice(i, 1); S.cmp = S.cmp.filter(x => x != v); bsv(); R(0);
-    toast('Registro “' + gone.n + '” borrado', 'Deshacer', () => { BIT.splice(i, 0, gone); bsv(); R(0) });
+    const [gone] = BIT.splice(i, 1), cmpBefore = S.cmp.slice();
+    S.cmp = S.cmp.filter(x => x != v); bsv(); R(0);
+    toast('Registro “' + gone.n + '” borrado', 'Deshacer', () => {
+      if (BIT.some(b => b.id === gone.id)) return;
+      /* La bitácora va de más nuevo a más viejo: se reinserta según su id (fecha de creación). */
+      const at = BIT.findIndex(b => b.id < gone.id);
+      BIT.splice(at < 0 ? BIT.length : at, 0, gone);
+      S.cmp = cmpBefore.filter(id => BIT.some(b => b.id === id));
+      bsv(); R(0);
+    });
   }
 });
