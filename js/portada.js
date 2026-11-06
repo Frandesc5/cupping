@@ -2,24 +2,24 @@
    Portada
    Cambia según el avance guardado en este navegador:
    · nueva     (nunca abriste una estación): presentación del campus y "Empezá por…"
-   · en curso  (1 a 5 estaciones): panel personal — seguir donde lo dejaste y
+   · en curso  (empezaste la Academia o usaste el Laboratorio): panel personal — seguir donde lo dejaste y
                sugerencias para reforzar lo aprendido (el mapa de estaciones está en la Academia)
    · completa  (6 de 6): felicitación, desafíos pendientes y cursos presenciales
    ============================================================ */
 
 const CH_LEVELS = ['Básico', 'Intermedio', 'Avanzado'];
-const homeMode = () => P.last == null ? 'new' : SC.every((_, i) => stDone(i)) ? 'complete' : 'progress';
+const homeMode = () => P.last == null && !BIT.length ? 'new' : SC.every((_, i) => stDone(i)) ? 'complete' : 'progress';
 function homeView() { const m = homeMode(); return m === 'new' ? campusHome() : personalHome(m) }
 
 /* ---------- Panel personal ---------- */
 function personalHome(mode) {
   const n = SC.length, done = SC.filter((_, i) => stDone(i)).length, list = suggestions();
   const h = mode === 'complete' ? `Completaste las ${n} estaciones`
-    : done === 0 ? 'Ya empezaste el recorrido' : done < n / 2 ? 'Buen comienzo' : done === n / 2 ? 'Vas por la mitad del recorrido' : 'Te falta poco para terminar';
+    : P.last == null ? 'Seguí practicando' : done === 0 ? 'Ya empezaste el recorrido' : done < n / 2 ? 'Buen comienzo' : done === n / 2 ? 'Vas por la mitad del recorrido' : 'Te falta poco para terminar';
   const first = mode === 'complete' ? list.find(x => x.a === 'openChallenge') : null;
   return `<section class="me-head"><div class="k">${mode === 'complete' ? 'Recorrido completo' : 'Hola de nuevo'}</div><h1>${h}</h1>
     <div class="menu-progress"><div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${done}" aria-label="Estaciones completas"><i style="width:${Math.round(done / n * 100)}%"></i></div><span>${done} de ${n} estaciones completas</span></div></section>
-  <div class="me-stack">${mode === 'complete' ? completeCard(first) : homeResume()}${suggestHTML(first ? list.filter(x => x !== first) : list, mode)}${courseTeaser(mode)}</div>
+  <div class="me-stack">${mode === 'complete' ? completeCard(first) : homeResume()}${lastTestCard()}${suggestHTML(first ? list.filter(x => x !== first) : list, mode)}${courseTeaser(mode)}</div>
   ${spacesRow()}`;
 }
 
@@ -55,8 +55,8 @@ function suggestions() {
     ch.push({ ico: '◇', t: `Desafíos de ${SC[i].mt.charAt(0).toLowerCase() + SC[i].mt.slice(1)}`, s: `Nivel ${lvl.toLowerCase()} · ${hechos} de 3 niveles hechos`, href: '#/desafios', a: 'openChallenge', v: m + '|' + lvl });
   }
   const lab = [];
-  if (BIT.length >= 2) lab.push({ ico: '⌁', t: 'Compará tus dos últimas preparaciones', s: 'En tu bitácora del Laboratorio', href: '#/laboratorio/bitacora', a: 'compareLast' });
-  else if (stDone(4)) lab.push({ ico: '⌁', t: 'Probá tu receta en el Laboratorio', s: BIT.length ? 'Registrá otra preparación para poder compararlas' : 'Ajustá variables y guardá la prueba en tu bitácora', href: '#/laboratorio/filtrado' });
+  /* Con registros en la bitácora, la práctica ya está en la tarjeta 'Tu última prueba'. */
+  if (!BIT.length && stDone(4)) lab.push({ ico: '⌁', t: 'Probá tu receta en el Laboratorio', s: 'Ajustá variables y guardá la prueba en tu bitácora', href: '#/laboratorio/filtrado' });
   return [...ch.slice(0, lab.length ? 2 : 3), ...lab].slice(0, 3);
 }
 function suggestHTML(list, mode) {
@@ -79,11 +79,67 @@ function spacesRow() {
   return `<nav class="spaces-row" aria-label="Espacios del campus">${rows.map(r => `<a href="#/${r[0]}"><span aria-hidden="true">${r[1]}</span><span><b>${r[2]}</b><small>${r[3]}</small></span></a>`).join('')}</nav>`;
 }
 
+
+/* ---------- Tu última prueba en el Laboratorio ----------
+   Solo aparece si hay registros en la bitácora. Muestra el último y ofrece
+   repetirlo (registro nuevo con la misma receta) o ajustarlo en el simulador. */
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const nf = (x, d = 1) => new Intl.NumberFormat('es-AR', { maximumFractionDigits: d }).format(x);
+const dur = s => s >= 60 ? Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') + ' min' : s + ' s';
+function lastTestCard() {
+  const b = BIT[0]; if (!b) return '';
+  const esp = b.m === 'Espresso';
+  const stats = [
+    [nf(b.d) + ' g', 'Dosis'],
+    [nf(b.w, 0) + ' g', esp ? 'Bebida' : 'Agua'],
+    ['1:' + nf(b.w / b.d), 'Ratio'],
+    b.t ? [nf(b.t) + ' °C', 'Temperatura'] : null,
+    b.s ? [dur(b.s), 'Tiempo'] : null,
+    b.tds ? [nf(b.tds, 2) + ' %', 'TDS'] : null,
+    b.ey ? [nf(b.ey) + ' %', 'Rendimiento'] : null
+  ].filter(Boolean);
+  const meta = [b.m, b.p, b.o].filter(Boolean).map(esc).join(' · ');
+  return `<section class="lab-last" aria-labelledby="lab-last-h">
+    <div class="lab-last-top"><div class="k">Tu última prueba en el Laboratorio</div><span class="m">${esc(recDate(b))}</span></div>
+    <h2 id="lab-last-h">${esc(b.n)}</h2>${meta ? `<p class="lab-last-meta">${meta}</p>` : ''}
+    <ul class="lab-last-stats">${stats.map(s => `<li><b>${s[0]}</b><span>${s[1]}</span></li>`).join('')}</ul>
+    ${b.z ? `<p class="lab-last-notes">“${esc(b.z)}”</p>` : ''}
+    <div class="lab-last-actions"><button class="b p" data-a="repeatLast">Repetir la receta</button><button class="b" data-a="tuneLast">Ajustar en el simulador</button>
+      ${BIT.length >= 2 ? `<a class="link-btn" href="#/laboratorio/bitacora" data-a="compareLast">Comparar con la anterior →</a>` : ''}<a class="link-btn" href="#/laboratorio/bitacora">Ver mi bitácora (${BIT.length}) →</a></div>
+  </section>`;
+}
+
+/* Lleva una receta guardada a los deslizadores del simulador, dentro de sus rangos. */
+const fitRange = (list, k, v) => {
+  const p = list.find(x => x[0] === k);
+  if (!p || v == null || v === '' || isNaN(+v)) return null;
+  const [, , mn, mx, st] = p;
+  return Math.min(mx, Math.max(mn, Math.round(+v / st) * st));
+};
+function loadRecipe(b) {
+  const set = (obj, list, k, v) => { const x = fitRange(list, k, v); if (x != null) obj[k] = x };
+  if (b.m === 'Espresso') {
+    set(S.es, EV, 'd', b.d); set(S.es, EV, 'y', b.w); set(S.es, EV, 't', b.t || null); set(S.es, EV, 's', b.s || null);
+    const g = ESG.indexOf(b.g); if (g >= 0) S.es.g = g + 1;
+    return 'espresso';
+  }
+  set(S.lab, PV, 'd', b.d); set(S.lab, PV, 'w', b.w); set(S.lab, PV, 't', b.t || null);
+  set(S.lab, PV, 'f', recFlow(b) || null); set(S.lab, PV, 'n', b.pours || null); set(S.lab, PV, 'b', b.bloom || null); set(S.lab, PV, 'e', b.wait || null);
+  const g = GN.indexOf(b.g); if (g >= 0) S.lab.g = g + 1;
+  const a = AN.indexOf(b.agitation); if (a >= 0) S.lab.a = a;
+  if (b.clicks != null) S.lab.clicks = Math.max(0, Math.min(150, Math.round(b.clicks)));
+  return 'filtrado';
+}
+
 on({
   /* Abre Desafíos directamente en el módulo y nivel sugeridos. */
   openChallenge: v => { const [m, l] = v.split('|'); S.chModule = m; S.chLevel = l; routeTo('/desafios') },
   /* Abre la bitácora con las dos últimas preparaciones ya elegidas para comparar. */
-  compareLast: () => { if (BIT.length >= 2) S.cmp = [BIT[0].id, BIT[1].id]; routeTo('/laboratorio/bitacora') }
+  compareLast: () => { if (BIT.length >= 2) S.cmp = [BIT[0].id, BIT[1].id]; routeTo('/laboratorio/bitacora') },
+  /* Registro nuevo con la misma receta; el resultado (TDS, bebida, notas) queda en blanco para la prueba nueva. */
+  repeatLast: () => { const b = BIT[0]; if (!b) return; const p = prefillFromRecord(b); delete p.x; delete p.y; delete p.z; S.prefill = p; S.be = ''; S.bm = ''; routeTo('/laboratorio/nuevo-registro'); toast('Receta cargada: anotá el resultado de esta prueba') },
+  /* Abre el simulador con la receta cargada, para cambiar una variable y ver qué pasa. */
+  tuneLast: () => { const b = BIT[0]; if (!b) return; routeTo('/laboratorio/' + loadRecipe(b)); toast('Tu receta está cargada en el simulador') }
 });
 
 /* ---------- Portada para quien entra por primera vez ---------- */
