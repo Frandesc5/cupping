@@ -15,7 +15,7 @@ const CF = ['Objetivos', 'Programa por unidades', 'Videos', 'Material descargabl
 const COURSES_URL = 'https://academiadebaristas.com.ar/talleres-y-cursos/';
 
 function cap() {
-  if (S.cu < 0) return `<div class="k">04 / CAPACITARSE</div><h2>Cursos y formación</h2><p class="m">Elegí cómo seguir formándote: un recorrido online a tu ritmo o capacitaciones presenciales con el equipo de la Academia.</p>
+  if (S.cu < 0) return `<div class="k">Cursos</div><h2>Cursos y formación</h2><p class="m">Elegí cómo seguir formándote: un recorrido online a tu ritmo o capacitaciones presenciales con el equipo de la Academia.</p>
     <div class="course-list">${CRS.map(c => `<a class="course-card" href="#/capacitarse/${c.slug}"><span class="course-mode">${c.m}</span><strong>${c.t}</strong><span class="course-meta">${c.d}${c.s ? ' · ' + c.s : ''}</span><span class="card-link">VER DETALLE <b>→</b></span></a>`).join('')}</div>`;
   const c = CRS[S.cu], pr = Math.round(Math.min(P.max, 6) / 6 * 100);
   return `<div class="k">${c.m}</div><h2>${c.t}</h2><p>Nivel: ${c.n} · Duración: ${c.d}${c.s ? ' · Sede: ' + c.s : ''}</p>` +

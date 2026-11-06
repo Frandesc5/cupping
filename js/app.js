@@ -20,7 +20,7 @@ const HERO_PHOTO = 'https://academiadebaristas.com.ar/wp-content/uploads/2026/05
 const SITE = 'https://academiadebaristas.com.ar/';
 
 /* Los cuatro espacios del campus: [clave, nombre, dirección] */
-const SPACES = [['ac', 'Academia', 'academia'], ['lb', 'Laboratorio', 'laboratorio'], ['de', 'Desafíos', 'desafios'], ['ca', 'Capacitarse', 'capacitarse']];
+const SPACES = [['ac', 'Academia', 'academia'], ['lb', 'Laboratorio', 'laboratorio'], ['de', 'Desafíos', 'desafios'], ['ca', 'Cursos', 'capacitarse']];
 
 const SPACE_ICONS = { ac: '◉', lb: '⌁', de: '◇', ca: '▤' };
 
@@ -122,7 +122,7 @@ function crumbTrail() {
     c.push(['/laboratorio', 'Laboratorio']);
     c.push([0, S.workMode === 'record' ? 'Nuevo registro' : S.workMode === 'history' ? 'Mi bitácora' : LB.find(t => t[0] === S.lb)[1]]);
   } else if (S.sp === 'de') c.push(['/desafios', 'Desafíos']);
-  else if (S.sp === 'ca') { c.push(['/capacitarse', 'Capacitarse']); if (S.cu >= 0) c.push([0, CRS[S.cu].t]) }
+  else if (S.sp === 'ca') { c.push(['/capacitarse', 'Cursos']); if (S.cu >= 0) c.push([0, CRS[S.cu].t]) }
   c[c.length - 1][0] = 0;  // el último es la página actual
   return c;
 }
@@ -161,7 +161,7 @@ function campusHome() {
     ['academia', 'Academia', 'Explorá los módulos de formación, desde el origen hasta la taza.', '01', '◉'],
     ['laboratorio', 'Laboratorio', 'Diseñá pruebas, ajustá variables y analizá resultados.', '02', '⌁'],
     ['desafios', 'Desafíos', 'Poné a prueba tu criterio profesional.', '03', '◇'],
-    ['capacitarse', 'Capacitarse', 'Cursos y experiencias de formación.', '04', '↗']
+    ['capacitarse', 'Cursos', 'Capacitaciones online y presenciales para seguir formándote.', '04', '▤']
   ];
   return `<section class="home-hero">
   <div class="hero-copy">
@@ -169,16 +169,16 @@ function campusHome() {
     <div class="k">FORMACIÓN EN CAFÉ DE ESPECIALIDAD</div>
     <h1>Aprendé.<br><em>Experimentá.</em><br>Crecé.</h1>
     <p>Un espacio para incorporar conocimientos, desarrollar criterio, practicar y construir tu recorrido profesional en el café.</p>
-    <div class="action-row"><a class="b p" href="#/academia">Entrar a la Academia →</a><a class="b" href="#/capacitarse">Ver capacitaciones</a></div>
+    <div class="action-row"><a class="b p" href="#/academia">Entrar a la Academia →</a><a class="b" href="#/capacitarse">Ver cursos</a></div>
     <div class="hero-signature">TEORÍA <span>+</span> PRÁCTICA <span>+</span> ACOMPAÑAMIENTO</div>
   </div>
   <figure class="hero-photo-wrap"><img class="hero-photo" src="${HERO_PHOTO}" alt="Equipo de Academia de Baristas" fetchpriority="high" decoding="async"><figcaption class="photo-note"><b>APASIONADOS EN LA MATERIA.</b><span>Aprender café también es compartirlo.</span></figcaption><div class="photo-index">.CAMPUS</div></figure>
   <div class="hero-footer"><span>.CAMPUS · ACADEMIA DE BARISTAS</span><span>CAFÉ DE ESPECIALIDAD · FORMACIÓN CONTINUA</span></div>
 </section>
 ${nextStep()}
-<div class="section-intro"><div><div class="k">01 / .CAMPUS</div><h2>Un recorrido.<br>Cuatro espacios.</h2></div><p class="m">Aprendé conceptos, explorá herramientas, experimentá con variables, consultá tus registros, resolvé situaciones y seguí capacitándote.</p></div>
-<div class="section-grid">${cards.map(c => `<a class="section-card" href="#/${c[0]}"><span class="card-top"><span class="section-icon" aria-hidden="true">${c[4]}</span><span class="card-number">${c[3]} / 04</span></span><span><strong>${c[1]}</strong><small>${c[2]}</small><span class="card-link">EXPLORAR <b>→</b></span></span></a>`).join('')}</div>
-<div class="learning-banner"><div class="learning-mark" aria-hidden="true">AB<span>.</span></div><div><div class="k">APRENDER HACIENDO</div><h3>La teoría cobra sentido<br>cuando pasa por tus manos.</h3><p>Un campus para acompañar tu formación y conectar el conocimiento con la práctica.</p></div><a class="b" href="#/capacitarse">Conocé las capacitaciones →</a></div>`;
+<div class="section-intro"><div><div class="k">.campus</div><h2>Un recorrido.<br>Cuatro espacios.</h2></div><p class="m">Aprendé en la Academia, probá en el Laboratorio, poné a prueba tu criterio en Desafíos y seguí formándote con los Cursos.</p></div>
+<div class="section-grid">${cards.map(c => `<a class="section-card" href="#/${c[0]}"><span class="card-top"><span class="section-icon" aria-hidden="true">${c[4]}</span></span><span><strong>${c[1]}</strong><small>${c[2]}</small><span class="card-link">EXPLORAR <b>→</b></span></span></a>`).join('')}</div>
+<div class="learning-banner"><div class="learning-mark" aria-hidden="true">AB<span>.</span></div><div><div class="k">APRENDER HACIENDO</div><h3>La teoría cobra sentido<br>cuando pasa por tus manos.</h3><p>Un campus para acompañar tu formación y conectar el conocimiento con la práctica.</p></div><a class="b" href="#/capacitarse">Conocé los cursos →</a></div>`;
 }
 
 function siteFooter() {
