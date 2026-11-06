@@ -146,7 +146,7 @@ function pageTitle() {
 
 /* La portada (nueva o personal) está en js/portada.js. */
 function siteFooter() {
-  return `<footer class="site-foot"><img src="${LOGO}" alt="Academia de Baristas" width="436" height="405"><span>UN CAMPUS PARA SEGUIR CRECIENDO.</span><a href="${SITE}" target="_blank" rel="noopener">academiadebaristas.com.ar ↗</a></footer>`;
+  return `<footer class="site-foot"><img src="${LOGO}" alt="Academia de Baristas" width="436" height="405"><span>Un campus para seguir creciendo.</span><a href="${SITE}" target="_blank" rel="noopener">academiadebaristas.com.ar ↗</a></footer>`;
 }
 
 /* ---------- Dibujar la pantalla actual ----------

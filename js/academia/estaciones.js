@@ -140,11 +140,11 @@ function stepFootHTML(c) {
      Si el último paso está a medias, no se saca a la persona de ahí: la tarea es completarlo. */
   const others = pending.filter(x => x !== s);
   let main = '';
-  if (next) main = stepLink(c, next, 'b p', `Siguiente paso: ${next.label} →`);
-  else if (ok) main = `<a class="b p" href="${nextStationHref()}">${nextSt ? `Continuar a la estación ${S.i + 2}: ${nextSt.n} →` : 'Terminar el recorrido →'}</a>`;
-  else if (!miss.length) main = stepLink(c, others[0], 'b p', `Completar lo que falta: ${others[0].label} →`);
+  if (next) main = stepLink(c, next, 'b p', `Siguiente paso: ${next.label}`);
+  else if (ok) main = `<a class="b p" href="${nextStationHref()}">${nextSt ? `Continuar a la estación ${S.i + 2}: ${nextSt.n}` : 'Terminar el recorrido'}</a>`;
+  else if (!miss.length) main = stepLink(c, others[0], 'b p', `Completar lo que falta: ${others[0].label}`);
   const stationNote = ok && next
-    ? `<p class="station-done-note">✓ Ya completaste la estación. <a class="link-btn" href="${nextStationHref()}">${nextSt ? `Continuar a ${nextSt.n} →` : 'Terminar el recorrido →'}</a></p>`
+    ? `<p class="station-done-note">✓ Ya completaste la estación. <a class="link-btn" href="${nextStationHref()}">${nextSt ? `Continuar a ${nextSt.n}` : 'Terminar el recorrido'}</a></p>`
     : !next && !ok && others.length ? `<p class="station-done-note is-pending">${miss.length ? 'Además, para completar la estación' : 'Para completar la estación'} te falta: ${others.map(x => stepLink(c, x, 'link-btn', x.label)).join(', ')}.</p>` : '';
   return `${status}<div class="step-actions">${back}${main}</div>${stationNote}`;
 }
@@ -196,7 +196,7 @@ function goStep(k) {
 }
 
 function completeView() {
-  return `<div class="k">Camino completado</div><h2>De la cereza a la taza</h2>${finHTML()}<p>Recorriste las seis estaciones:</p>${SC.map(c => `<p>✓ ${c.t}</p>`).join('')}<p class="m">Podés volver a cualquier estación desde el mapa, o poner a prueba lo que aprendiste.</p>${strip()}<div class="bar"><a class="b p" href="#/desafios">Ir a Desafíos →</a><button class="b" data-a="go" data-v="0">Repetir desde la estación 1</button></div>`;
+  return `<div class="k">Camino completado</div><h2>De la cereza a la taza</h2>${finHTML()}<p>Recorriste las seis estaciones:</p>${SC.map(c => `<p>✓ ${c.t}</p>`).join('')}<p class="m">Podés volver a cualquier estación desde el mapa, o poner a prueba lo que aprendiste.</p>${strip()}<div class="bar"><a class="b p" href="#/desafios">Ir a Desafíos</a><button class="b" data-a="go" data-v="0">Repetir desde la estación 1</button></div>`;
 }
 
 /* Al entrar a una estación (desde un enlace, el menú o la dirección). */
@@ -250,8 +250,8 @@ const SOON = [
 ];
 function moduleState(i) {
   if (stDone(i)) return ['done', '✓ Completado · repasar'];
-  if (startedSt(i)) return ['started', `En curso · ${stepsDone(SC[i])} de ${SC[i].steps.length} pasos →`];
-  return ['new', 'Empezar →'];
+  if (startedSt(i)) return ['started', `En curso · ${stepsDone(SC[i])} de ${SC[i].steps.length} pasos`];
+  return ['new', 'Empezar'];
 }
 /* Próxima estación sugerida: la última abierta si no está completa; si no, la primera pendiente. */
 function suggestedStation() {
@@ -261,14 +261,14 @@ function suggestedStation() {
 }
 function resumeCard() {
   const i = suggestedStation();
-  if (i < 0) return `<section class="resume-card is-done"><div><div class="k">Recorrido completo</div><h3>Completaste las ${SC.length} estaciones</h3><p class="m">Repasá cualquier módulo o poné a prueba lo que aprendiste en Desafíos.</p></div><a class="b p" href="#/desafios">Ir a Desafíos →</a></section>`;
+  if (i < 0) return `<section class="resume-card is-done"><div><div class="k">Recorrido completo</div><h3>Completaste las ${SC.length} estaciones</h3><p class="m">Repasá cualquier módulo o poné a prueba lo que aprendiste en Desafíos.</p></div><a class="b p" href="#/desafios">Ir a Desafíos</a></section>`;
   const c = SC[i], s = curStep(c), started = startedSt(i);
-  return `<section class="resume-card"><div><div class="k">${started ? 'Seguí donde lo dejaste' : i === 0 ? 'Empezá por acá' : 'Tu próxima estación'}</div><h3>Estación ${i + 1} · ${c.t}</h3><p class="m">${started ? `Paso ${stepIdx(c) + 1} de ${c.steps.length}: ${s.label} · ${stepsDone(c)} de ${c.steps.length} pasos completos.` : c.goal}</p></div><a class="b p" href="#${stepPath(i)}">${started ? 'Continuar →' : 'Empezar →'}</a></section>`;
+  return `<section class="resume-card"><div><div class="k">${started ? 'Seguí donde lo dejaste' : i === 0 ? 'Empezá por acá' : 'Tu próxima estación'}</div><h3>Estación ${i + 1} · ${c.t}</h3><p class="m">${started ? `Paso ${stepIdx(c) + 1} de ${c.steps.length}: ${s.label} · ${stepsDone(c)} de ${c.steps.length} pasos completos.` : c.goal}</p></div><a class="b p" href="#${stepPath(i)}">${started ? 'Continuar' : 'Empezar'}</a></section>`;
 }
 function academyMenu() {
   const done = SC.filter((_, i) => stDone(i)).length, soonCount = SOON.reduce((n, g) => n + g[1].length, 0), next = suggestedStation();
   return `<div class="academy-menu">
-  <div class="academy-menu-head"><div class="eyebrow">Academia · mapa de aprendizaje</div><h2>Explorá los módulos.</h2><p class="m">Un recorrido de ${SC.length} estaciones para comprender el café desde su origen hasta la taza. Cada estación se hace por pasos y tu avance se guarda en este dispositivo.</p>
+  <div class="academy-menu-head"><h2>Explorá los módulos.</h2><p class="m">Un recorrido de ${SC.length} estaciones para comprender el café desde su origen hasta la taza. Cada estación se hace por pasos y tu avance se guarda en este dispositivo.</p>
     <div class="menu-progress"><div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="${SC.length}" aria-valuenow="${done}" aria-label="Estaciones completas"><i style="width:${Math.round(done / SC.length * 100)}%"></i></div><span>${done} de ${SC.length} estaciones completas</span></div></div>
   ${resumeCard()}
   <section class="academy-group"><h3>El recorrido, en orden</h3><ol class="academy-grid academy-path">${SC.map((c, i) => {
@@ -276,7 +276,7 @@ function academyMenu() {
     return `<li><a class="academy-module active is-${st} ${i === next ? 'is-next' : ''}" href="#${stepPath(i)}"><span class="mod-no">Estación ${i + 1}${i === next ? ' · sugerida' : ''}</span><span><strong>${c.mt}</strong><small>${c.md}</small></span><span class="mod-foot">${label}</span></a></li>`;
   }).join('')}</ol></section>
   <details class="academy-soon"><summary>Próximamente · ${soonCount} módulos en preparación</summary>${SOON.map(g => `<h4>${g[0]}</h4><ul>${g[1].map(m => `<li><b>${m[0]}</b> <span class="m">${m[1]}</span></li>`).join('')}</ul>`).join('')}</details>
-  <section class="academy-resources"><div class="resource-head"><div class="eyebrow">Herramientas de estudio</div><h2>Consultá y profundizá.</h2><p class="m">Dos espacios complementarios para acompañar tu recorrido.</p></div><div class="academy-grid"><button class="academy-module active" data-a="glossary"><span class="mod-no">Consulta rápida</span><span><strong>Glosario cafetero</strong><small>Definiciones y vocabulario técnico, con buscador.</small></span><span class="mod-foot">Abrir →</span></button><button class="academy-module active" data-a="theory"><span class="mod-no">Biblioteca</span><span><strong>Apuntes y profundizaciones</strong><small>Lecturas para ir más allá de cada módulo.</small></span><span class="mod-foot">Leer →</span></button></div></section>
+  <section class="academy-resources"><div class="resource-head"><h2>Consultá y profundizá.</h2><p class="m">Dos espacios complementarios para acompañar tu recorrido.</p></div><div class="academy-grid"><button class="academy-module active" data-a="glossary"><span class="mod-no">Consulta rápida</span><span><strong>Glosario cafetero</strong><small>Definiciones y vocabulario técnico, con buscador.</small></span><span class="mod-foot">Abrir</span></button><button class="academy-module active" data-a="theory"><span class="mod-no">Biblioteca</span><span><strong>Apuntes y profundizaciones</strong><small>Lecturas para ir más allá de cada módulo.</small></span><span class="mod-foot">Leer</span></button></div></section>
 </div>`;
 }
 
