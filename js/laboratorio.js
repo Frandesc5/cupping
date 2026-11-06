@@ -33,8 +33,8 @@ function lab(){return `<div class=k>Espacio de experimentación</div><h2>Laborat
 function recordForm(){const p=S.prefill||{},adv=Object.keys(p).some(k=>!['n','m','d','w','z'].includes(k)&&p[k]!==''&&p[k]!=null&&!FORM_DEFAULTS.includes(p[k]));return `<div class=panel><div class=k>Nuevo registro</div><h3>Guardá una preparación</h3><p class=m>Solo los campos con * son obligatorios. El resto podés sumarlo ahora o más adelante.</p>
 <div class=form-grid>${fi('n','Nombre del café *')}${sel('m','Método',['V60','Espresso','AeroPress','Prensa francesa','Otro'])}${fi('d','Dosis de café (g) *','number','min=0.1 step=.1')}${fi('w','Agua o bebida (g) *','number','min=1 step=1')}</div>
 <details class=more-fields ${adv?'open':''}><summary>Más detalles <span class=m>(origen, temperatura, molienda, tiempos, TDS…)</span></summary><div class=form-grid>${fi('o','Origen')}${fi('v','Variedad')}${sel('p','Proceso',['Lavado','Natural','Honey','Anaeróbico','Otro'])}${fi('t','Temperatura (°C)','number','min=60 max=100 step=.5')}${fi('g','Molienda / ajuste')}${fi('cl','Clics del molino (0–150)','number','min=0 max=150 step=1')}${fi('s','Tiempo total (segundos)','number','min=1')}${fi('f','Caudal de vertido (g/s)','number','min=0 step=.1')}${fi('pc','Cantidad de vertidos','number','min=1 step=1')}${fi('bl','Bloom (veces la dosis)','number','min=0 step=.5')}${fi('ew','Espera del bloom (segundos)','number','min=0 step=1')}${sel('a','Agitación',['Sin remoción','Suave','Moderada','Intensa'])}${fi('x','TDS (%)','number','min=0 max=20 step=.01')}${fi('y','Masa de bebida (g)','number','min=1')}</div></details>
-<div class="form-grid"><div class="wide"><label for=b_z>Notas sensoriales y observaciones</label><textarea class=ti id=b_z placeholder="Aroma, acidez, dulzor, cuerpo, balance, cambios que probaste…"></textarea><div class=field-hint>Escribí libremente. No hace falta completar todos los atributos.</div></div></div><div id=berr class="form-error" role="alert">${S.be||''}</div><div class=bar><button class="b p" data-a=quickSave>Guardar registro</button><button class=b data-a=clearform>Limpiar</button></div><p class=m>${S.bm||'Se guarda en este navegador y dispositivo.'}</p></div>`}
-function recordHistory(){return `<div class=k>Tu biblioteca de preparaciones</div><h3>${BIT.length} registros guardados</h3><p class=m>Revisá, compará y detectá patrones entre tus pruebas.</p>${BIT.length?BIT.slice().reverse().map(b=>`<div class=record-card><div class=challenge-meta><span>${recDate(b)}</span><span>${b.m||'Método sin definir'}</span>${b.p?`<span>${b.p}</span>`:''}</div><h3 style="margin:10px 0 4px">${b.n}</h3><p class=m>${[b.o,b.v].filter(Boolean).join(' · ')}</p><p><b>${b.d} g</b> / <b>${b.w} g</b> · ratio 1:${(b.w/b.d).toFixed(1)}${b.t?' · '+b.t+' °C':''}${b.s?' · '+b.s+' s':''}${b.tds?' · TDS '+b.tds+' %':''}${b.ey?' · EY '+b.ey.toFixed(1)+' %':''}</p>${recFlow(b)||b.pours||b.bloom||b.agitation?`<p class=m>${b.g?'Molienda '+b.g+' · ':''}${b.clicks!=null?'Molino '+b.clicks+' clics · ':''}${recFlow(b)?'Caudal '+recFlow(b)+' g/s · ':''}${b.pours?'Vertidos '+b.pours+' · ':''}${b.bloom?'Bloom '+b.bloom+'× · ':''}${b.wait?'Espera '+b.wait+' s · ':''}${b.agitation||''}</p>`:''}${b.z?`<p class=m>${b.z}</p>`:''}<div class=record-actions><button class=b data-a=bcmp data-v="${b.id}">${S.cmp.includes(b.id)?'Quitar comparación':'Comparar'}</button><button class=b data-a=editRecord data-v="${b.id}">Duplicar como nueva prueba</button><button class=b data-a=bdel data-v="${b.id}">Borrar</button></div></div>`).join(''):`<div class=panel><h3>Tu bitácora empieza acá</h3><p class=m>Hacé una prueba en el laboratorio y guardala, o creá un registro manual.</p><button class="b p" data-a=wm data-v=experiment>Ir a experimentar</button></div>`}${(()=>{let c=S.cmp.map(id=>BIT.find(b=>b.id==id)).filter(Boolean);return c.length===2?`<div class=panel><div class=k>Comparación de preparaciones</div><p class=m>La tabla muestra diferencias entre registros. Para atribuir un efecto a una variable, procurá mantener constantes las demás condiciones.</p><table><tr><th>Variable</th><th>${c[0].n}</th><th>${c[1].n}</th></tr>${[['Ratio',b=>'1:'+(b.w/b.d).toFixed(1)],['Temperatura',b=>b.t||'—'],['Tiempo',b=>b.s?b.s+' s':'—'],['TDS',b=>b.tds?b.tds+' %':'—'],['Rendimiento',b=>b.ey?b.ey.toFixed(1)+' %':'—'],['Molienda',b=>b.g||'—'],['Clics del molino',b=>b.clicks!=null?b.clicks+' clics':'—'],['Caudal',b=>recFlow(b)?recFlow(b)+' g/s':'—'],['Vertidos',b=>b.pours||'—'],['Bloom',b=>b.bloom?b.bloom+'×':'—'],['Agitación',b=>b.agitation||'—']].map(r=>`<tr><th>${r[0]}</th><td>${r[1](c[0])}</td><td>${r[1](c[1])}</td></tr>`).join('')}</table></div>`:''})()}`}
+${recSensBlock()}<div class="form-grid"><div class="wide"><label for=b_z>Notas sensoriales y observaciones</label><textarea class=ti id=b_z placeholder="Aroma, acidez, dulzor, cuerpo, balance, cambios que probaste…"></textarea><div class=field-hint>Escribí libremente. No hace falta completar todos los atributos.</div></div></div><div id=berr class="form-error" role="alert">${S.be||''}</div><div class=bar><button class="b p" data-a=quickSave>Guardar registro</button><button class=b data-a=clearform>Limpiar</button></div><p class=m>${S.bm||'Se guarda en este navegador y dispositivo.'}</p></div>`}
+function recordHistory(){return `<div class=k>Tu biblioteca de preparaciones</div><h3>${BIT.length} registros guardados</h3><p class=m>Revisá, compará y detectá patrones entre tus pruebas.</p>${BIT.length?BIT.slice().reverse().map(b=>`<div class=record-card><div class=challenge-meta><span>${recDate(b)}</span><span>${b.m||'Método sin definir'}</span>${b.p?`<span>${b.p}</span>`:''}</div><h3 style="margin:10px 0 4px">${b.n}</h3><p class=m>${[b.o,b.v].filter(Boolean).join(' · ')}</p><p><b>${b.d} g</b> / <b>${b.w} g</b> · ratio 1:${(b.w/b.d).toFixed(1)}${b.t?' · '+b.t+' °C':''}${b.s?' · '+b.s+' s':''}${b.tds?' · TDS '+b.tds+' %':''}${b.ey?' · EY '+b.ey.toFixed(1)+' %':''}</p>${recFlow(b)||b.pours||b.bloom||b.agitation?`<p class=m>${b.g?'Molienda '+b.g+' · ':''}${b.clicks!=null?'Molino '+b.clicks+' clics · ':''}${recFlow(b)?'Caudal '+recFlow(b)+' g/s · ':''}${b.pours?'Vertidos '+b.pours+' · ':''}${b.bloom?'Bloom '+b.bloom+'× · ':''}${b.wait?'Espera '+b.wait+' s · ':''}${b.agitation||''}</p>`:''}${b.sens?`<div class=rec-sens-mini>${sensRadar(b.sens,120)}</div>`:''}${b.z?`<p class=m>${b.z}</p>`:''}<div class=record-actions><button class=b data-a=bcmp data-v="${b.id}">${S.cmp.includes(b.id)?'Quitar comparación':'Comparar'}</button><button class=b data-a=editRecord data-v="${b.id}">Duplicar como nueva prueba</button><button class=b data-a=bdel data-v="${b.id}">Borrar</button></div></div>`).join(''):`<div class=panel><h3>Tu bitácora empieza acá</h3><p class=m>Hacé una prueba en el laboratorio y guardala, o creá un registro manual.</p><button class="b p" data-a=wm data-v=experiment>Ir a experimentar</button></div>`}${(()=>{let c=S.cmp.map(id=>BIT.find(b=>b.id==id)).filter(Boolean);return c.length===2?`<div class=panel><div class=k>Comparación de preparaciones</div><p class=m>La tabla muestra diferencias entre registros. Para atribuir un efecto a una variable, procurá mantener constantes las demás condiciones.</p><table><tr><th>Variable</th><th>${c[0].n}</th><th>${c[1].n}</th></tr>${[['Ratio',b=>'1:'+(b.w/b.d).toFixed(1)],['Temperatura',b=>b.t||'—'],['Tiempo',b=>b.s?b.s+' s':'—'],['TDS',b=>b.tds?b.tds+' %':'—'],['Rendimiento',b=>b.ey?b.ey.toFixed(1)+' %':'—'],['Molienda',b=>b.g||'—'],['Clics del molino',b=>b.clicks!=null?b.clicks+' clics':'—'],['Caudal',b=>recFlow(b)?recFlow(b)+' g/s':'—'],['Vertidos',b=>b.pours||'—'],['Bloom',b=>b.bloom?b.bloom+'×':'—'],['Agitación',b=>b.agitation||'—']].map(r=>`<tr><th>${r[0]}</th><td>${r[1](c[0])}</td><td>${r[1](c[1])}</td></tr>`).join('')}</table></div>`:''})()}`}
 
 /* ---------- Después de dibujar ---------- */
 function labAfter() {
@@ -87,9 +87,11 @@ on({
   editRecord: v => { const b = BIT.find(x => x.id == v); if (b) { S.prefill = prefillFromRecord(b); S.be = ''; S.bm = ''; routeTo('/laboratorio/nuevo-registro') } },
   clearform: () => {
     const before = formSnapshot();
-    S.prefill = null; S.be = ''; S.bm = ''; R(0);
-    if (Object.values(before).some(v => v && !FORM_DEFAULTS.includes(v)))
+    const sensBefore = S.recSens.slice();
+    S.prefill = null; S.be = ''; S.bm = ''; S.recSens = [0, 0, 0, 0, 0, 0]; R(0);
+    if (Object.values(before).some(v => v && !FORM_DEFAULTS.includes(v)) || sensBefore.some(v => v))
       toast('Formulario limpio', 'Deshacer', () => {
+        if (!S.recSens.some(v => v)) { S.recSens = sensBefore; recSensUpdate() }
         /* Solo repone los campos que siguen vacíos: no pisa lo escrito después de limpiar. */
         for (const [k, v] of Object.entries(before)) {
           const el = document.getElementById('b_' + k);
@@ -111,8 +113,10 @@ on({
     BIT.unshift({
       id: Date.now(), f: new Date().toLocaleDateString('es-AR'), n, o: bv('o'), v: bv('v'), p: bv('p'), m: bv('m'), d, w, t, g: bv('g'),
       clicks: bv('cl') === '' ? null : Math.max(0, Math.min(150, Math.round(+bv('cl')))), s: +bv('s') || 0, flow: +bv('f') || 0,
-      pours: +bv('pc') || 0, bloom: +bv('bl') || 0, wait: +bv('ew') || 0, agitation: bv('a'), y, tds: x, ey: x && y ? x * y / d : 0, z: bv('z')
+      pours: +bv('pc') || 0, bloom: +bv('bl') || 0, wait: +bv('ew') || 0, agitation: bv('a'), y, tds: x, ey: x && y ? x * y / d : 0, z: bv('z'),
+      sens: S.recSens.some(v => v) ? S.recSens.slice() : null
     });
+    S.recSens = [0, 0, 0, 0, 0, 0];
     bsv(); S.be = ''; S.bm = 'Registro guardado correctamente.'; S.prefill = null;
     routeTo('/laboratorio/bitacora'); toast('✓ Registro guardado');
   },
@@ -130,4 +134,35 @@ on({
       bsv(); R(0);
     });
   }
+});
+
+/* ---------- Perfil sensorial del registro ----------
+   Versión simple del radar del módulo Sensorial: cada atributo se marca con un
+   toque del 1 al 5 (otro toque en el mismo número lo borra). Es opcional;
+   el radar se dibuja solo con los atributos marcados. */
+S.recSens = S.recSens || [0, 0, 0, 0, 0, 0];
+function sensRadar(v, size = 180) {
+  const pt = (k, r) => { const g = (-90 + 60 * k) * Math.PI / 180; return [(100 + r * Math.cos(g)).toFixed(1), (100 + r * Math.sin(g)).toFixed(1)] };
+  const ring = r => AX.map((_, k) => pt(k, r).join(',')).join(' ');
+  const poly = v.map((x, k) => pt(k, 70 * (x || 0) / 5).join(',')).join(' ');
+  return `<svg class="sens-radar" viewBox="-24 0 248 200" width="${size}" height="${size}" role="img" aria-label="Perfil sensorial: ${AX.map((a, k) => a + ' ' + (v[k] || 0)).join(', ')}">
+    <g fill="none" stroke="var(--line-strong)">${[1, 2, 3, 4, 5].map(k => `<polygon points="${ring(70 * k / 5)}" ${k < 5 ? 'opacity=".55"' : ''}/>`).join('')}${AX.map((_, k) => `<line x1="100" y1="100" x2="${pt(k, 70)[0]}" y2="${pt(k, 70)[1]}" opacity=".55"/>`).join('')}</g>
+    <polygon points="${poly}" fill="var(--accent)" fill-opacity=".45" stroke="var(--terra)" stroke-width="2"/>
+    <g font-size="10" fill="var(--muted)" text-anchor="middle">${AX.map((a, k) => { const [x, y] = pt(k, 88); return `<text x="${x}" y="${+y + 3}">${a}</text>` }).join('')}</g></svg>`;
+}
+function recSensInner() {
+  const v = S.recSens, any = v.some(x => x);
+  return `<div class="rec-sens-grid"><div class="rec-sens-rows">${AX.map((a, i) => `<div class="sens-row"><span class="sens-name" id="sn${i}">${a}</span><div class="sens-scale" role="radiogroup" aria-labelledby="sn${i}">${[1, 2, 3, 4, 5].map(n => `<button type="button" class="sens-dot" role="radio" aria-checked="${v[i] === n}" aria-label="${n}: ${SW[n]}" data-a="recSens" data-v="${i}:${n}">${n}</button>`).join('')}</div><span class="sens-val">${v[i] ? SW[v[i]] : '—'}</span></div>`).join('')}</div>
+    <div class="rec-sens-chart">${sensRadar(v)}${any ? `<button type="button" class="link-btn" data-a="recSensClear">Borrar perfil</button>` : `<p class="m">Tocá un número en cada atributo para ver el perfil.</p>`}</div></div>`;
+}
+const recSensBlock = () => `<section class="rec-sens" aria-labelledby="rec-sens-h"><div class="k" id="rec-sens-h">Perfil sensorial <span class="m">(opcional)</span></div><p class="field-hint">1 = muy suave · 5 = muy intensa. Marcá solo lo que percibiste.</p><div id="rec-sens">${recSensInner()}</div></section>`;
+/* Se redibuja solo este bloque: lo escrito en el resto del formulario no se toca. */
+function recSensUpdate(focusV) {
+  const box = $('#rec-sens'); if (!box) return;
+  box.innerHTML = recSensInner();
+  if (focusV) { const b = box.querySelector(`[data-v="${focusV}"]`); if (b) b.focus({ preventScroll: true }) }
+}
+on({
+  recSens: v => { const [i, n] = v.split(':').map(Number); S.recSens[i] = S.recSens[i] === n ? 0 : n; recSensUpdate(v) },
+  recSensClear: () => { S.recSens = [0, 0, 0, 0, 0, 0]; recSensUpdate() }
 });
