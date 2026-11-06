@@ -4,6 +4,9 @@
    ============================================================ */
 
 Object.assign(S, { chModule: 'Fruto', chLevel: 'Básico', chAnswers: {} });
+/* Las respuestas se guardan en este navegador para no perder el avance al recargar. */
+try { S.chAnswers = JSON.parse(localStorage.getItem('cl-ch')) || {} } catch (e) {}
+const chSave = () => { try { localStorage.setItem('cl-ch', JSON.stringify(S.chAnswers)) } catch (e) {} };
 
 const CHBANK={
 'Fruto':[
@@ -36,6 +39,6 @@ function des(){let names=Object.keys(CHBANK),arr=CHBANK[S.chModule],q=arr.find(x
 on({
   chmodule: v => { S.chModule = v; R(0) },
   chlevel: v => { S.chLevel = v; R(0) },
-  chanswer: v => { S.chAnswers[S.chModule + '|' + S.chLevel] = +v; R(0) },
-  chreset: () => { delete S.chAnswers[S.chModule + '|' + S.chLevel]; R(0) }
+  chanswer: v => { S.chAnswers[S.chModule + '|' + S.chLevel] = +v; chSave(); R(0) },
+  chreset: () => { delete S.chAnswers[S.chModule + '|' + S.chLevel]; chSave(); R(0) }
 });
