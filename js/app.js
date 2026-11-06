@@ -27,6 +27,7 @@ const SPACE_ICONS = { ac: '◉', lb: '⌁', de: '◇', ca: '▤' };
 /* ---------- Rutas ---------- */
 function applyPath(path) {
   const [a, b, c] = path.split('/').filter(Boolean).map(decodeURIComponent);
+  S.recap = false;
   if (!a) { S.sp = 'home'; return true }
   if (a === 'academia') {
     S.sp = 'ac';
@@ -35,7 +36,8 @@ function applyPath(path) {
     if (b === 'apuntes') { S.i = -3; return true }
     if (b === 'recorrido-completo') { enterStation(SC.length); return true }
     const k = SC.findIndex(s => s.slug === b);
-    if (k >= 0) { enterStation(k, c); return true }
+    /* .../repaso es el cierre de la estación; si todavía no está completa, se muestra la estación. */
+    if (k >= 0) { enterStation(k, c); S.recap = c === 'repaso' && stDone(k); return true }
     return false;
   }
   if (a === 'laboratorio') {
@@ -90,7 +92,7 @@ function showRoute(restore) {
 /* Al cambiar de pantalla, el foco va al título: así el teclado y los lectores
    de pantalla empiezan a leer la pantalla nueva y no quedan en un botón que ya no existe. */
 /* Identifica la página sin contar cambios internos (herramienta del laboratorio, término abierto). */
-const pageKey = () => S.sp + '|' + (S.sp === 'ac' ? S.i : S.sp === 'lb' ? (S.workMode === 'experiment' ? 'x' : S.workMode) : S.sp === 'ca' ? S.cu : '');
+const pageKey = () => S.sp + '|' + (S.sp === 'ac' ? S.i + (S.recap ? 'r' : '') : S.sp === 'lb' ? (S.workMode === 'experiment' ? 'x' : S.workMode) : S.sp === 'ca' ? S.cu : '');
 function focusHeading() {
   /* Si la pantalla abre un término o apunte puntual, el foco va ahí; si no, al título. */
   const h = $('#v .glossary-entry[open] summary') || $('#v .theory-card.open button') || $('#v h1, #v h2');
@@ -125,7 +127,7 @@ function crumbTrail() {
     c.push(['/academia', 'Academia']);
     if (S.i === -2) c.push([0, 'Glosario']);
     else if (S.i === -3) c.push([0, 'Apuntes']);
-    else if (S.i >= 0 && S.i < SC.length) c.push([0, SC[S.i].t]);
+    else if (S.i >= 0 && S.i < SC.length) { c.push(['/academia/' + SC[S.i].slug, SC[S.i].t]); if (S.recap) c.push([0, 'Lo que aprendiste']) }
     else if (S.i >= SC.length) c.push([0, 'Recorrido completo']);
   } else if (S.sp === 'lb') {
     c.push(['/laboratorio', 'Laboratorio']);

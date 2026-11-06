@@ -67,6 +67,7 @@ const GLOSSARY=[
 ['Convección','Tueste','Transferencia de calor mediante el movimiento de un fluido, como el aire caliente alrededor del grano.'],
 ['Conducción','Tueste','Transferencia de calor por contacto directo entre superficies.'],
 ['Radiación','Tueste','Transferencia de energía mediante ondas electromagnéticas, sin requerir contacto directo.'],
+['Reacción de Maillard','Tueste','Conjunto de reacciones entre azúcares reductores y aminoácidos que, con calor, generan color marrón y muchos compuestos aromáticos.'],
 ['Bloom / preinfusión','Filtrado','Primera humectación del café molido para liberar gases y favorecer una saturación más uniforme antes de los vertidos principales.'],
 ['Bypass','Preparación','Agregado de agua a la bebida ya extraída, sin atravesar el lecho de café.'],
 ['Agitación','Preparación','Movimiento inducido del agua o del lecho de café que puede modificar humectación, flujo y extracción.'],

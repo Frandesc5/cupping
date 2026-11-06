@@ -24,7 +24,7 @@ const sv = () => { try { localStorage.setItem('cl2', JSON.stringify(P)) } catch 
    i:  vista de Academia (-1 menú, -2 glosario, -3 apuntes, 0..5 estaciones, 6 recorrido completo)
    Cada módulo agrega sus propias claves al cargarse. */
 let S = {
-  sp: 'home', i: -1, qa: {}, dn: {},
+  sp: 'home', i: -1, qa: {}, dn: {}, deep: {},
   lab: { d: 20, w: 240, t: 93, g: 3, clicks: 0, f: 4, n: 3, b: 2, e: 30, a: 1 }
 };
 
@@ -36,13 +36,19 @@ const QA = {
   r: { q: '¿Qué le pasa al grano durante el tueste?', o: ['Solo cambia de color', 'Pierde humedad y masa, se expande y cambia su química', 'Gana peso'], a: 1, e: ['El color es solo lo visible: hay cambios físicos y químicos.', 'Correcto: varios procesos ocurren a la vez.', 'Al perder agua y compuestos, pierde masa.'] },
   s: { q: 'Un instrumento indica una bebida muy concentrada. ¿Garantiza que a todos les parezca intensa?', o: ['Sí, siempre', 'No: mide sólidos disueltos y la percepción varía', 'Solo si es lavado'], a: 1, e: ['La percepción no es una medida directa.', 'Correcto: el instrumento y la persona miden cosas distintas.', 'El proceso no cambia esa diferencia.'] }
 };
-const ask = id => {
-  const z = QA[id], p = S.qa[id], d = p != null;
-  return `<div class="panel quiz"><div class="k">Desafío</div><h3>${z.q}</h3>${z.o.map((o, i) => `<button class="opt ${d ? (i === z.a ? 'ok' : i === p ? 'no' : '') : ''}" data-a="ans" data-v="${id}:${i}" ${d ? 'disabled' : ''}>${o}</button>`).join('')}${d ? `<p><b>${p === z.a ? '' : 'Revisemos. '}</b>${z.e[p]}</p>` : ''}</div>`;
-};
+/* Se responden en una ventana al avanzar de paso: ver quizDlgHTML() en js/academia/estaciones.js. */
 
-/* Desafío que todavía no se puede responder: se muestra igual, con lo que falta para habilitarlo. */
-const lockedQuiz = msg => `<div class="panel quiz is-locked"><div class="k">Desafío · todavía bloqueado</div><p>${msg}</p></div>`;
+/* ---------- Qué hacer ----------
+   doIt('Tocá cada capa', '2 de 5') dibuja la instrucción del paso justo encima del control
+   que hay que usar, con el avance opcional. Así la consigna y la acción quedan juntas. */
+const doIt = (text, prog = '') => `<p class="do-it">${text}${prog ? ` <span class="do-it-n">· ${prog}</span>` : ''}</p>`;
+
+/* ---------- Profundizá ----------
+   Cada paso muestra primero lo esencial; el resto queda plegado acá.
+   deeper('clave', 'De qué trata', html) · la clave recuerda si quedó abierto
+   aunque la pantalla se vuelva a dibujar. */
+const deeper = (id, title, html) => `<details class="deeper" data-deeper="${id}" ${S.deep[id] ? 'open' : ''}><summary><span><b>Profundizá:</b> ${title}</span></summary><div class="deeper-body">${html}</div></details>`;
+document.addEventListener('toggle', e => { const d = e.target; if (d.dataset && d.dataset.deeper) S.deep[d.dataset.deeper] = d.open }, true);
 
 /* ---------- Acciones (data-a) y controles (input) ----------
    on({nombre: (valor, elemento) => ...}) registra acciones de clic.
@@ -67,7 +73,6 @@ document.addEventListener('keydown', e => {
   }
 });
 
-on({ ans: v => { const [id, i] = v.split(':'); S.qa[id] = +i; R(0) } });
 
 /* ---------- Aviso breve ----------
    toast('Texto')                       aviso simple (3,5 s)

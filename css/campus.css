@@ -162,6 +162,19 @@ th { color: var(--hl); font-weight: 600; letter-spacing: .02em }
 .stage:has(.roast-curve-visual), .stage:has(#mc) { width: min(100%, 560px) }
 
 .dots { display: flex; gap: 8px; justify-content: center; margin: 10px 0 }
+/* Anatomía del fruto: los controles van dentro del visualizado, así el gráfico se ve mientras se usan */
+.cherry-stage { display: flex; flex-direction: column; gap: 8px }
+.cherry-top { display: flex; justify-content: center }
+.cherry-top .b, .cherry-nav .b { min-height: 44px; padding: 8px 16px }
+.cherry-nav { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px }
+.cherry-nav .b { background: var(--surface) }
+.cherry-arrow { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; padding: 0 !important; border-radius: 50% }
+.cherry-arrow svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round }
+.cherry-now { text-align: center; font-weight: 600; font-size: .9rem; line-height: 1.2 }
+.cherry-now .dots { margin: 6px 0 0 }
+@media (max-width: 650px) {
+  .cherry-stage svg { max-height: 40vh }
+}
 .dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--line-strong) }
 .dots i.s { background: var(--sage) }
 .dots i.c { background: var(--terra); transform: scale(1.5) }
@@ -385,27 +398,26 @@ textarea.ti { min-height: 96px; padding: 10px 12px }
 .station-head { margin: 4px 0 0 }
 .station-head h2 { margin: .25em 0 .3em }
 .station-goal { max-width: 720px; margin: 0; color: var(--muted); font-size: 1rem; line-height: 1.6 }
-.station-progress { display: flex; align-items: center; gap: 12px; margin-top: 12px; font-size: .85rem; color: var(--muted) }
-.station-progress .progress { flex: 1; max-width: 280px; margin: 0 }
 
-.stepper { list-style: none; margin: 18px 0 0; padding: 0; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 8px; scroll-margin-top: calc(var(--header-h) + 12px) }
-.step-pill {
-  text-decoration: none;
-  display: flex; align-items: center; gap: 10px; width: 100%; height: 100%; min-height: 56px; padding: 8px 12px;
-  border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--muted);
-  font-size: .9rem; font-weight: 600; text-align: left; line-height: 1.2; transition: border-color .2s, background-color .2s;
-}
-.step-pill:hover { border-color: var(--sage); color: var(--ink) }
-.step-n { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1.5px solid var(--line-strong); border-radius: 50%; font-size: .85rem; font-variant-numeric: tabular-nums }
+/* Línea de pasos de la estación: completo en verde con ✓, actual con aro marrón, pendiente en gris */
+.stepper { --dot: 30px; list-style: none; margin: 20px 0 0; padding: 0; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); scroll-margin-top: calc(var(--header-h) + 12px) }
+.stepper li { position: relative }
+.stepper li + li::before { content: ''; position: absolute; top: calc(var(--dot) / 2 - 1px); right: calc(50% + var(--dot) / 2 + 6px); left: calc(-50% + var(--dot) / 2 + 6px); height: 2px; background: var(--line) }
+.stepper li.is-linked::before { background: var(--sage) }
+.step-pill { display: flex; flex-direction: column; align-items: center; gap: 8px; min-height: 44px; padding: 0 4px; text-decoration: none; text-align: center; color: var(--muted); font-size: .88rem; font-weight: 500; line-height: 1.25 }
+.step-pill:hover { color: var(--ink) }
+.step-n { display: inline-flex; align-items: center; justify-content: center; width: var(--dot); height: var(--dot); border: 1.5px solid var(--line-strong); border-radius: 50%; background: var(--surface); font-size: .85rem; font-weight: 600; font-variant-numeric: tabular-nums }
 .step-pill.is-done { color: var(--sage) }
 .step-pill.is-done .step-n { background: var(--sage); border-color: var(--sage); color: #fff }
-.step-pill.is-current { border-color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary); color: var(--ink) }
-.step-pill.is-current .step-n { background: var(--primary); border-color: var(--primary); color: #fff }
+.step-pill.is-current { color: var(--ink); font-weight: 700 }
+.step-pill.is-current .step-n { outline: 2px solid var(--terra); outline-offset: 2px }
+.step-pill.is-current:not(.is-done) .step-n { border-color: var(--terra); color: var(--terra) }
 
-.step-head { margin: 14px 0 12px; padding: 16px 18px; border-left: 3px solid var(--terra); border-radius: 0 12px 12px 0; background: var(--surface) }
-.step-head h3 { margin: 4px 0 6px; font-size: 1.35rem }
-.step-task { margin: 0; color: #3d423b; line-height: 1.55 }
-.step-task b { color: var(--hl) }
+.step-head { margin: 22px 0 6px }
+.step-head h3 { margin: 2px 0 0; font-size: 1.35rem }
+/* Qué hacer: la instrucción va pegada al control que hay que usar */
+.do-it { margin: 16px 0 10px; color: var(--primary); font-weight: 600; line-height: 1.45 }
+.do-it-n { color: var(--muted); font-weight: 500; white-space: nowrap }
 
 .step-foot { margin: 28px 0 0; padding: 18px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--soft) }
 .step-status b { display: block }
@@ -418,10 +430,46 @@ textarea.ti { min-height: 96px; padding: 10px 12px }
 .link-btn { min-height: 24px; padding: 0; border: 0; background: none; color: var(--hl); font-weight: 600; text-decoration: underline; text-underline-offset: 3px }
 .link-btn:hover { color: var(--terra) }
 
-.quiz.is-locked { border-style: dashed; background: #f5f5f2; box-shadow: none }
-.quiz.is-locked .k { color: var(--muted) }
-.quiz.is-locked p { margin: 6px 0 0; color: var(--muted) }
+/* Desafío del paso: ventana que se abre al tocar el botón para avanzar */
+#quiz-dlg { width: min(560px, calc(100% - 32px)); max-height: calc(100% - 32px); padding: 22px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--ink) }
+#quiz-dlg::backdrop { background: rgba(0, 0, 0, .45) }
+#quiz-dlg h3 { margin: 6px 0 14px; font: 600 1.15rem/1.35 var(--font); text-transform: none }
+#quiz-dlg .opt { width: 100% }
+.quiz-dlg-fb { margin: 14px 0 0; padding: 12px 14px; border-radius: var(--radius-sm); background: var(--soft); line-height: 1.5 }
+.quiz-dlg-fb:focus { outline: none }
+#quiz-dlg .bar { margin-top: 18px }
+@media (max-width: 650px) {
+  #quiz-dlg { width: 100%; max-width: none; margin: auto 0 0; padding: 20px 16px calc(20px + env(safe-area-inset-bottom)); border-radius: var(--radius) var(--radius) 0 0 }
+  #quiz-dlg .bar { flex-direction: column }
+  #quiz-dlg .bar .b { flex: none; width: 100% }
+}
 .hint-btn { margin-top: 10px; min-height: 40px; font-size: .88rem }
+
+/* Profundizá: lo que no hace falta para cumplir la consigna queda plegado */
+.deeper { margin: 18px 0 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface) }
+.deeper > summary { display: flex; align-items: center; gap: 6px; min-height: 52px; padding: 12px 16px; list-style: none; cursor: pointer; font-weight: 600 }
+.deeper > summary::-webkit-details-marker { display: none }
+.deeper > summary span { flex: 1 }
+.deeper > summary b { color: var(--hl) }
+.deeper > summary::after { content: '+'; margin-left: auto; padding-left: 12px; color: var(--hl); font-size: 1.2rem; line-height: 1 }
+.deeper[open] > summary::after { content: '−' }
+.deeper > summary:hover { color: var(--hl) }
+.deeper-body { padding: 14px 16px 16px; border-top: 1px solid var(--line) }
+.deeper-body > :first-child { margin-top: 0 }
+.deeper-body .panel:last-child, .deeper-body .post-card:last-child { margin-bottom: 0 }
+
+/* Palabras del glosario dentro del paso: se tocan y muestran la definición ahí mismo */
+.term { display: inline; min-height: 0; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-decoration: underline dotted var(--terra); text-decoration-thickness: 1.5px; text-underline-offset: 3px; cursor: pointer }
+.term:hover, .term[aria-expanded="true"] { color: var(--hl); text-decoration-style: solid }
+.term-def { display: block; margin: 8px 0; padding: 10px 12px; border-left: 3px solid var(--terra); border-radius: 0 8px 8px 0; background: var(--soft); color: var(--ink); font-size: .92rem; line-height: 1.5 }
+.term-def b { color: var(--hl) }
+
+/* Grados de tueste: ordenar los granos */
+.grade-tray { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 12px 0 6px }
+.grade-bean { display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 44px; padding: 10px 4px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); color: var(--ink); font-weight: 600; font-size: .9rem }
+.grade-bean svg { width: 72px; height: 72px }
+.grade-bean:hover:not(:disabled) { border-color: var(--sage) }
+.grade-bean:disabled { cursor: default; border-color: var(--sage); background: var(--ok-bg); color: var(--sage) }
 
 /* Menú: próximo paso sugerido y recorrido en orden */
 .resume-card { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px 22px; border-radius: var(--radius); background: var(--primary); color: #fff }
@@ -437,15 +485,21 @@ textarea.ti { min-height: 96px; padding: 10px 12px }
 .academy-module.is-next .mod-no { color: var(--primary) }
 
 @media (max-width: 650px) {
-  .stepper { gap: 6px }
-  .step-pill { flex-direction: column; justify-content: flex-start; gap: 5px; min-height: 68px; padding: 8px 4px; font-size: .75rem; text-align: center }
-  .step-head { padding: 14px }
-  .step-head h3 { font-size: 1.2rem }
+  /* En el celu el encabezado de la estación se achica para que la consigna entre en la primera pantalla:
+     el mapa de estaciones queda en Academia (migas), y el avance se ve en los pasos. */
+  .station-head h2 { font-size: 1.4rem; margin: .15em 0 .2em }
+  .station-goal { font-size: .92rem; line-height: 1.5 }
+  .station-goal.is-later { display: none }
+  .stepper { --dot: 26px; margin-top: 14px }
+  .step-pill { gap: 6px; font-size: .75rem }
+  .step-n { font-size: .78rem }
+  .step-head { margin: 16px 0 4px }
+  .step-head .k { display: none }
+  .step-head h3 { margin-top: 0; font-size: 1.2rem }
   .step-foot { padding: 14px }
   .step-actions { flex-direction: column-reverse; align-items: stretch }
   .step-actions > span:empty { display: none }
   .resume-card { flex-direction: column; align-items: stretch }
-  .station-progress .progress { max-width: none }
 }
 
 /* Glosario y apuntes */
@@ -475,15 +529,16 @@ textarea.ti { min-height: 96px; padding: 10px 12px }
 .theory-body { padding: 0 18px 18px; color: #3d423b; font-size: .94rem; line-height: 1.7; max-width: 820px }
 .theory-body h4 { color: var(--ink); font-size: .98rem; margin: 18px 0 6px }
 
-.related-panel { margin: 26px 0 0; padding: 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface) }
-.related-panel h3 { margin: 7px 0 }
-.related-chips { display: flex; flex-wrap: wrap; gap: 7px; margin: 10px 0 16px }
-.inline-link, .related-note, .related-all { border: 1px solid var(--line); border-radius: 20px; padding: 7px 12px; background: transparent; color: var(--ink); font-size: .84rem }
-.inline-link { color: var(--hl); border-color: rgba(110, 74, 51, .3) }
-.inline-link:hover, .related-note:hover { border-color: var(--terra) }
+/* Pantalla de cierre de estación (#/academia/<estación>/repaso) */
+.station-recap { margin: 20px 0 0; padding: 20px; border: 1px solid var(--line); border-left: 3px solid var(--sage); border-radius: 0 var(--radius) var(--radius) 0; background: var(--surface) }
+.recap-actions { margin-top: 20px; max-width: 720px }
+.station-recap dl { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px 24px; margin: 0 0 14px }
+.station-recap dt { font-weight: 600; color: var(--hl) }
+.station-recap dd { margin: 2px 0 0; color: #3d423b; font-size: .92rem; line-height: 1.5 }
+.related-note { border: 1px solid var(--line); border-radius: 20px; padding: 7px 12px; background: transparent; color: var(--ink); font-size: .84rem }
+.related-note:hover { border-color: var(--terra) }
 .related-note { display: block; width: 100%; margin: 7px 0; border-radius: var(--radius-sm); text-align: left }
 .glossary-meta .related-note { width: auto; display: inline-block; margin: 0 }
-.related-all { margin-top: 9px; border: 0; padding-left: 0; color: var(--hl); font-weight: 600 }
 
 /* ---------- 7. Módulos ---------- */
 /* Fruto: cereza por capas */
@@ -742,8 +797,7 @@ textarea.ti { min-height: 96px; padding: 10px 12px }
   .academy-module small { font-size: .75rem }
   .lab-tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) }
   .lab-tool:last-child { grid-column: 1 / -1; min-height: 0 }
-  .strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 6px }
-  .strip a { font-size: .72rem; letter-spacing: .03em }
+  .strip { display: none }
   .post-tabs { gap: 6px }
   .post-tabs button { padding: 8px 5px; font-size: .75rem }
   .post-card { padding: 16px }
