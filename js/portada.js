@@ -81,31 +81,21 @@ function spacesRow() {
 
 
 /* ---------- Tu última prueba en el Laboratorio ----------
-   Solo aparece si hay registros en la bitácora. Muestra el último y ofrece
-   repetirlo (registro nuevo con la misma receta) o ajustarlo en el simulador. */
+   Fila compacta (mismo peso que las sugerencias): solo aparece si hay registros
+   en la bitácora. Muestra el último con 3 datos clave y dos acciones chicas;
+   la acción principal de la portada sigue siendo "Continuar". */
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const nf = (x, d = 1) => new Intl.NumberFormat('es-AR', { maximumFractionDigits: d }).format(x);
 const dur = s => s >= 60 ? Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') + ' min' : s + ' s';
 function lastTestCard() {
   const b = BIT[0]; if (!b) return '';
-  const esp = b.m === 'Espresso';
-  const stats = [
-    [nf(b.d) + ' g', 'Dosis'],
-    [nf(b.w, 0) + ' g', esp ? 'Bebida' : 'Agua'],
-    ['1:' + nf(b.w / b.d), 'Ratio'],
-    b.t ? [nf(b.t) + ' °C', 'Temperatura'] : null,
-    b.s ? [dur(b.s), 'Tiempo'] : null,
-    b.tds ? [nf(b.tds, 2) + ' %', 'TDS'] : null,
-    b.ey ? [nf(b.ey) + ' %', 'Rendimiento'] : null
-  ].filter(Boolean);
-  const meta = [b.m, b.p, b.o].filter(Boolean).map(esc).join(' · ');
+  const line = ['1:' + nf(b.w / b.d), b.t ? nf(b.t) + ' °C' : null, b.tds ? 'TDS ' + nf(b.tds, 2) + ' %' : b.s ? dur(b.s) : null].filter(Boolean).join(' · ');
   return `<section class="lab-last" aria-labelledby="lab-last-h">
-    <div class="lab-last-top"><div class="k">Tu última prueba en el Laboratorio</div><span class="m">${esc(recDate(b))}</span></div>
-    <h2 id="lab-last-h">${esc(b.n)}</h2>${meta ? `<p class="lab-last-meta">${meta}</p>` : ''}
-    <ul class="lab-last-stats">${stats.map(s => `<li><b>${s[0]}</b><span>${s[1]}</span></li>`).join('')}</ul>
-    ${b.z ? `<p class="lab-last-notes">“${esc(b.z)}”</p>` : ''}
-    <div class="lab-last-actions"><button class="b p" data-a="repeatLast">Repetir la receta</button><button class="b" data-a="tuneLast">Ajustar en el simulador</button>
-      ${BIT.length >= 2 ? `<a class="link-btn" href="#/laboratorio/bitacora" data-a="compareLast">Comparar con la anterior →</a>` : ''}<a class="link-btn" href="#/laboratorio/bitacora">Ver mi bitácora (${BIT.length}) →</a></div>
+    <span class="suggest-ico" aria-hidden="true">⌁</span>
+    <div class="lab-last-body"><div class="k">Tu última prueba · ${esc(recDate(b))}</div>
+      <h2 id="lab-last-h"><a href="#/laboratorio/bitacora">${esc(b.n)}</a>${b.m ? ` <span class="m">· ${esc(b.m)}</span>` : ''}</h2>
+      <p class="lab-last-line">${line}</p></div>
+    <div class="lab-last-actions"><button class="b sm" data-a="repeatLast" aria-label="Repetir la receta">Repetir</button><button class="b sm" data-a="tuneLast" aria-label="Ajustar en el simulador">Ajustar</button></div>
   </section>`;
 }
 
@@ -134,8 +124,6 @@ function loadRecipe(b) {
 on({
   /* Abre Desafíos directamente en el módulo y nivel sugeridos. */
   openChallenge: v => { const [m, l] = v.split('|'); S.chModule = m; S.chLevel = l; routeTo('/desafios') },
-  /* Abre la bitácora con las dos últimas preparaciones ya elegidas para comparar. */
-  compareLast: () => { if (BIT.length >= 2) S.cmp = [BIT[0].id, BIT[1].id]; routeTo('/laboratorio/bitacora') },
   /* Registro nuevo con la misma receta; el resultado (TDS, bebida, notas) queda en blanco para la prueba nueva. */
   repeatLast: () => { const b = BIT[0]; if (!b) return; const p = prefillFromRecord(b); delete p.x; delete p.y; delete p.z; S.prefill = p; S.be = ''; S.bm = ''; routeTo('/laboratorio/nuevo-registro'); toast('Receta cargada: anotá el resultado de esta prueba') },
   /* Abre el simulador con la receta cargada, para cambiar una variable y ver qué pasa. */
