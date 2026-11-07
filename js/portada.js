@@ -62,7 +62,7 @@ function suggestions() {
 function suggestHTML(list, mode) {
   const body = list.length
     ? `<ul class="suggest-list">${list.map(x => `<li><a class="suggest-card" href="${x.href}" ${x.a ? `data-a="${x.a}"` : ''} ${x.v ? `data-v="${x.v}"` : ''}><span class="suggest-ico" aria-hidden="true">${x.ico}</span><span><b>${x.t}</b><small>${x.s}</small></span></a></li>`).join('')}</ul>`
-    : `<p class="me-empty">${mode === 'complete' ? 'Respondiste todos los desafíos de los módulos que completaste.' : 'Cuando completes una estación, acá vas a ver desafíos y prácticas para reforzarla.'}</p>`;
+    : `<p class="me-empty">${mode === 'complete' ? 'Respondiste todos los desafíos de las estaciones que completaste.' : 'Cuando completes una estación, acá vas a ver desafíos y prácticas para reforzarla.'}</p>`;
   return `<section class="me-suggest" aria-labelledby="sug-h"><h2 id="sug-h" class="me-h">Para reforzar lo que viste</h2>${body}</section>`;
 }
 
@@ -156,7 +156,7 @@ function heroHTML() {
   return `<section class="home-hero">
   <div class="hero-copy">
     <h1>Aprendé.<br>Experimentá.<br>Crecé.</h1>
-    <p>El campus de la Academia de Baristas: módulos para entender el café de la planta a la taza, un laboratorio para probar recetas y desafíos para poner a prueba tu criterio.</p>
+    <p>El campus de la Academia de Baristas: estaciones para entender el café de la planta a la taza, un laboratorio para probar recetas y desafíos para poner a prueba tu criterio.</p>
     <div class="action-row"><a class="b p" href="#/academia">Entrar a la Academia</a><a class="b" href="#/capacitarse">Ver cursos</a></div>
   </div>
   <figure class="hero-photo-wrap"><img class="hero-photo" src="${HERO_PHOTO}" alt="Equipo de Academia de Baristas" fetchpriority="high" decoding="async"><figcaption class="photo-note">Aprender café también es compartirlo.</figcaption></figure>
@@ -165,7 +165,7 @@ function heroHTML() {
 
 function campusHome() {
   const cards = [
-    ['academia', 'Academia', 'Explorá los módulos de formación, desde el origen hasta la taza.', '01', '◉'],
+    ['academia', 'Academia', 'Recorré las estaciones de formación, desde el origen hasta la taza.', '01', '◉'],
     ['laboratorio', 'Laboratorio', 'Diseñá pruebas, ajustá variables y analizá resultados.', '02', '⌁'],
     ['desafios', 'Desafíos', 'Poné a prueba tu criterio profesional.', '03', '◇'],
     ['capacitarse', 'Cursos', 'Capacitaciones online y presenciales para seguir formándote.', '04', '▤']

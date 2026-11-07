@@ -15,7 +15,7 @@
 /* Lo que falta mientras el desafío del paso no se respondió. */
 const QUIZ_MISS = 'Falta el desafío: se abre con el botón de abajo.', QUIZ_LATER = 'Después vas a responder un desafío.';
 const SC = [
-  { n: 'Fruto', slug: 'fruto', mt: 'La planta y el fruto', md: 'Botánica, anatomía de la cereza y especies.', t: 'La planta y el fruto',
+  { n: 'Fruto', slug: 'fruto', mt: 'La planta y el fruto', md: 'Especies, altitud, madurez y las capas del fruto.', t: 'La planta y el fruto',
     goal: 'Conocé de dónde viene el café: las especies, cómo influyen la altitud y la madurez, y qué capas tiene el fruto.',
     tab: 't1', vis: 't1v', after: frutoAfter,
     steps: [
@@ -26,7 +26,7 @@ const SC = [
         quiz: 'c', ready: () => S.seen.length >= 5,
         need: () => [S.seen.length >= 5 || `Tocá las 5 capas del fruto (${S.seen.length} de 5).`, S.qa.c != null || (S.seen.length >= 5 ? QUIZ_MISS : QUIZ_LATER)] }
     ] },
-  { n: 'Poscosecha', slug: 'poscosecha', mt: 'Poscosecha', md: 'Lavado, natural, honey y fermentaciones.', t: 'Del fruto al café seco',
+  { n: 'Poscosecha', slug: 'poscosecha', mt: 'Poscosecha', md: 'Cómo el fruto se convierte en grano seco: lavado, natural y honey.', t: 'Del fruto al café seco',
     goal: 'Seguí el camino del fruto hasta el café seco: las rutas de proceso, las fermentaciones y los métodos de secado.',
     tab: 'postTab', vis: 'postTabsSeen',
     steps: [
@@ -37,7 +37,7 @@ const SC = [
       { k: 'drying', slug: 'secado', label: 'Secado', view: postDryingView,
         quiz: 'd', need: () => [S.qa.d != null || QUIZ_MISS] }
     ] },
-  { n: 'Verde', slug: 'cafe-verde', mt: 'Café verde', md: 'Estructura, composición, defectos y calidad.', t: 'El café verde',
+  { n: 'Verde', slug: 'cafe-verde', mt: 'Café verde', md: 'Cómo se elige un buen café verde: defectos y calidad.', t: 'El café verde',
     goal: 'Aprendé a evaluar un lote de café verde: defectos, clasificación, humedad, densidad y trazabilidad.',
     tab: 't3', vis: 't3v', after: verdeAfter,
     steps: [
@@ -47,7 +47,7 @@ const SC = [
       { k: 'hd', slug: 'humedad-y-densidad', label: 'Humedad y densidad', view: hum },
       { k: 'tz', slug: 'tamano-y-origen', label: 'Tamaño y origen', view: tam }
     ] },
-  { n: 'Tueste', slug: 'tueste', mt: 'Tueste', md: 'Etapas, transferencia de calor y desarrollo.', t: 'El tueste',
+  { n: 'Tueste', slug: 'tueste', mt: 'Tueste', md: 'Qué le pasa al grano dentro del tostador.', t: 'El tueste',
     goal: 'Entendé qué le pasa al grano en el tostador: sus fases, la curva de temperatura, los grados de tueste y las fallas más comunes.',
     tab: 't4', vis: 't4v', after: tuesteAfter,
     steps: [
@@ -59,7 +59,7 @@ const SC = [
         need: () => [S.gro.length >= 3 || 'Ordená los tres granos del más claro al más oscuro.'] },
       { k: 'fa', slug: 'fallas', label: 'Fallas', view: fal }
     ] },
-  { n: 'Preparación', slug: 'preparacion', mt: 'Preparación', md: 'Variables, ratio y extracción.', t: 'La preparación',
+  { n: 'Preparación', slug: 'preparacion', mt: 'Preparación', md: 'Armá una receta: ratio, agua y molienda.', t: 'La preparación',
     goal: 'Armá una receta y entendé las variables que cambian la taza: el ratio, el agua, la molienda y la medición.',
     tab: 't5', vis: 't5v', after: prepAfter,
     steps: [
@@ -69,7 +69,7 @@ const SC = [
       { k: 'mo', slug: 'molienda', label: 'Molienda', view: () => mol(true) },
       { k: 'me', slug: 'medir', label: 'Medir', view: () => med(true) }
     ] },
-  { n: 'Sensorial', slug: 'sensorial', mt: 'Sensorial', md: 'Atributos, descriptores y percepción.', t: 'La experiencia sensorial',
+  { n: 'Sensorial', slug: 'sensorial', mt: 'Sensorial', md: 'Aprendé a describir lo que sentís en la taza.', t: 'La experiencia sensorial',
     goal: 'Aprendé a describir lo que percibís: el perfil de un café, la rueda de sabores, la cata y los sesgos.',
     tab: 't6', vis: 't6v', after: sensAfter,
     steps: [
@@ -318,6 +318,7 @@ function academiaView() {
 function academiaAfter() {
   if (S.i === -2) return glossaryAfter();
   if (S.i === -3) return theoryAfter();
+  if (S.i === -1) return mapAfter();
   if (S.i < 0 || S.i >= SC.length || S.recap) return;
   S.pl = 0;
   const c = SC[S.i]; if (c.after) c.after();
@@ -341,43 +342,31 @@ on({
   academyMenu: () => routeTo('/academia')
 });
 
-/* ---------- Menú de módulos ----------
-   Arriba, el próximo paso sugerido; después los módulos en orden y con su estado;
-   los que están en preparación quedan plegados al final. */
+/* Temas en preparación (se muestran plegados al final de la página de la Academia). */
 const SOON = [
   ['Del origen al grano verde', [['Cultivo y territorio', 'Altitud, clima, suelo y prácticas agrícolas.'], ['Cosecha y selección', 'Madurez, recolección y clasificación del fruto.']]],
   ['Transformación', [['Curvas de tueste', 'Lectura de perfiles, energía y desarrollo.'], ['Control de calidad', 'Muestras, catación y consistencia de lotes.']]],
   ['De la molienda a la taza', [['Espresso', 'Máquina, receta, calibración y servicio.'], ['Filtrados', 'V60, Origami, AeroPress y otros métodos.'], ['Agua y molienda', 'Minerales, dureza, alcalinidad y granulometría.'], ['Análisis sensorial', 'Cata, protocolos y evaluación de café.']]]
 ];
-function moduleState(i) {
-  if (stDone(i)) return ['done', '✓ Completa · repasar'];
-  if (startedSt(i)) return ['started', `En curso · ${stepsDone(SC[i])} de ${SC[i].steps.length} pasos`];
-  return ['new', 'Empezar'];
-}
 /* Próxima estación sugerida: la última abierta si no está completa; si no, la primera pendiente. */
 function suggestedStation() {
   if (P.last != null && !stDone(P.last)) return P.last;
   const i = SC.findIndex((_, j) => !stDone(j));
   return i;
 }
-function resumeCard() {
-  const i = suggestedStation();
-  if (i < 0) return `<section class="resume-card is-done"><div><div class="k">Recorrido completo</div><h3>Completaste las ${SC.length} estaciones</h3><p class="m">Repasá cualquier estación o poné a prueba lo que aprendiste en Desafíos.</p></div><a class="b p" href="#/desafios">Ir a Desafíos</a></section>`;
-  const c = SC[i], s = curStep(c), started = startedSt(i);
-  return `<section class="resume-card"><div><div class="k">${started ? 'Seguí donde lo dejaste' : i === 0 ? 'Empezá por acá' : 'Tu próxima estación'}</div><h3>Estación ${i + 1} · ${c.t}</h3><p class="m">${started ? `Paso ${stepIdx(c) + 1} de ${c.steps.length}: ${s.label} · ${stepsDone(c)} de ${c.steps.length} pasos completos.` : c.goal}</p></div><a class="b p" href="#${stepPath(i)}">${started ? 'Continuar' : 'Empezar'}</a></section>`;
-}
+
+/* ---------- Página de la Academia: mapa de la planta a la taza ----------
+   El mapa isométrico (js/academia/mapa.js) con "Estás acá" en la estación actual.
+   Glosario, apuntes y lo que viene van al final, chicos. */
+const SOON_COUNT = () => SOON.reduce((n, g) => n + g[1].length, 0);
 function academyMenu() {
-  const done = SC.filter((_, i) => stDone(i)).length, soonCount = SOON.reduce((n, g) => n + g[1].length, 0), next = suggestedStation();
+  const done = doneCount(), cur = suggestedStation();
+  const allDone = cur < 0 ? `<div class="path-end"><p><b>Completaste las ${SC.length} estaciones.</b> Repasá la que quieras o poné a prueba lo que aprendiste.</p><a class="b p" href="#/desafios">Ir a Desafíos</a></div>` : '';
   return `<div class="academy-menu">
-  <div class="academy-menu-head"><h2>Recorré las estaciones.</h2><p class="m">Un recorrido de ${SC.length} estaciones para comprender el café desde su origen hasta la taza. Cada estación se hace por pasos y tu avance se guarda en este dispositivo.</p>
-    <div class="menu-progress"><div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="${SC.length}" aria-valuenow="${done}" aria-label="Estaciones completas"><i style="width:${Math.round(done / SC.length * 100)}%"></i></div><span>${done} de ${SC.length} estaciones completas</span></div></div>
-  ${resumeCard()}
-  <section class="academy-group"><h3>El recorrido, en orden</h3><ol class="academy-grid academy-path">${SC.map((c, i) => {
-    const [st, label] = moduleState(i);
-    return `<li><a class="academy-module active is-${st} ${i === next ? 'is-next' : ''}" href="#${stepPath(i)}"><span class="mod-no">Estación ${i + 1}${i === next ? ' · sugerida' : ''}</span><span><strong>${c.mt}</strong><small>${c.md}</small></span><span class="mod-foot">${label}</span></a></li>`;
-  }).join('')}</ol></section>
-  <details class="academy-soon"><summary>Próximamente · ${soonCount} módulos en preparación</summary>${SOON.map(g => `<h4>${g[0]}</h4><ul>${g[1].map(m => `<li><b>${m[0]}</b> <span class="m">${m[1]}</span></li>`).join('')}</ul>`).join('')}</details>
-  <section class="academy-resources"><div class="resource-head"><h2>Consultá y profundizá.</h2><p class="m">Dos espacios complementarios para acompañar tu recorrido.</p></div><div class="academy-grid"><button class="academy-module active" data-a="glossary"><span class="mod-no">Consulta rápida</span><span><strong>Glosario cafetero</strong><small>Definiciones y vocabulario técnico, con buscador.</small></span><span class="mod-foot">Abrir</span></button><button class="academy-module active" data-a="theory"><span class="mod-no">Biblioteca</span><span><strong>Apuntes y profundizaciones</strong><small>Lecturas para ir más allá de cada estación.</small></span><span class="mod-foot">Leer</span></button></div></section>
+  <div class="academy-menu-head"><h2>Recorré las estaciones.</h2><p class="m">De la planta a la taza, en ${SC.length} estaciones que se hacen por pasos. Llevás ${done} de ${SC.length}. Tocá una isla para ver qué tiene.</p></div>
+  ${allDone}${mapWorld(cur)}
+  <p class="path-more">Para consultar: el <button type="button" class="link-btn" data-a="glossary">glosario</button> y los <button type="button" class="link-btn" data-a="theory">apuntes</button>.</p>
+  <details class="academy-soon"><summary>Próximamente: ${SOON_COUNT()} temas más</summary>${SOON.map(g => `<h4>${g[0]}</h4><ul>${g[1].map(m => `<li><b>${m[0]}</b> <span class="m">${m[1]}</span></li>`).join('')}</ul>`).join('')}</details>
 </div>`;
 }
 

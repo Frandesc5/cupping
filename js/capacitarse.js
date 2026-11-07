@@ -7,7 +7,7 @@
    ============================================================ */
 
 const CRS = [
-  { t: 'Fundamentos del café (online)', slug: 'fundamentos-online', m: 'Online autónomo', n: 'Principiante', d: '6 módulos interactivos', on: 1, c: ['Programa por unidades', 'Seguimiento de progreso'] },
+  { t: 'Fundamentos del café (online)', slug: 'fundamentos-online', m: 'Online autónomo', n: 'Principiante', d: '6 estaciones interactivas', on: 1, c: ['Programa por unidades', 'Seguimiento de progreso'] },
   { t: 'Barista Profesional', slug: 'barista-profesional', m: 'Presencial', n: 'Desde cero', d: '2 meses', s: 'Santa Fe y Rosario', c: [] },
   { t: 'Curso Intensivo', slug: 'curso-intensivo', m: 'Presencial', n: 'Consultar en el sitio', d: '5 horas', s: 'Santa Fe', c: [] }
 ];
@@ -20,7 +20,7 @@ function cap() {
   const c = CRS[S.cu], pr = Math.round(doneCount() / SC.length * 100);
   return `<div class="k">${c.m}</div><h2>${c.t}</h2><p>Nivel: ${c.n} · Duración: ${c.d}${c.s ? ' · Sede: ' + c.s : ''}</p>` +
     (c.on
-      ? `<div class="panel"><div class="k">Programa</div><div class="program-list">${SC.map((x, i) => `<button class="program-item" data-a="go" data-v="${i}"><span class="num">0${i + 1}</span><b>${x.t}</b></button>`).join('')}</div><div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pr}" aria-label="Progreso del recorrido"><i style="width:${pr}%"></i></div><p class="m">Progreso en este dispositivo: ${pr} %</p></div>`
-      : `<div class="panel"><p>Los detalles de inscripción, fechas y cupos están en el sitio oficial. Los módulos de la Academia sirven como recurso digital complementario.</p><div class="bar"><a class="b p" href="${COURSES_URL}" target="_blank" rel="noopener">Ver fechas e inscripción ↗</a></div></div>`) +
+      ? `<div class="panel"><div class="k">Programa</div><div class="program-list">${SC.map((x, i) => `<button class="program-item" data-a="go" data-v="${i}"><b>${x.t}</b><span class="prog-state ${stDone(i) ? 'is-done' : startedSt(i) ? 'is-started' : ''}">${stDone(i) ? '✓ Completa' : startedSt(i) ? 'En curso' : 'Empezar'}</span></button>`).join('')}</div><div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="${SC.length}" aria-valuenow="${doneCount()}" aria-label="Estaciones completas"><i style="width:${pr}%"></i></div><p class="m">${doneCount()} de ${SC.length} estaciones completas en este dispositivo.</p></div>`
+      : `<div class="panel"><p>Los detalles de inscripción, fechas y cupos están en el sitio oficial. Las estaciones de la Academia sirven como recurso digital complementario.</p><div class="bar"><a class="b p" href="${COURSES_URL}" target="_blank" rel="noopener">Ver fechas e inscripción en el sitio</a></div></div>`) +
     (c.on ? `<div class="panel"><div class="k">Qué incluye</div><ul class="feature-list">${CF.map(f => c.c.includes(f) ? `<li class="yes">${f}</li>` : `<li class="soon">${f} <span>próximamente</span></li>`).join('')}</ul></div>` : '');
 }

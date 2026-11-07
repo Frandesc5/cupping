@@ -1,6 +1,6 @@
 /* ============================================================
-   Desafíos · preguntas por módulo y nivel
-   CHBANK[módulo] = [[nivel, tema, pregunta, opciones, índice correcto, explicación], ...]
+   Desafíos · preguntas por estación y nivel
+   CHBANK[estación] = [[nivel, tema, pregunta, opciones, índice correcto, explicación], ...]
    ============================================================ */
 
 Object.assign(S, { chModule: 'Fruto', chLevel: 'Básico', chAnswers: {} });
@@ -43,11 +43,18 @@ try {
     }
 } catch (e) {}
 const CH_TOTAL = Object.values(CHBANK).reduce((n, qs) => n + qs.length, 0);
-function des(){let names=Object.keys(CHBANK),arr=CHBANK[S.chModule],q=arr.find(x=>x[0]===S.chLevel),key=S.chModule+'|'+S.chLevel,ans=S.chAnswers[key],done=Object.keys(S.chAnswers).length,offset=(names.indexOf(S.chModule)+['Básico','Intermedio','Avanzado'].indexOf(S.chLevel))%3,opts=q[3].map((_,i)=>q[3][(i+offset)%3]),correct=(q[4]-offset+3)%3;return `<h2>Entrená tu criterio</h2><p class=m>Casos y preguntas organizados por módulo. Empezá por fundamentos y avanzá hacia decisiones profesionales.</p><div class=workspace-tabs>${names.map(n=>`<button data-a=chmodule data-v="${n}" aria-pressed="${S.chModule===n}">${n}</button>`).join('')}</div><div class=level-tabs>${['Básico','Intermedio','Avanzado'].map(n=>`<button class=chip data-a=chlevel data-v="${n}" aria-pressed="${S.chLevel===n}">${n}</button>`).join('')}</div><div class=challenge-meta><span>${S.chModule}</span><span>${S.chLevel}</span><span>${done} ${done===1?'respuesta realizada':'respuestas realizadas'}</span></div><div class="panel quiz"><div class=k>${q[1]}</div><h3>${q[2]}</h3>${opts.map((o,i)=>`<button class="opt ${ans!=null?(i===correct?'ok':i===ans?'no':''):''}" data-a=chanswer data-v="${i}" ${ans!=null?'disabled':''}>${o}</button>`).join('')}${ans!=null?`<p><b>${ans===correct?'Correcto.':'Revisemos el criterio.'}</b> ${q[5]}</p><button class="b p" data-a=chreset>Volver a intentar</button>`:`<p class=m>Elegí una respuesta para ver la explicación.</p>`}</div><div class=panel><div class=k>Tu recorrido</div><div class=challenge-progress><i style="width:${Math.round(done/CH_TOTAL*100)}%"></i></div><p class=m>${done} de ${CH_TOTAL} combinaciones módulo / nivel respondidas. Podés volver a cada una cuando quieras.</p></div>`}
+/* Una estación por vez y una pregunta por vez (básico → intermedio → avanzado).
+   Al responder: explicación y botón a la pregunta siguiente; al final de una estación, a la siguiente estación. */
+const CH_LV = ['Básico', 'Intermedio', 'Avanzado'];
+const chDone = m => CH_LV.every(l => S.chAnswers[m + '|' + l] != null);
+function des(){const names=Object.keys(CHBANK),li=CH_LV.indexOf(S.chLevel),q=CHBANK[S.chModule].find(x=>x[0]===S.chLevel),key=S.chModule+'|'+S.chLevel,ans=S.chAnswers[key],done=Object.keys(S.chAnswers).length,offset=(names.indexOf(S.chModule)+li)%3,opts=q[3].map((_,i)=>q[3][(i+offset)%3]),correct=(q[4]-offset+3)%3,nextMod=names[names.indexOf(S.chModule)+1],nextLv=CH_LV[li+1];
+const next=nextLv?`<button type="button" class="b p" data-a=chlv data-v="${li+1}">Siguiente pregunta</button>`:nextMod?`<button type="button" class="b p" data-a=chmodule data-v="${nextMod}">Seguir con ${nextMod}</button>`:'';
+return `<h2>Entrená tu criterio</h2><p class=m>Tres preguntas por estación, de lo básico a lo profesional. Elegí una estación y respondé.</p><div class="seg ch-modules" role="group" aria-label="Estación">${names.map(n=>`<button type="button" data-a=chmodule data-v="${n}" aria-pressed="${S.chModule===n}">${n}${chDone(n)?' ✓':''}</button>`).join('')}</div><div class="stage ch-nav">${viewerNav('chlv',li,3,S.chLevel,'Pregunta',CH_LV.map((l,j)=>S.chAnswers[S.chModule+'|'+l]!=null?j:-1),nextMod?{act:'chmodule',v:nextMod,name:nextMod}:null)}</div><div class="panel quiz ch-question"><div class=k>${q[1]}</div><h3>${q[2]}</h3>${opts.map((o,i)=>`<button class="opt ${ans!=null?(i===correct?'ok':i===ans?'no':''):''}" data-a=chanswer data-v="${i}" ${ans!=null?'disabled':''}>${o}</button>`).join('')}${ans!=null?`<p><b>${ans===correct?'¡Bien!':'No es esa.'}</b> ${q[5]}</p><div class=bar>${next}<button type="button" class=b data-a=chreset>Volver a intentar</button></div>`:''}</div><div class=panel><div class=k>Tu recorrido</div><div class=challenge-progress><i style="width:${Math.round(done/CH_TOTAL*100)}%"></i></div><p class=m>Respondiste ${done} de ${CH_TOTAL} preguntas. Podés volver a cualquiera cuando quieras.</p></div>`}
 
 on({
-  chmodule: v => { S.chModule = v; R(0) },
-  chlevel: v => { S.chLevel = v; R(0) },
+  /* Al cambiar de estación se arranca por la primera pregunta sin responder; en el celu, la vista va a la pregunta. */
+  chmodule: (v, el) => { S.chModule = v; S.chLevel = CH_LV.find(l => S.chAnswers[v + '|' + l] == null) || CH_LV[0]; R(0); viewerFocus(el, '.ch-nav') },
+  chlv: (v, el) => { S.chLevel = CH_LV[+v]; R(0); viewerFocus(el, '.ch-nav') },
   chanswer: v => { S.chAnswers[S.chModule + '|' + S.chLevel] = +v; chSave(); R(0) },
   chreset: () => { delete S.chAnswers[S.chModule + '|' + S.chLevel]; chSave(); R(0) }
 });

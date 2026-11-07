@@ -22,7 +22,15 @@ const SITE = 'https://academiadebaristas.com.ar/';
 /* Los cuatro espacios del campus: [clave, nombre, dirección] */
 const SPACES = [['ac', 'Academia', 'academia'], ['lb', 'Laboratorio', 'laboratorio'], ['de', 'Desafíos', 'desafios'], ['ca', 'Cursos', 'capacitarse']];
 
-const SPACE_ICONS = { ac: '◉', lb: '⌁', de: '◇', ca: '▤' };
+/* Íconos de línea fina de la barra de abajo (celular). */
+const NB_SVG = d => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
+const SPACE_ICONS = {
+  home: NB_SVG('<path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z"/>'),
+  ac: NB_SVG('<path d="M12 21c-4.5-3.6-7-7-7-10a7 7 0 0 1 14 0c0 3-2.5 6.4-7 10z"/><path d="M12 7c1.5 2 1.5 5 0 7"/>'),
+  lb: NB_SVG('<path d="M10 3h4M11 3v6l-5 9a2 2 0 0 0 1.7 3h8.6a2 2 0 0 0 1.7-3l-5-9V3"/><path d="M8 15h8"/>'),
+  de: NB_SVG('<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/>'),
+  ca: NB_SVG('<path d="M4 5h6a2 2 0 0 1 2 2v12a2 2 0 0 0-2-2H4z"/><path d="M20 5h-6a2 2 0 0 0-2 2v12a2 2 0 0 1 2-2h6z"/>')
+};
 
 /* ---------- Rutas ---------- */
 function applyPath(path) {
@@ -112,7 +120,7 @@ history.scrollRestoration = 'manual';
 
 /* ---------- Encabezado y navegación ---------- */
 function navLinks(withHome) {
-  return (withHome ? `<a href="#/" ${S.sp === 'home' ? 'aria-current="page"' : ''}><span class="nb-ico" aria-hidden="true">⌂</span>Inicio</a>` : '') +
+  return (withHome ? `<a href="#/" ${S.sp === 'home' ? 'aria-current="page"' : ''}><span class="nb-ico" aria-hidden="true">${SPACE_ICONS.home}</span>Inicio</a>` : '') +
     SPACES.map(([k, name, slug]) => `<a href="#/${slug}" ${S.sp === k ? 'aria-current="page"' : ''}>${withHome ? `<span class="nb-ico" aria-hidden="true">${SPACE_ICONS[k]}</span>` : ''}${name}</a>`).join('');
 }
 function renderChrome() {

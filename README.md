@@ -21,7 +21,8 @@ js/academia/
   sensorial.js             módulo 06 · sensorial
   glosario.js, apuntes.js  contenidos de consulta
   recursos.js              vistas del glosario y los apuntes; palabras del glosario dentro de los pasos (term)
-  estaciones.js            recorrido de 6 estaciones y menú de módulos
+  estaciones.js            recorrido de 6 estaciones y página de la Academia
+  mapa.js                  mapa isométrico de la planta a la taza (islas, insignias y ficha)
 js/laboratorio.js          simuladores, nuevo registro y bitácora
 js/desafios.js             banco de preguntas
 js/capacitarse.js          cursos (para agregar uno, sumarlo a CRS)
