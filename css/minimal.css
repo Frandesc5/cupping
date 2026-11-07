@@ -1,13 +1,12 @@
 /* ============================================================
-   .campus · capa "mínima" (en prueba)
-   Se activa con ?estilo=min en la dirección (queda recordada en este
-   navegador; ?estilo=base la apaga). La interfaz se retira: una sola
-   tipografía, negro y grises, sin bordes ni rayas decorativas, para que
-   el color y la atención queden en los dibujos y simuladores.
-   El verde se reserva para el botón principal y el avance.
+   .campus · estilo mínimo (se carga después de campus.css y lo ajusta)
+   La interfaz se retira: una sola tipografía, negro y grises, sin bordes
+   ni rayas decorativas, para que el color y la atención queden en los
+   dibujos y simuladores. El verde se reserva para el botón principal y
+   el avance; el resto de los colores, para los dibujos.
    ============================================================ */
 
-html.min {
+:root {
   --ink: #111;
   --muted: #6e6e6a;
   --line: #ececea;
@@ -20,81 +19,84 @@ html.min {
 }
 
 /* ---------- Tipografía: una sola familia ---------- */
-.min h1, .min h2 { font-family: var(--font); font-weight: 650; text-transform: none; letter-spacing: -.025em; line-height: 1.08 }
-.min h2 { font-size: clamp(1.75rem, 4vw, 2.3rem) }
-.min h3 { font-family: var(--font); font-weight: 600; letter-spacing: -.01em }
-.min .k { font-weight: 500; font-size: .82rem; color: var(--muted) }
-.min .m { color: var(--muted) }
+h1, h2 { font-family: var(--font); font-weight: 650; text-transform: none; letter-spacing: -.025em; line-height: 1.08 }
+h2 { font-size: clamp(1.75rem, 4vw, 2.3rem) }
+h3 { font-family: var(--font); font-weight: 600; letter-spacing: -.01em }
+.k { font-weight: 500; font-size: .82rem; color: var(--muted) }
+.m { color: var(--muted) }
 
 /* ---------- Encabezado y navegación ---------- */
-.min #hd { border-bottom-color: transparent; background: rgba(255, 255, 255, .96) }
-.min .main-nav a { border-bottom: 0; border-radius: 999px; color: var(--muted) }
-.min .main-nav a[aria-current=page] { background: var(--surface-2); color: var(--ink); border-radius: 999px }
-.min #nb { border-top-color: var(--line) }
-.min #nb a { color: var(--muted) }
-.min #nb a[aria-current=page] { color: var(--ink); box-shadow: inset 0 2px 0 var(--ink) }
-.min .crumbs a { color: var(--muted); font-weight: 500 }
+#hd { border-bottom-color: transparent; background: rgba(255, 255, 255, .96) }
+.main-nav a { border-bottom: 0; border-radius: 999px; color: var(--muted) }
+.main-nav a[aria-current=page] { background: var(--surface-2); color: var(--ink); border-radius: 999px }
+#nb { border-top-color: var(--line) }
+#nb a { color: var(--muted) }
+#nb a[aria-current=page] { color: var(--ink); box-shadow: inset 0 2px 0 var(--ink) }
+.crumbs a { color: var(--muted); font-weight: 500 }
 
 /* ---------- Botones ---------- */
-.min .b { border: 0; border-radius: 12px; background: var(--surface-2); color: var(--ink); font-weight: 600 }
-.min .b:hover:not(:disabled) { background: #ebebe8 }
-.min .b.p { background: var(--primary); color: #fff }
-.min .b.p:hover:not(:disabled) { background: #1b2b1e }
-.min .link-btn { color: var(--ink); font-weight: 500; text-decoration-color: var(--line-strong) }
+.b { border: 0; border-radius: 12px; background: var(--surface-2); color: var(--ink); font-weight: 600 }
+.b:hover:not(:disabled) { background: #ebebe8 }
+.b.p { background: var(--primary); color: #fff }
+.b.p:hover:not(:disabled) { background: #1b2b1e }
+.link-btn { color: var(--ink); font-weight: 500; text-decoration-color: var(--line-strong) }
 
 /* Selectores: píldoras grises, la elegida en negro */
-.min .chip, .min .seg button, .min .post-visual-choice, .min .proc-tabs button, .min .workspace-tabs button, .min .related-note {
+.chip, .seg button, .post-visual-choice, .proc-tabs button, .workspace-tabs button, .related-note {
   border: 0; border-radius: 999px; background: var(--surface-2); color: var(--ink); box-shadow: none; font-weight: 500 }
-.min .chip[aria-pressed=true], .min .seg button[aria-pressed=true], .min .post-visual-choice.active, .min .proc-tabs button[aria-pressed=true], .min .workspace-tabs button[aria-pressed=true] {
+.chip[aria-pressed=true], .seg button[aria-pressed=true], .post-visual-choice.active, .proc-tabs button[aria-pressed=true], .workspace-tabs button[aria-pressed=true] {
   background: var(--ink); color: #fff }
-.min .workspace-tabs button { border-radius: 14px }
-.min .proc-tabs { border: 0; background: var(--surface-2) }
+.workspace-tabs button { border-radius: 14px }
+.proc-tabs { border: 0; background: var(--surface-2) }
 
 /* Opciones de desafío */
-.min .opt { border: 0; border-radius: 12px; background: var(--surface-2) }
-.min .opt.ok { background: #e6efe3; color: #213a28 }
-.min .opt.no { background: #f6e7e1; color: #6b3a28 }
+.opt { border: 0; border-radius: 12px; background: var(--surface-2) }
+.opt.ok { background: #e6efe3; color: #213a28 }
+.opt.no { background: #f6e7e1; color: #6b3a28 }
 
 /* Flechas de los visores */
-.min .viewer-arrow { background: #fff; border: 0 }
-.min .viewer-arrow:not(:disabled):hover { background: #ebebe8 }
+.viewer-arrow { background: #fff; border: 0 }
+.viewer-arrow:not(:disabled):hover { background: #ebebe8 }
 
 /* ---------- Bloques: sin bordes, separados por espacio ---------- */
-.min .panel, .min .post-card, .min .post-visual-detail, .min .lab-result, .min .grind-reading, .min .cup-timer,
-.min .station-recap, .min .path-now, .min .path-end, .min .dc-sum, .min .lab-current, .min .variable-group, .min .record-card {
+.panel, .post-card, .post-visual-detail, .lab-result, .grind-reading, .cup-timer,
+.station-recap, .path-now, .path-end, .dc-sum, .lab-current, .variable-group, .record-card {
   border: 0; border-radius: var(--radius); background: var(--surface-2); box-shadow: none }
-.min .panel.quiz { background: transparent; padding-left: 0; padding-right: 0 }
-.min .station-recap { border-left: 0 }
-.min .lab-current { border-left: 0 }
-.min .step-head { border-left: 0 }
-.min .dato { border-left: 0; padding: 12px 14px; border-radius: 12px; background: #fff }
-.min .term-def { border-left: 0; border-radius: 12px; background: var(--surface-2) }
-.min .stage { border-radius: 20px }
+.panel.quiz { background: transparent; padding-left: 0; padding-right: 0 }
+.station-recap { border-left: 0 }
+.lab-current { border-left: 0 }
+.step-head { border-left: 0 }
+.dato { border-left: 0; padding: 12px 14px; border-radius: 12px; background: #fff }
+.term-def { border-left: 0; border-radius: 12px; background: var(--surface-2) }
+.stage { border-radius: 20px }
 
 /* Profundizá: una línea, sin caja */
-.min .deeper { border: 0; border-top: 1px solid var(--line); border-radius: 0; background: transparent }
-.min .deeper > summary { padding-left: 0; padding-right: 0 }
-.min .deeper > summary b { color: var(--ink) }
-.min .deeper-body { border-top: 0; padding: 4px 0 14px }
+.deeper { border: 0; border-top: 1px solid var(--line); border-radius: 0; background: transparent }
+.deeper > summary { padding-left: 0; padding-right: 0 }
+.deeper > summary b { color: var(--ink) }
+.deeper-body { border-top: 0; padding: 4px 0 14px }
 
 /* Pie del paso */
-.min .step-foot { border: 0; background: transparent; padding: 18px 0 0; border-top: 1px solid var(--line); border-radius: 0 }
-.min .step-status.is-done b { color: var(--ink) }
+.step-foot { border: 0; background: transparent; padding: 18px 0 0; border-top: 1px solid var(--line); border-radius: 0 }
+.step-status.is-done b { color: var(--ink) }
 
 /* Instrucción del paso: negro, sin verde */
-.min .do-it { color: var(--ink) }
+.do-it { color: var(--ink) }
 
 /* Línea de pasos: más liviana */
-.min .step-n { border-width: 1px }
-.min .step-pill.is-done .step-n { background: var(--ink); border-color: var(--ink) }
-.min .step-pill.is-current .step-n { outline-color: var(--ink) }
-.min .step-pill.is-current:not(.is-done) .step-n { border-color: var(--ink); color: var(--ink) }
-.min .stepper li.is-linked::before { background: var(--ink) }
-.min .step-pill.is-done { color: var(--muted) }
+.step-n { border-width: 1px }
+.step-pill.is-done .step-n { background: var(--ink); border-color: var(--ink) }
+.step-pill.is-current .step-n { outline-color: var(--ink) }
+.step-pill.is-current:not(.is-done) .step-n { border-color: var(--ink); color: var(--ink) }
+.stepper li.is-linked::before { background: var(--ink) }
+.step-pill.is-done { color: var(--muted) }
 
 /* Palabras del glosario */
-.min .term { text-decoration-color: var(--line-strong) }
+.term { text-decoration-color: var(--line-strong) }
 
 /* Ventanas (desafío y ficha del mapa) */
-.min #quiz-dlg, .min #map-dlg { border: 0 }
-.min .map-steps span.is-cur { background: var(--ink) }
+#quiz-dlg, #map-dlg { border: 0 }
+.map-steps span.is-cur { background: var(--ink) }
+
+/* Portada: sobre el fondo gris de la presentación, el botón secundario va en blanco */
+.home-hero .b:not(.p) { background: #fff }

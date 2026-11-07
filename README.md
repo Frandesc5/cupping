@@ -10,7 +10,8 @@ Abrí `index.html` en el navegador. No necesita instalar nada ni un servidor (ta
 
 ```
 index.html                 página base: carga estilos y scripts en orden
-css/campus.css             única hoja de estilos (colores y medidas en :root)
+css/campus.css             hoja de estilos base (colores y medidas en :root)
+css/minimal.css            estilo mínimo: se carga después y ajusta la base (una tipografía, sin bordes, color solo en los dibujos)
 js/core.js                 estado, progreso guardado, acciones (on/onInput), avisos, bloques "Profundizá"
 js/academia/
   fruto.js                 módulo 01 · planta y fruto
