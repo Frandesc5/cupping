@@ -288,9 +288,16 @@ textarea.ti { min-height: 96px; padding: 10px 12px }
 .academy-menu-head p { max-width: 640px }
 /* Mapa isométrico de la Academia (js/academia/mapa.js) */
 .map-world { position: relative; width: 100%; max-width: 560px; margin: 0 auto }
+/* Escena que se funde con la página: cielo arriba, suelo cálido abajo, bordes que se desvanecen en el blanco.
+   La usan el mapa, la mesada del Laboratorio y la ficha de cada isla. */
+.scene-fade { position: relative; isolation: isolate }
+.scene-fade::before { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: linear-gradient(#e3edf1, #eef1ec 30%, #f3efe6 62%, #efe9df); -webkit-mask-image: linear-gradient(transparent, #000 14%, #000 82%, transparent), linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent); -webkit-mask-composite: source-in; mask-image: linear-gradient(transparent, #000 14%, #000 82%, transparent), linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent); mask-composite: intersect }
 /* Sin caja: el cielo y el suelo se desvanecen hacia el blanco por todos los bordes */
 .map-world::before { content: ''; position: absolute; inset: 0; background: linear-gradient(#e3edf1, #eef1ec 18%, #f3efe6 50%, #efe9df 90%); -webkit-mask-image: linear-gradient(transparent, #000 6%, #000 92%, transparent), linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); -webkit-mask-composite: source-in; mask-image: linear-gradient(transparent, #000 6%, #000 92%, transparent), linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); mask-composite: intersect }
 .map-scene { position: relative; display: block; width: 100%; height: auto }
+.map-isle { cursor: pointer; transition: transform .2s ease }
+@media (hover: hover) { .map-isle:hover { transform: translateY(-3px) } }
+@media (prefers-reduced-motion: reduce) { .map-isle { transition: none } }
 /* Título dentro del cielo */
 .map-sky-head { position: absolute; top: 0; left: 0; right: 0; z-index: 2; padding: 34px 20px 0; text-align: center; pointer-events: none }
 .map-sky-head h2 { margin: 0 0 6px }
@@ -303,6 +310,25 @@ textarea.ti { min-height: 96px; padding: 10px 12px }
 .academy-map { display: block; margin-bottom: 20px }
 .map-side { max-width: 560px; margin: 8px auto 0 }
 .map-now { display: none }
+/* Laboratorio: mesa de trabajo con los instrumentos (se tocan para elegir el simulador) */
+.bench { max-width: 600px; margin: 4px auto 8px; padding: 26px 30px 18px }
+.bench-svg { display: block; width: 100%; height: auto }
+.bench-obj { position: absolute; transform: translate(-50%, -50%); width: 56px; height: 56px; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer }
+.bench-obj span { position: absolute; left: 50%; top: calc(100% - 6px); transform: translateX(-50%); padding: 3px 9px; border-radius: 999px; background: #fff; border: 1px solid var(--line); white-space: nowrap; font-size: .78rem; font-weight: 600; color: var(--ink) }
+.bench-obj.is-up span { top: auto; bottom: calc(100% - 6px) }
+.bench-obj:hover span { border-color: var(--line-strong) }
+.bench-obj.is-on span { background: var(--ink); border-color: var(--ink); color: #fff }
+.bench-obj:focus-visible { outline: 3px solid var(--terra); outline-offset: 2px }
+.lab-save-side { width: 100%; margin-top: 14px }
+@media (max-width: 899px) { .lab-variable-panel { padding-bottom: 72px } }
+@media (min-width: 900px) { .lab-fab { display: none } }
+/* Portada de cada estación: su isla del mapa en chico al lado del título */
+.station-head.has-isle { display: grid; grid-template-columns: 150px minmax(0, 1fr); align-items: center; gap: 18px }
+.station-isle { border-radius: 50%; background: radial-gradient(closest-side, #e6eef1, #eff0ea 55%, rgba(243, 239, 230, .7) 78%, rgba(255, 255, 255, 0)) }
+.station-isle .isle-svg { display: block; width: 100%; height: auto }
+@media (max-width: 650px) {
+  .station-head.has-isle { grid-template-columns: 86px minmax(0, 1fr); gap: 12px }
+}
 .map-fab { position: fixed; left: 16px; right: 16px; bottom: calc(var(--nb-h) + 12px + env(safe-area-inset-bottom)); z-index: 15; display: flex; min-height: 52px; border-radius: 14px; box-shadow: 0 6px 20px rgba(0, 0, 0, .18) }
 @media (min-width: 900px) {
   .academy-map { display: grid; grid-template-columns: minmax(0, 560px) 320px; justify-content: center; align-items: start; gap: 40px }
@@ -346,6 +372,10 @@ textarea.ti { min-height: 96px; padding: 10px 12px }
 #map-dlg .map-place { font-size: .8rem; font-weight: 700; color: var(--hl) }
 #map-dlg h3 { margin: 4px 0 6px; font: 600 1.6rem/1.1 var(--display) }
 #map-dlg p { margin: 0 0 12px; color: var(--muted) }
+/* La ficha abre con su isla en grande, sobre el cielo del mapa que se desvanece hacia el texto */
+#map-dlg .sheet-art { margin: -22px -22px 6px; padding: 18px 0 0 }
+#map-dlg .sheet-art::before { -webkit-mask-image: linear-gradient(#000 55%, transparent); -webkit-mask-composite: source-over; mask-image: linear-gradient(#000 55%, transparent); mask-composite: add }
+#map-dlg .isle-svg { display: block; width: 210px; max-width: 60%; height: auto; margin: 0 auto }
 .map-steps { display: flex; gap: 6px; margin: 0 0 6px }
 .map-steps span { flex: 1; padding: 8px 4px; border-radius: 8px; background: var(--surface-2); font-size: .76rem; text-align: center; color: var(--muted) }
 .map-steps span.is-done { background: var(--ok-bg); color: var(--sage); font-weight: 600 }
@@ -354,6 +384,8 @@ textarea.ti { min-height: 96px; padding: 10px 12px }
   /* De borde a borde: compensa el margen lateral de la página */
   .map-world { width: calc(100% + 2 * var(--gutter)); max-width: none; margin: 4px calc(-1 * var(--gutter)) 0; border-radius: 0 }
   #map-dlg { width: 100%; max-width: none; margin: auto 0 0; padding: 20px 16px calc(20px + env(safe-area-inset-bottom)); border-radius: 22px 22px 0 0 }
+  #map-dlg .sheet-art { margin: -20px -16px 4px; padding-top: 14px }
+  #map-dlg .isle-svg { width: 160px }
   #map-dlg .bar { flex-direction: column }
   #map-dlg .bar .b { flex: none; width: 100% }
 }

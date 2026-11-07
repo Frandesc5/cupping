@@ -129,14 +129,13 @@ function isoCupping(o) {
   [[38, 44], [58, 44], [78, 44], [38, 66], [58, 66], [78, 66]].sort((a, b) => (a[0] + a[1]) - (b[0] + b[1])).forEach(([x, y]) => { s += spoon(x - 4, y + 9) + bowl(x, y, k++) });
   return s;
 }
-/* Barra: mostrador con una máquina de espresso roja de dos grupos y un V60 sobre su server. */
-function isoBar(o) {
-  const T = 24, S = '#d9d9d6';
-  let s = isoBox(o, 8, 50, 0, 102, 34, T, '#8a6748', '#ece6db');
+/* Máquina de espresso roja de dos grupos, apoyada en z = T, con su frente hacia +y. */
+function isoEspresso(o, mx, my, T, mw = 58) {
+  let s = '';
   /* Máquina de espresso: un perfil de costado (y-z) extendido a lo ancho (x).
      Atrás baja en curva; arriba, la cabeza sobresale con los grupos; abajo, la base con la bandeja;
      en el medio, el hueco de trabajo de acero. Cada cara se sombrea según hacia dónde mira. */
-  const mx = 12, my = 52, mw = 58, D = 24, H = 30, z0 = T + 2;
+  const D = 24, H = 30, z0 = T + 2;
   [[mx + 3, my + 3], [mx + mw - 5, my + 3], [mx + 3, my + D - 4], [mx + mw - 5, my + D - 4]].forEach(([x, y]) => { s += isoBox(o, x, y, T, 2, 2, 2, '#151515') });
   /* Perfil (y desde atrás, z desde la base), en sentido antihorario visto desde la derecha */
   const prof = [[1, 0], [D - 1, 0], [D + 2, 2], [D + 2, 6], [D - 9, 6], [D - 9, H - 9], [D, H - 9], [D, H - 3], [D - 3, H]];
@@ -173,13 +172,23 @@ function isoBar(o) {
   s += `<polygon points="${pts(prof.map(q => P3(mx + mw, q)))}" fill="${tone(.82)}" stroke="rgba(0,0,0,.18)" stroke-width=".6"/>`;
   const trim = []; for (let k = 0; k <= 10; k++) { const tt = k / 10; trim.push(P3(mx + mw + .1, [2 + (D - 4) * tt, 3 + (H - 6) * (tt * tt * .3 + tt * .7)])) }
   s += `<polyline points="${pts(trim)}" fill="none" stroke="#f1f1ee" stroke-width="1.1" opacity=".9"/>`;
+  return s;
+}
+/* V60 sobre su server, apoyado en z = T. */
+function isoV60(o, vx, vy, T) {
+  let s = '';
   /* V60 sobre su server (un poco más grande que la escala real, para que se lea) */
-  const vx = 92, vy = 66, sb = isoP(o, vx, vy, T), st = isoP(o, vx, vy, T + 11);
+  const sb = isoP(o, vx, vy, T), st = isoP(o, vx, vy, T + 11);
   s += `<g transform="translate(${sb[0]} ${sb[1]}) scale(1.35) translate(${-sb[0]} ${-sb[1]})">`;
   s += `<path d="M${sb[0] - 6} ${sb[1]}q-1-6 1-11h10q2 5 1 11z" fill="#dbe7ec" opacity=".75" stroke="#9fb3bb" stroke-width=".8"/><path d="M${sb[0] - 5.6} ${sb[1] - 1}q0-3 .6-5h10q.6 2 .6 5z" fill="#5a3522" opacity=".9"/><ellipse cx="${st[0]}" cy="${st[1]}" rx="5.6" ry="2.4" fill="#cfdde3" stroke="#9fb3bb" stroke-width=".8"/>`;
   const vb = isoP(o, vx, vy, T + 12), vt = isoP(o, vx, vy, T + 21);
   s += `<ellipse cx="${vb[0]}" cy="${vb[1]}" rx="6" ry="2.6" fill="#e9e6e0" stroke="#bdb8ae" stroke-width=".7"/><path d="M${vb[0] - 2.4} ${vb[1] - 1}L${vt[0] - 8.5} ${vt[1]}h17L${vb[0] + 2.4} ${vb[1] - 1}z" fill="#f6f4f0" stroke="#bdb8ae" stroke-width=".8"/><ellipse cx="${vt[0]}" cy="${vt[1]}" rx="8.5" ry="3.6" fill="#ece8e0" stroke="#bdb8ae" stroke-width=".8"/><ellipse cx="${vt[0]}" cy="${vt[1] + .3}" rx="6.4" ry="2.5" fill="#fbfaf7"/><ellipse cx="${vt[0]}" cy="${vt[1] + .6}" rx="4" ry="1.5" fill="#6b4630"/></g>`;
   return s;
+}
+/* Barra: mostrador con una máquina de espresso roja de dos grupos y un V60 sobre su server. */
+function isoBar(o) {
+  const T = 24;
+  return isoBox(o, 8, 50, 0, 102, 34, T, '#8a6748', '#ece6db') + isoEspresso(o, 12, 52, T) + isoV60(o, 92, 66, T);
 }
 /* Tostadora de muestras sobre una mesa, con saco de café verde en el suelo. */
 function isoRoastery(o) {
@@ -289,25 +298,35 @@ const mapOrigin = i => [i % 2 ? 268 : 132, MAP_TOP + i * MAP_GAP];
 const mapFront = i => isoP(mapOrigin(i), MAP_IW / 2, MAP_ID, 0);
 
 /* ---------- Mundo ---------- */
+/* Baldosas del camino entre dos puntos de pantalla (a → b); verdes en el tramo recorrido. */
+function mapTiles(a, b, lit) {
+  let s = '';
+  const n = 7, col = on => on ? ['#a9bf98', '#7f9670', '#8faa7e'] : ['#e8d9b8', '#c2ad87', '#d4c09a'];
+  for (let k = 1; k < n; k++) {
+    const t = k / n, cx = a[0] + (b[0] - a[0]) * t, cy = a[1] + (b[1] - a[1]) * t + 6, w = 15, h = 8;
+    const tile = ([top, left, right]) => isoPoly([[cx, cy - h], [cx + w, cy], [cx, cy + h], [cx - w, cy]], top) + isoPoly([[cx - w, cy], [cx, cy + h], [cx, cy + h + 5], [cx - w, cy + 5]], left) + isoPoly([[cx, cy + h], [cx + w, cy], [cx + w, cy + 5], [cx, cy + h + 5]], right);
+    s += tile(col(lit));
+  }
+  return s;
+}
+/* Una isla con su lugar, en el origen o. */
+function mapIsland(i, o) {
+  const m = MAP_PLACES[i], sh = isoP(o, MAP_IW / 2, MAP_ID / 2, -MAP_IH - 30);
+  return `<ellipse cx="${sh[0]}" cy="${sh[1] + 40}" rx="70" ry="14" fill="#000" opacity=".06"/>` + isoBox(o, 0, 0, -MAP_IH, MAP_IW, MAP_ID, MAP_IH, m.col, m.top) + m.land(o);
+}
 function mapScene() {
   let s = [[70, 40, 1], [320, 300, .8], [60, 600, .7], [330, 900, .9], [80, 1250, .7]].map(([x, y, k]) => `<g opacity=".8" transform="translate(${x} ${y}) scale(${k})" fill="#fff"><ellipse rx="26" ry="9"/><ellipse cx="-12" cy="-5" rx="13" ry="9"/><ellipse cx="12" cy="-7" rx="15" ry="11"/></g>`).join('');
   /* Camino de baldosas (detrás de las islas); verde en lo ya recorrido. */
-  for (let i = 0; i < SC.length - 1; i++) {
-    const a = mapFront(i), b = isoP(mapOrigin(i + 1), MAP_IW / 2, 0, 0), done = stDone(i), n = 7;
-    const [top, left, right] = done ? ['#a9bf98', '#7f9670', '#8faa7e'] : ['#e8d9b8', '#c2ad87', '#d4c09a'];
-    for (let k = 1; k < n; k++) {
-      const t = k / n, cx = a[0] + (b[0] - a[0]) * t, cy = a[1] + (b[1] - a[1]) * t + 6, w = 15, h = 8;
-      s += isoPoly([[cx, cy - h], [cx + w, cy], [cx, cy + h], [cx - w, cy]], top) + isoPoly([[cx - w, cy], [cx, cy + h], [cx, cy + h + 5], [cx - w, cy + 5]], left) + isoPoly([[cx, cy + h], [cx + w, cy], [cx + w, cy + 5], [cx, cy + h + 5]], right);
-    }
-  }
-  /* Islas con su lugar */
-  MAP_PLACES.forEach((m, i) => {
-    const o = mapOrigin(i), sh = isoP(o, MAP_IW / 2, MAP_ID / 2, -MAP_IH - 30);
-    s += `<ellipse cx="${sh[0]}" cy="${sh[1] + 40}" rx="70" ry="14" fill="#000" opacity=".06"/>` + isoBox(o, 0, 0, -MAP_IH, MAP_IW, MAP_ID, MAP_IH, m.col, m.top) + m.land(o);
-  });
+  for (let i = 0; i < SC.length - 1; i++) s += mapTiles(mapFront(i), isoP(mapOrigin(i + 1), MAP_IW / 2, 0, 0), stDone(i));
+  /* Toda la isla se puede tocar para abrir su ficha (el botón redondo sigue siendo el acceso con teclado). */
+  MAP_PLACES.forEach((m, i) => { s += `<g class="map-isle" data-a="mapNode" data-v="${i}">${mapIsland(i, mapOrigin(i))}</g>` });
   return `<svg class="map-scene" viewBox="0 0 ${MAP_W} ${MAP_H}" aria-hidden="true">${s}</svg>`;
 }
-/* Mapa con las insignias tocables. cur: estación actual (o -1 si el recorrido está completo). */
+/* Isla sola, para la portada de cada estación. */
+function islandThumb(i) {
+  return `<svg class="isle-svg" viewBox="0 0 230 250" aria-hidden="true">${mapIsland(i, [115, 102])}</svg>`;
+}
+
 /* head: título y avance, que se muestran dentro del cielo, arriba del mapa. */
 function mapWorld(cur, head = '') {
   const pos = i => { const f = mapFront(i); return `left:${(f[0] / MAP_W * 100).toFixed(2)}%;top:${((f[1] + 10) / MAP_H * 100).toFixed(2)}%` };
@@ -332,7 +351,7 @@ function mapSheetHTML(i) {
   const c = SC[i], ok = stDone(i), started = startedSt(i), here = i === suggestedStation(), j = stepIdx(c);
   const chips = c.steps.map((s, k) => `<span class="${here && started && !ok && k === j ? 'is-cur' : stepDone(c, s) ? 'is-done' : ''}">${s.label}</span>`).join('');
   const label = ok ? 'Repasar' : started ? `Continuar con ${curStep(c).label}` : 'Empezar';
-  return `<div class="map-place">Estación ${i + 1} de ${SC.length} · ${MAP_PLACES[i].place}</div><h3 id="map-dlg-title">${c.t}</h3><p>${c.md}</p><div class="map-steps">${chips}</div><div class="bar"><a class="b p" href="#${stepPath(i)}">${label}</a><button type="button" class="b" data-a="mapClose">Cerrar</button></div>`;
+  return `<div class="sheet-art scene-fade">${islandThumb(i)}</div><div class="map-place">Estación ${i + 1} de ${SC.length} · ${MAP_PLACES[i].place}</div><h3 id="map-dlg-title">${c.t}</h3><p>${c.md}</p><div class="map-steps">${chips}</div><div class="bar"><a class="b p" href="#${stepPath(i)}">${label}</a><button type="button" class="b" data-a="mapClose">Cerrar</button></div>`;
 }
 function mapDlg() {
   let dl = $('#map-dlg');

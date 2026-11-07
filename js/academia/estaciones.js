@@ -256,7 +256,7 @@ function stationView() {
   openStep(c, s.k);
   /* En el celu el objetivo se muestra solo en el primer paso, para que la consigna entre en la primera pantalla. */
   return `${strip()}
-  <header class="station-head"><div class="k">Estación ${S.i + 1} de ${SC.length}</div><h2>${c.t}</h2><p class="station-goal ${j ? 'is-later' : ''}">${c.goal}</p></header>
+  <header class="station-head has-isle"><div class="station-isle">${islandThumb(S.i)}</div><div class="station-head-txt"><div class="k">Estación ${S.i + 1} de ${SC.length} · ${MAP_PLACES[S.i].place}</div><h2>${c.t}</h2><p class="station-goal ${j ? 'is-later' : ''}">${c.goal}</p></div></header>
   <ol class="stepper" id="stepper" aria-label="Pasos de esta estación">${stepperHTML(c)}</ol>
   <section class="step" aria-labelledby="step-title">
     <div class="step-head"><div class="k">Paso ${j + 1} de ${c.steps.length}</div><h3 id="step-title" tabindex="-1">${s.label}</h3></div>
