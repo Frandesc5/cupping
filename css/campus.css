@@ -287,8 +287,38 @@ textarea.ti { min-height: 96px; padding: 10px 12px }
 .academy-menu-head h2 { margin: 8px 0; font-size: clamp(1.9rem, 3.2vw, 2.5rem) }
 .academy-menu-head p { max-width: 640px }
 /* Mapa isométrico de la Academia (js/academia/mapa.js) */
-.map-world { position: relative; width: 100%; max-width: 520px; margin: 4px auto 0; border-radius: 22px; overflow: hidden; background: linear-gradient(#e6eef2, #f3efe6 40%, #efe9df) }
-.map-scene { display: block; width: 100%; height: auto }
+.map-world { position: relative; width: 100%; max-width: 560px; margin: 0 auto }
+/* Sin caja: el cielo y el suelo se desvanecen hacia el blanco por todos los bordes */
+.map-world::before { content: ''; position: absolute; inset: 0; background: linear-gradient(#e3edf1, #eef1ec 18%, #f3efe6 50%, #efe9df 90%); -webkit-mask-image: linear-gradient(transparent, #000 6%, #000 92%, transparent), linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); -webkit-mask-composite: source-in; mask-image: linear-gradient(transparent, #000 6%, #000 92%, transparent), linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); mask-composite: intersect }
+.map-scene { position: relative; display: block; width: 100%; height: auto }
+/* Título dentro del cielo */
+.map-sky-head { position: absolute; top: 0; left: 0; right: 0; z-index: 2; padding: 34px 20px 0; text-align: center; pointer-events: none }
+.map-sky-head h2 { margin: 0 0 6px }
+.map-sky-head p { margin: 0 auto; max-width: 30ch; color: var(--muted) }
+.map-progress { display: flex; gap: 4px; width: 168px; margin: 12px auto 0 }
+.map-progress i { flex: 1; height: 5px; border-radius: 3px; background: rgba(0, 0, 0, .1) }
+.map-progress i.is-done { background: var(--sage) }
+.map-progress i.is-cur { background: #7a5139 }
+/* Página de la Academia: mapa + panel lateral (computadora) o botón flotante (celu) */
+.academy-map { display: block; margin-bottom: 20px }
+.map-side { max-width: 560px; margin: 8px auto 0 }
+.map-now { display: none }
+.map-fab { position: fixed; left: 16px; right: 16px; bottom: calc(var(--nb-h) + 12px + env(safe-area-inset-bottom)); z-index: 15; display: flex; min-height: 52px; border-radius: 14px; box-shadow: 0 6px 20px rgba(0, 0, 0, .18) }
+@media (min-width: 900px) {
+  .academy-map { display: grid; grid-template-columns: minmax(0, 560px) 320px; justify-content: center; align-items: start; gap: 40px }
+  .map-world { margin: 0 }
+  .map-side { position: sticky; top: calc(var(--header-h) + 28px); margin: 120px 0 0 }
+  .map-now { display: block; padding: 20px; border-radius: var(--radius); background: var(--surface-2) }
+  .map-now .map-place { font-size: .8rem; font-weight: 700; color: var(--hl) }
+  .map-now h3 { margin: 4px 0 6px; font-size: 1.5rem }
+  .map-now .map-steps { margin: 10px 0 14px }
+  .map-now .b { width: 100% }
+  .map-side .path-more { margin-top: 18px }
+  .map-fab { display: none }
+}
+@media (max-width: 899px) {
+  .academy-map { padding-bottom: 76px }
+}
 .map-node { position: absolute; transform: translate(-50%, -50%); width: 60px; height: 60px; padding: 0; border: 0; background: none; cursor: pointer }
 .map-badge { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 4px solid #fff; background: #f6f1e6; color: #8a7a62; box-shadow: 0 6px 0 #cbbfa9; transition: transform .12s, box-shadow .12s }
 .map-node:active .map-badge { transform: translateY(4px); box-shadow: 0 2px 0 #cbbfa9 }

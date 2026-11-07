@@ -362,11 +362,17 @@ const SOON_COUNT = () => SOON.reduce((n, g) => n + g[1].length, 0);
 function academyMenu() {
   const done = doneCount(), cur = suggestedStation();
   const allDone = cur < 0 ? `<div class="path-end"><p><b>Completaste las ${SC.length} estaciones.</b> Repasá la que quieras o poné a prueba lo que aprendiste.</p><a class="b p" href="#/desafios">Ir a Desafíos</a></div>` : '';
-  return `<div class="academy-menu">
-  <div class="academy-menu-head"><h2>Recorré las estaciones.</h2><p class="m">De la planta a la taza, en ${SC.length} estaciones que se hacen por pasos. Llevás ${done} de ${SC.length}. Tocá una isla para ver qué tiene.</p></div>
-  ${allDone}${mapWorld(cur)}
-  <p class="path-more">Para consultar: el <button type="button" class="link-btn" data-a="glossary">glosario</button> y los <button type="button" class="link-btn" data-a="theory">apuntes</button>.</p>
-  <details class="academy-soon"><summary>Próximamente: ${SOON_COUNT()} temas más</summary>${SOON.map(g => `<h4>${g[0]}</h4><ul>${g[1].map(m => `<li><b>${m[0]}</b> <span class="m">${m[1]}</span></li>`).join('')}</ul>`).join('')}</details>
+  /* El título va dentro del cielo del mapa. En computadora, a la derecha, un panel que acompaña al bajar;
+     en el celu, un botón flotante con la acción principal. */
+  const head = `<h2>Recorré las estaciones.</h2><p>De la planta a la taza, en ${SC.length} estaciones. Llevás ${done} de ${SC.length}.</p><div class="map-progress" aria-hidden="true">${SC.map((_, i) => `<i class="${stDone(i) ? 'is-done' : i === cur ? 'is-cur' : ''}"></i>`).join('')}</div>`;
+  const more = `<p class="path-more">Para consultar: el <button type="button" class="link-btn" data-a="glossary">glosario</button> y los <button type="button" class="link-btn" data-a="theory">apuntes</button>.</p>
+  <details class="academy-soon"><summary>Próximamente: ${SOON_COUNT()} temas más</summary>${SOON.map(g => `<h4>${g[0]}</h4><ul>${g[1].map(m => `<li><b>${m[0]}</b> <span class="m">${m[1]}</span></li>`).join('')}</ul>`).join('')}</details>`;
+  const now = cur >= 0 ? `<div class="map-now">${mapNowHTML(cur)}</div>` : allDone;
+  const fab = cur >= 0 ? `<a class="b p map-fab" href="#${stepPath(cur)}">${mapFabLabel(cur)}</a>` : `<a class="b p map-fab" href="#/desafios">Ir a Desafíos</a>`;
+  return `<div class="academy-menu academy-map">
+  ${mapWorld(cur, head)}
+  <aside class="map-side">${now}${more}</aside>
+  ${fab}
 </div>`;
 }
 
