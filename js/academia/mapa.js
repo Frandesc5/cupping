@@ -344,7 +344,7 @@ function mapNowHTML(i) {
   const chips = c.steps.map((s, k) => `<span class="${started && k === j ? 'is-cur' : stepDone(c, s) ? 'is-done' : ''}">${s.label}</span>`).join('');
   return `<div class="map-place">Estás acá · ${MAP_PLACES[i].place}</div><h3>${c.t}</h3><p class="m">${c.md}</p><div class="map-steps">${chips}</div><a class="b p" href="#${stepPath(i)}">${started ? `Continuar con ${curStep(c).label}` : 'Empezar'}</a>`;
 }
-const mapFabLabel = i => { const c = SC[i]; return startedSt(i) ? `Continuar: ${curStep(c).label}` : `Empezar: ${c.t}` };
+const mapFabLabel = i => { const c = SC[i]; return startedSt(i) ? `Continuar: ${curStep(c).label}` : doneCount() ? `Empezar: ${MAP_PLACES[i].place}` : 'Empezar el recorrido' };
 
 /* ---------- Ficha de cada estación ---------- */
 function mapSheetHTML(i) {

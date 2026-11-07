@@ -8,15 +8,15 @@
 
 const CRS = [
   { t: 'Fundamentos del café (online)', slug: 'fundamentos-online', m: 'Online autónomo', n: 'Principiante', d: '6 estaciones interactivas', on: 1, c: ['Programa por unidades', 'Seguimiento de progreso'] },
-  { t: 'Barista Profesional', slug: 'barista-profesional', m: 'Presencial', n: 'Desde cero', d: '2 meses', s: 'Santa Fe y Rosario', c: [] },
-  { t: 'Curso Intensivo', slug: 'curso-intensivo', m: 'Presencial', n: 'Consultar en el sitio', d: '5 horas', s: 'Santa Fe', c: [] }
+  { t: 'Barista profesional', slug: 'barista-profesional', m: 'Presencial', n: 'Desde cero', d: '2 meses', s: 'Santa Fe y Rosario', c: [] },
+  { t: 'Curso intensivo', slug: 'curso-intensivo', m: 'Presencial', n: 'Consultar en el sitio', d: '5 horas', s: 'Santa Fe', c: [] }
 ];
 const CF = ['Objetivos', 'Programa por unidades', 'Videos', 'Material descargable', 'Evaluaciones', 'Seguimiento de progreso', 'Certificado'];
 const COURSES_URL = 'https://academiadebaristas.com.ar/talleres-y-cursos/';
 
 function cap() {
   if (S.cu < 0) return `<h2>Cursos y formación</h2><p class="m">Elegí cómo seguir formándote: un recorrido online a tu ritmo o capacitaciones presenciales con el equipo de la Academia.</p>
-    <div class="course-list">${CRS.map(c => `<a class="course-card" href="#/capacitarse/${c.slug}"><span class="course-mode">${c.m}</span><strong>${c.t}</strong><span class="course-meta">${c.d}${c.s ? ' · ' + c.s : ''}</span><span class="card-link">Ver detalle </span></a>`).join('')}</div>`;
+    <div class="course-list">${CRS.map(c => `<a class="course-card" href="#/capacitarse/${c.slug}"><span class="course-mode">${c.m}</span><strong>${c.t}</strong><span class="course-meta">${c.d}${c.s ? ' · ' + c.s : ''}</span><span class="card-link">Ver el curso </span></a>`).join('')}</div>`;
   const c = CRS[S.cu], pr = Math.round(doneCount() / SC.length * 100);
   return `<div class="k">${c.m}</div><h2>${c.t}</h2><p>Nivel: ${c.n} · Duración: ${c.d}${c.s ? ' · Sede: ' + c.s : ''}</p>` +
     (c.on

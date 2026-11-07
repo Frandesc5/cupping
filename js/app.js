@@ -139,7 +139,7 @@ function crumbTrail() {
     else if (S.i >= SC.length) c.push([0, 'Recorrido completo']);
   } else if (S.sp === 'lb') {
     c.push(['/laboratorio', 'Laboratorio']);
-    c.push([0, S.workMode === 'record' ? 'Nuevo registro' : S.workMode === 'history' ? 'Mi bitácora' : LB.find(t => t[0] === S.lb)[1]]);
+    c.push([0, S.workMode === 'record' ? 'Nuevo registro' : S.workMode === 'history' ? 'Bitácora' : LB.find(t => t[0] === S.lb)[1]]);
   } else if (S.sp === 'de') c.push(['/desafios', 'Desafíos']);
   else if (S.sp === 'ca') { c.push(['/capacitarse', 'Cursos']); if (S.cu >= 0) c.push([0, CRS[S.cu].t]) }
   c[c.length - 1][0] = 0;  // el último es la página actual
@@ -168,11 +168,15 @@ function R(top) {
   document.title = pageTitle();
   const v = $('#v');
   if (S.sp === 'home') v.innerHTML = homeView() + siteFooter();
-  else v.innerHTML = crumbs() + ({ ac: academiaView, lb: lab, de: des, ca: cap })[S.sp]() + siteFooter();
+  /* Cada sección tiene su h1 (oculto a la vista: el título visible ya está en la página). */
+  else v.innerHTML = crumbs() + `<h1 class="sr-only">${({ ac: 'Academia', lb: 'Laboratorio', de: 'Desafíos', ca: 'Cursos' })[S.sp]}</h1>` + ({ ac: academiaView, lb: lab, de: des, ca: cap })[S.sp]() + siteFooter();
   if (S.sp === 'ac') academiaAfter();
   else if (S.sp === 'lb') labAfter();
   if (top !== 0) window.scrollTo(0, 0);
 }
+
+/* Saltar al contenido (para quien navega con teclado) */
+on({ skipToMain: () => { const v = $('#v'); v.tabIndex = -1; v.focus() } });
 
 /* Inicio */
 showRoute(true);

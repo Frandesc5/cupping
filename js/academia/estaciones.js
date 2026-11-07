@@ -144,9 +144,9 @@ function quizDlgHTML() {
   let cont = '';
   if (d) {
     const others = c.steps.filter(x => !stepDone(c, x));
-    cont = next ? stepLink(c, next, 'b p', `Siguiente paso: ${next.label}`)
+    cont = next ? stepLink(c, next, 'b p', `Ir a ${next.label}`)
       : c.ok() ? `<a class="b p" href="#${recapPath(S.i)}">Ver lo que aprendiste</a>`
-      : others.length ? stepLink(c, others[0], 'b p', `Completar lo que falta: ${others[0].label}`) : '';
+      : others.length ? stepLink(c, others[0], 'b p', `Completar ${others[0].label}`) : '';
   }
   return `<div class="k">Desafío · ${s.label}</div><h3 id="quiz-dlg-title">${z.q}</h3><div class="quiz-dlg-opts">${z.o.map((o, i) => `<button type="button" class="opt ${d ? (i === z.a ? 'ok' : i === p ? 'no' : '') : ''}" data-a="quizAns" data-v="${i}" ${d ? 'disabled' : ''}>${o}</button>`).join('')}</div>${d ? `<p class="quiz-dlg-fb" tabindex="-1"><b>${p === z.a ? '¡Bien!' : 'No es esa.'}</b> ${z.e[p]}</p>` : ''}<div class="bar">${cont}<button type="button" class="b" data-a="quizClose">${d ? 'Quedarme en este paso' : 'Volver al paso'}</button></div>`;
 }
@@ -168,15 +168,15 @@ function stepFootHTML(c) {
   const status = miss.length
     ? `<div class="step-status is-pending"><b>Para completar este paso:</b><ul>${miss.map(m => `<li>${m}</li>`).join('')}</ul></div>`
     : `<div class="step-status is-done"><b><span class="tick ${S.tickDone.has(footKey()) ? '' : 'pop'}" aria-hidden="true">✓</span> Paso completo.</b>${ok ? ' Completaste toda la estación.' : ''}</div>`;
-  const back = prev ? stepLink(c, prev, 'b', 'Paso anterior: ' + prev.label) : '<span></span>';
+  const back = prev ? stepLink(c, prev, 'b', 'Volver a ' + prev.label) : '<span></span>';
   /* Acción principal: avanzar de paso; en el último, ir al cierre de la estación (y desde ahí a la próxima).
      Si el último paso está a medias, no se saca a la persona de ahí: la tarea es completarlo. */
   const others = pending.filter(x => x !== s);
   let main = '';
-  if (quizDue(s)) main = `<button type="button" class="b p" data-a="quizOpen">${next ? `Siguiente paso: ${next.label}` : 'Terminar la estación'}</button>`;
-  else if (next) main = stepLink(c, next, 'b p', `Siguiente paso: ${next.label}`);
+  if (quizDue(s)) main = `<button type="button" class="b p" data-a="quizOpen">${next ? `Ir a ${next.label}` : 'Terminar la estación'}</button>`;
+  else if (next) main = stepLink(c, next, 'b p', `Ir a ${next.label}`);
   else if (ok) main = `<a class="b p" href="#${recapPath(S.i)}">Ver lo que aprendiste</a>`;
-  else if (!miss.length) main = stepLink(c, others[0], 'b p', `Completar lo que falta: ${others[0].label}`);
+  else if (!miss.length) main = stepLink(c, others[0], 'b p', `Completar ${others[0].label}`);
   const stationNote = ok && next
     ? `<p class="station-done-note">✓ Ya completaste la estación. <a class="link-btn" href="#${recapPath(S.i)}">Ver lo que aprendiste y continuar</a></p>`
     : !next && !ok && others.length ? `<p class="station-done-note is-pending">${miss.length ? 'Además, para completar la estación' : 'Para completar la estación'} te falta: ${others.map(x => stepLink(c, x, 'link-btn', x.label)).join(', ')}.</p>` : '';
@@ -273,7 +273,7 @@ function recapView() {
   return `${strip()}
   <header class="station-head"><div class="k">Estación ${S.i + 1} de ${SC.length} · completa</div><h2>Lo que aprendiste</h2><p class="station-goal">Terminaste «${c.t}». Estas son las ideas clave para llevarte. Llevás ${n} de ${SC.length} estaciones.</p></header>
   ${stationRecap(S.i)}
-  <div class="bar recap-actions"><a class="b p" href="${nextStationHref()}">${nx ? `Continuar a la estación ${S.i + 2}: ${nx.n}` : 'Terminar el recorrido'}</a><a class="b" href="#${stepPath(S.i)}">Volver a la estación</a></div>`;
+  <div class="bar recap-actions"><a class="b p" href="${nextStationHref()}">${nx ? `Ir a ${nx.n}` : 'Terminar el recorrido'}</a><a class="b" href="#${stepPath(S.i)}">Volver a la estación</a></div>`;
 }
 
 /* Cambiar de paso: la dirección refleja el paso (sin sumar entradas al historial),
@@ -366,7 +366,7 @@ function academyMenu() {
      en el celu, un botón flotante con la acción principal. */
   const head = `<h2>Recorré las estaciones.</h2><p>De la planta a la taza, en ${SC.length} estaciones. Llevás ${done} de ${SC.length}.</p><div class="map-progress" aria-hidden="true">${SC.map((_, i) => `<i class="${stDone(i) ? 'is-done' : i === cur ? 'is-cur' : ''}"></i>`).join('')}</div>`;
   const more = `<p class="path-more">Para consultar: el <button type="button" class="link-btn" data-a="glossary">glosario</button> y los <button type="button" class="link-btn" data-a="theory">apuntes</button>.</p>
-  <details class="academy-soon"><summary>Próximamente: ${SOON_COUNT()} temas más</summary>${SOON.map(g => `<h4>${g[0]}</h4><ul>${g[1].map(m => `<li><b>${m[0]}</b> <span class="m">${m[1]}</span></li>`).join('')}</ul>`).join('')}</details>`;
+  <details class="academy-soon"><summary>Próximamente: ${SOON_COUNT()} temas más</summary>${SOON.map(g => `<h3 class="soon-h">${g[0]}</h3><ul>${g[1].map(m => `<li><b>${m[0]}</b> <span class="m">${m[1]}</span></li>`).join('')}</ul>`).join('')}</details>`;
   const now = cur >= 0 ? `<div class="map-now">${mapNowHTML(cur)}</div>` : allDone;
   const fab = cur >= 0 ? `<a class="b p map-fab" href="#${stepPath(cur)}">${mapFabLabel(cur)}</a>` : `<a class="b p map-fab" href="#/desafios">Ir a Desafíos</a>`;
   return `<div class="academy-menu academy-map">

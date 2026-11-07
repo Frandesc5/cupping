@@ -137,7 +137,7 @@ function nextStep() {
   let k, h, p, href, cta;
   if (P.last == null) {
     k = '¿Primera vez en .campus?'; h = 'Empezá por ' + SC[0].t.toLowerCase();
-    p = 'Te sugerimos este orden: Academia para aprender, Laboratorio para probar y Desafíos para poner a prueba tu criterio. Tu avance se guarda en este dispositivo.';
+    p = 'Aprendé en la Academia, probá en el Laboratorio y medite en Desafíos. Tu avance queda guardado en este dispositivo.';
     href = '#/academia/' + SC[0].slug; cta = 'Empezar el recorrido';
   } else if (done >= SC.length) {
     k = 'Recorrido completo'; h = 'Poné a prueba lo que aprendiste';
@@ -159,7 +159,7 @@ function heroHTML() {
     <p>El campus de la Academia de Baristas: estaciones para entender el café de la planta a la taza, un laboratorio para probar recetas y desafíos para poner a prueba tu criterio.</p>
     <div class="action-row"><a class="b p" href="#/academia">Entrar a la Academia</a><a class="b" href="#/capacitarse">Ver cursos</a></div>
   </div>
-  <figure class="hero-photo-wrap"><img class="hero-photo" src="${HERO_PHOTO}" alt="Equipo de Academia de Baristas" fetchpriority="high" decoding="async"><figcaption class="photo-note">Aprender café también es compartirlo.</figcaption></figure>
+  <figure class="hero-photo-wrap"><img class="hero-photo" src="${HERO_PHOTO}" width="1200" height="900" alt="Equipo de Academia de Baristas" fetchpriority="high" decoding="async"><figcaption class="photo-note">Aprender café también es compartirlo.</figcaption></figure>
 </section>`;
 }
 
