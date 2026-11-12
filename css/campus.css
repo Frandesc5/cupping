@@ -110,7 +110,7 @@ th { color: var(--hl); font-weight: 600; letter-spacing: .02em }
 .crumbs { margin: 10px 0 18px; font-size: .82rem; color: var(--muted) }
 .crumbs ol { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; align-items: center }
 .crumbs li + li::before { content: '/'; margin: 0 9px; color: var(--line-strong) }
-.crumbs a { display: inline-block; padding: 8px 0; color: var(--sage); font-weight: 600; text-decoration: none }
+.crumbs a { display: inline-block; padding: 12px 0; color: var(--sage); font-weight: 600; text-decoration: none }
 .crumbs a:hover { text-decoration: underline }
 .crumbs [aria-current=page] { color: var(--ink) }
 
@@ -355,7 +355,10 @@ textarea.ti { min-height: 96px; padding: 10px 12px }
 .map-node.is-cur .map-badge { inset: -6px; background: #7a5139; color: #fff; box-shadow: 0 7px 0 #4b2f20 }
 .map-badge svg { width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round }
 .map-check { position: absolute; right: -6px; top: -6px; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 2px solid #596b55; border-radius: 50%; background: #fff; color: #596b55; font-weight: 800; font-size: .8rem }
-.map-name { position: absolute; left: 50%; top: calc(100% + 12px); transform: translateX(-50%); padding: 4px 10px; border: 1px solid rgba(0,0,0,.08); border-radius: 999px; background: #fff; white-space: nowrap; font: 600 .78rem var(--font); color: var(--ink) }
+.map-name { position: absolute; left: 50%; top: calc(100% + 12px); transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 5px 12px; border: 1px solid rgba(0,0,0,.08); border-radius: 12px; background: #fff; white-space: nowrap; text-align: center; font: 600 .78rem/1.2 var(--font); color: var(--ink) }
+.map-name b { font-weight: 700 }
+.map-name small { font-size: .72rem; font-weight: 500; color: var(--muted) }
+.map-node.is-cur .map-name small { color: rgba(255, 255, 255, .88) }
 .map-node.is-cur .map-name { top: calc(100% + 16px); border-color: #7a5139; background: #7a5139; color: #fff }
 .map-ring { position: absolute; inset: -16px; border: 3px solid #7a5139; border-radius: 50%; opacity: .5; animation: map-ring 2.2s ease-out infinite }
 .map-me { position: absolute; transform: translate(-50%, -100%); pointer-events: none; animation: map-bob 1.8s ease-in-out infinite }
@@ -404,7 +407,7 @@ textarea.ti { min-height: 96px; padding: 10px 12px }
 
 /* Portada personal (cuando ya empezaste el recorrido) */
 .me-head { margin: 36px 0 20px }
-.me-head h2 { margin: 8px 0 6px; font-size: clamp(2rem, 4.6vw, 3.2rem); line-height: 1 }
+.me-head h1 { margin: 8px 0 6px; font-size: clamp(2rem, 4.6vw, 3.2rem); line-height: 1 }
 .me-head .menu-progress { margin-top: 12px }
 .me-stack { display: grid; gap: 26px; min-width: 0 }
 .me-h { margin: 0 0 10px; font-size: 1.05rem }
@@ -511,7 +514,7 @@ textarea.ti { min-height: 96px; padding: 10px 12px }
 .step-status b { display: block }
 /* Pie del paso: aparece deslizándose al llegar al final; el ✓ rebota una vez */
 .step-foot.will-reveal { opacity: 0; transform: translateY(18px); transition: opacity .45s ease, transform .45s ease }
-.step-foot.will-reveal.is-in { opacity: 1; transform: none }
+.step-foot.will-reveal.is-in, .step-foot.will-reveal:focus-within { opacity: 1; transform: none }
 .step-status .tick { display: inline-block }
 .step-foot.is-in .tick.pop { animation: tick .5s .15s both }
 .step-status.is-done b { color: var(--sage) }
@@ -552,7 +555,10 @@ textarea.ti { min-height: 96px; padding: 10px 12px }
 .deeper-body .panel:last-child, .deeper-body .post-card:last-child { margin-bottom: 0 }
 
 /* Palabras del glosario dentro del paso: se tocan y muestran la definición ahí mismo */
-.term { display: inline; min-height: 0; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-decoration: underline dotted var(--terra); text-decoration-thickness: 1.5px; text-underline-offset: 3px; cursor: pointer }
+.term { display: inline; min-height: 0; padding: 0; border: 0; background: none; font: inherit; color: var(--ink); text-decoration: underline dotted var(--terra); text-decoration-thickness: 1.5px; text-underline-offset: 3px; cursor: pointer }
+.term::after { content: '?'; display: inline-block; width: 1.3em; height: 1.3em; margin-left: 3px; border-radius: 50%; background: #efe6dc; color: var(--hl); font-size: .68em; font-weight: 700; line-height: 1.3em; text-align: center; vertical-align: .25em }
+@media (pointer: coarse) { .term { padding: 9px 0 } }
+.step-body p.term-tip { margin: 6px 0 10px; padding: 8px 12px; border-radius: 10px; background: #f6efe6; color: var(--hl); font-size: .9rem }
 .term:hover, .term[aria-expanded="true"] { color: var(--hl); text-decoration-style: solid }
 .term-def { display: block; margin: 8px 0; padding: 10px 12px; border-left: 3px solid var(--terra); border-radius: 0 8px 8px 0; background: var(--soft); color: var(--ink); font-size: .92rem; line-height: 1.5 }
 .term-def b { color: var(--hl) }
@@ -579,7 +585,7 @@ textarea.ti { min-height: 96px; padding: 10px 12px }
   .station-goal { font-size: .92rem; line-height: 1.5 }
   .station-goal.is-later { display: none }
   .stepper { --dot: 26px; margin-top: 14px }
-  .step-pill { gap: 6px; font-size: .75rem }
+  .step-pill { gap: 6px; font-size: .8125rem }
   .step-n { font-size: .78rem }
   .step-head { margin: 16px 0 4px }
   .step-head .k { display: none }
@@ -863,9 +869,6 @@ textarea.ti { min-height: 96px; padding: 10px 12px }
   .learning-banner .b { grid-column: 2; justify-self: start }
 }
 @media (max-width: 899px) {
-  /* En celular los cuatro espacios ya están en la barra inferior: la portada no los repite. */
-  .home-spaces { display: none }
-  .home-spaces + .learning-banner { margin-top: 28px }
   :root { --gutter: 18px; --header-h: 64px }
   .main-nav { display: none }
   #nb {
@@ -874,7 +877,7 @@ textarea.ti { min-height: 96px; padding: 10px 12px }
     background: rgba(255, 255, 255, .96); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
     border-top: 1px solid var(--line);
   }
-  #nb a { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 0; min-height: var(--nb-h); font-size: .75rem; letter-spacing: .02em; text-transform: none }
+  #nb a { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 0; min-height: var(--nb-h); font-size: clamp(.72rem, 3.3vw, .8125rem); letter-spacing: .01em; text-transform: none }
   #nb .nb-ico { display: flex; line-height: 1 }
   #nb .nb-ico svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round }
   #nb a[aria-current=page] { color: var(--primary); box-shadow: inset 0 3px 0 var(--sage) }
@@ -980,3 +983,94 @@ input[type=range].sens-range:active::-webkit-slider-thumb { transform: scale(1.2
 input[type=range].sens-range::-moz-range-track { height: 2px; border-radius: 2px; background: var(--line-strong) }
 input[type=range].sens-range::-moz-range-progress { height: 2px; border-radius: 2px; background: var(--primary) }
 input[type=range].sens-range::-moz-range-thumb { width: 12px; height: 12px; border: 2px solid var(--primary); border-radius: 50%; background: var(--surface) }
+
+/* ============================================================
+   Ajustes de orientación (auditoría de UX, noviembre de 2026)
+   ============================================================ */
+
+/* ---------- Portada ---------- */
+.hero-map-link { display: inline-flex; align-items: center; min-height: 48px; align-self: center }
+.home-hero .hero-note { margin: -14px 0 0; font-size: .88rem; color: var(--muted) }
+.me-stack .menu-progress { flex-wrap: wrap; margin-top: -10px }
+.store-note { margin: 22px 0 0; color: var(--muted); font-size: .88rem }
+/* Íconos de los espacios: los mismos de la barra de abajo */
+.section-icon svg, .space-ico svg, .suggest-ico svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round }
+.space-ico { flex: none; display: flex }
+.card-space { display: block; margin-top: 22px; font-size: .82rem; font-weight: 600; color: var(--muted) }
+.section-card .card-space + strong { margin-top: 2px }
+@media (max-width: 650px) {
+  .home-spaces .section-intro { margin: 36px 0 16px }
+  .home-spaces .section-intro h2 { font-size: 2rem }
+  .section-grid { grid-template-columns: 1fr; margin-bottom: 36px }
+  .section-card { min-height: 0; flex-direction: row; align-items: center; justify-content: flex-start; gap: 14px; padding: 14px }
+  .section-card .card-space { margin-top: 0 }
+  .section-card strong { margin: 2px 0 4px; font-size: 1.1rem }
+  .section-card small { min-height: 0; font-size: .85rem }
+  .section-card .card-link { margin-top: 8px; padding-top: 0; border-top: 0; font-size: .82rem }
+}
+
+/* ---------- Mapa de la Academia ---------- */
+.map-links { display: flex; justify-content: center; gap: 8px; margin-top: 14px; pointer-events: auto }
+.map-links .b { min-height: 44px; background: #fff }
+.map-links .b:hover { background: #f1f1ee }
+
+/* ---------- Estaciones ---------- */
+/* El párrafo que enseña va en el color principal; el gris queda para aclaraciones y notas. */
+.step-body > p.m:first-child, .step-body > .post-section-intro > p:first-child, .step-body > .panel:first-child > p.m:first-child { color: var(--ink) }
+.station-goal { color: #3d423b }
+/* Paso abierto pero sin terminar: número con borde oscuro (sin ✓). */
+.step-pill.is-open .step-n { border-color: var(--muted); color: var(--ink) }
+/* Opción respondida: ícono y texto además del color */
+.opt-mark { display: inline-block; width: 1.5em; font-weight: 700 }
+.opt-tag { display: block; margin: 2px 0 0 1.5em; font-size: .82rem; font-weight: 600; opacity: .85 }
+.recap-more { margin: 14px 0 0 }
+.done-list { list-style: none; margin: 16px 0 4px; padding: 0; max-width: 560px }
+.done-list a { display: flex; gap: 10px; align-items: center; min-height: 44px; padding: 6px 0; border-bottom: 1px solid var(--line); color: var(--ink); text-decoration: none }
+.done-list a:hover { text-decoration: underline }
+.done-list li.is-done a { color: var(--sage); font-weight: 600 }
+
+/* ---------- Ventana de confirmación ---------- */
+.confirm-dlg { width: min(440px, calc(100% - 32px)); padding: 22px; border: 0; border-radius: var(--radius); background: var(--surface); color: var(--ink) }
+.confirm-dlg::backdrop { background: rgba(0, 0, 0, .45) }
+.confirm-dlg h3 { margin: 0 0 6px; font-size: 1.2rem }
+.confirm-dlg p { margin: 0; color: var(--muted) }
+.b.danger { background: #8f3f2a; border-color: #8f3f2a; color: #fff }
+.b.danger:hover:not(:disabled) { background: #7a3422 }
+
+/* ---------- Glosario ---------- */
+.glossary-entry p.gloss-plain { color: var(--ink) }
+.glossary-entry p.gloss-tech { margin-top: 8px; font-size: .86rem }
+.glossary-empty { max-width: 760px }
+.glossary-empty p { margin: 0 0 12px }
+.term-cat { font-size: .82rem }
+
+/* ---------- Laboratorio ---------- */
+.lab-scope { margin: -6px 0 6px; padding: 10px 14px; border-radius: 12px; background: #f6efe6; color: var(--hl); font-size: .92rem }
+.form-note { margin: 8px 0; padding: 10px 14px; border-radius: 12px; background: var(--ok-bg); color: #213a28; font-weight: 600 }
+.form-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 16px; margin: 14px 0 0; font-size: .9rem }
+.form-foot .link-btn { min-height: 44px }
+.form-actions { max-width: 420px }
+.cmp-note { margin: 10px 0; padding: 10px 14px; border-radius: 12px; background: #f6efe6; color: var(--hl); font-weight: 600 }
+.cmp-table { scroll-margin-top: calc(var(--header-h) + 12px); overflow-x: auto }
+.cmp-table:focus { outline: none }
+.record-actions .b[aria-pressed=true] { background: var(--ink); color: #fff }
+a.program-item { text-decoration: none }
+.bar.is-narrow { max-width: 420px }
+
+/* ---------- Desafíos ---------- */
+.ch-score { margin-left: 4px; font-size: .82em; font-weight: 500; opacity: .75 }
+.ch-note { margin: 0 0 12px; padding: 10px 14px; border-radius: 12px; background: #f6efe6; color: var(--hl) }
+.ch-levels { margin-top: 0 }
+.ch-levels button { flex: 0 1 auto }
+
+/* ---------- Celular: áreas táctiles ---------- */
+@media (max-width: 650px) {
+  input[type=range].sens-range { height: 44px }
+}
+
+/* Etiquetas de las islas de la izquierda: arrancan en el borde de la insignia, así no se salen de la pantalla en el celu */
+.map-node.is-left .map-name { left: -22px; transform: none; align-items: flex-start; text-align: left }
+/* Los títulos reciben el foco al cambiar de pantalla (para el lector de pantalla), pero no son controles: sin contorno */
+#v h1[tabindex="-1"]:focus, #v h2[tabindex="-1"]:focus, #v h3[tabindex="-1"]:focus { outline: none }
+/* El botón dorado de "Continuar" sigue dorado al pasar el mouse (el estilo mínimo lo oscurecía y el texto no se leía) */
+.resume-card .b.p:hover:not(:disabled) { background: #f0dca3; color: var(--ink) }

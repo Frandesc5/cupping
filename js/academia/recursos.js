@@ -2,8 +2,8 @@
    Glosario y apuntes: vistas, buscador y relaciones con los módulos.
    ============================================================ */
 
-function glossaryView(){const q=S.glossaryQuery||'';return `<div class="resource-head"><h2>Glosario cafetero</h2><p class="m">Vocabulario técnico para consultar conceptos, procesos, técnicas y mediciones. Tocá un término para ver qué significa.</p></div><div class="resource-tools"><input id="glossarySearch" type="search" value="${q.replace(/"/g,'&quot;')}" placeholder="Buscar término o categoría…" aria-label="Buscar en el glosario"></div><div class="resource-count" id="glossaryCount">${GLOSSARY.length} términos en el glosario</div><div class="glossary-list" id="glossaryList">${GLOSSARY.map(x=>{const ix=Object.values(RELATED).findIndex(r=>r.terms.includes(x[0]));const mod=Object.keys(RELATED).find(k=>RELATED[k].terms.includes(x[0]));const ti=Object.keys(RELATED).find(k=>RELATED[k].terms.includes(x[0]));const th=ti==null?[]:RELATED[ti].theory;return `<details class="glossary-entry" data-term="${x.join(' ').toLowerCase()}" ${S.openTerm===x[0]?'open':''}><summary><span>${x[0]}</span><span class="term-cat">${x[1]}</span></summary><p>${x[2]}</p><div class="glossary-meta">${mod!==undefined?`<button class="related-note" data-a="openModule" data-v="${mod}">Ver la estación</button>`:''}${th.map(k=>`<button class="related-note" data-a="openTheory" data-v="${k}">Leer: ${THEORY[k][0]}</button>`).join('')}</div></details>`}).join('')}</div>`}
-function theoryView(){return `<div class="resource-head"><h2>Apuntes y profundizaciones</h2><p class="m">Lecturas teóricas para ampliar los fundamentos científicos y técnicos de cada estación. Cada apunte conecta con términos del glosario y con su estación.</p></div><div class="theory-list">${THEORY.map((x,i)=>{const mod=Object.keys(RELATED).find(k=>RELATED[k].theory.includes(i));return `<article class="theory-card ${S.theoryOpen===i?'open':''}"><button data-a="theoryToggle" data-v="${i}" aria-expanded="${S.theoryOpen===i}"><span><strong>${x[0]}</strong><small>${x[1]}</small></span><span>${S.theoryOpen===i?'−':'+'}</span></button>${S.theoryOpen===i?`<div class="theory-body">${x[2]}<div class="glossary-meta">${mod!==undefined?`<button class="related-note" data-a="openModule" data-v="${mod}">Ir a la estación</button>`:''}<button class="related-note" data-a="glossary">Consultar glosario</button></div></div>`:''}</article>`}).join('')}</div>`}
+function glossaryView(){const q=S.glossaryQuery||'';return `<div class="resource-head"><h2>Glosario cafetero</h2><p class="m">Las palabras del café, explicadas en simple. Tocá un término para ver qué significa; debajo está también la definición técnica.</p></div><div class="resource-tools"><input id="glossarySearch" type="search" value="${q.replace(/"/g,'&quot;')}" placeholder="Buscar término o categoría…" aria-label="Buscar en el glosario"></div><div class="resource-count" id="glossaryCount" role="status">${GLOSSARY.length} términos en el glosario</div><div class="panel glossary-empty" id="glossaryEmpty" hidden><p id="glossaryEmptyText"></p><button type="button" class="b" data-a="glossaryClear">Ver todos los términos</button></div><div class="glossary-list" id="glossaryList">${GLOSSARY.map(x=>{const ix=Object.values(RELATED).findIndex(r=>r.terms.includes(x[0]));const mod=Object.keys(RELATED).find(k=>RELATED[k].terms.includes(x[0]));const ti=Object.keys(RELATED).find(k=>RELATED[k].terms.includes(x[0]));const th=ti==null?[]:RELATED[ti].theory;return `<details class="glossary-entry" data-term="${(x.join(' ')+' '+(TERM_PLAIN[x[0]]||'')).toLowerCase().replace(/"/g,'')}" ${S.openTerm===x[0]?'open':''}><summary><span>${x[0]}</span><span class="term-cat">${x[1]}</span></summary>${TERM_PLAIN[x[0]]?`<p class="gloss-plain">${TERM_PLAIN[x[0]]}</p><p class="gloss-tech"><b>Definición técnica.</b> ${x[2]}</p>`:`<p class="gloss-plain">${x[2]}</p>`}<div class="glossary-meta">${mod!==undefined?`<button class="related-note" data-a="openModule" data-v="${mod}">Ver la estación</button>`:''}${th.map(k=>`<button class="related-note" data-a="openTheory" data-v="${k}">Leer: ${THEORY[k][0]}</button>`).join('')}</div></details>`}).join('')}</div>`}
+function theoryView(){return `<div class="resource-head"><h2>Apuntes y profundizaciones</h2><p class="m">Lecturas más largas y técnicas, para cuando quieras ir a fondo. No hacen falta para completar las estaciones.</p></div><div class="theory-list">${THEORY.map((x,i)=>{const mod=Object.keys(RELATED).find(k=>RELATED[k].theory.includes(i));return `<article class="theory-card ${S.theoryOpen===i?'open':''}"><button data-a="theoryToggle" data-v="${i}" aria-expanded="${S.theoryOpen===i}"><span><strong>${x[0]}</strong><small>${x[1]}</small></span><span>${S.theoryOpen===i?'−':'+'}</span></button>${S.theoryOpen===i?`<div class="theory-body">${x[2]}<div class="glossary-meta">${mod!==undefined?`<button class="related-note" data-a="openModule" data-v="${mod}">Ir a la estación</button>`:''}<button class="related-note" data-a="glossary">Consultar glosario</button></div></div>`:''}</article>`}).join('')}</div>`}
 /* Relación entre el glosario, los apuntes y cada estación.
    terms: términos del glosario que llevan a la estación ("Ver módulo relacionado").
    recap: palabras clave que se repasan al completar la estación (todas aparecen en sus pasos).
@@ -20,7 +20,7 @@ const RELATED={
 const termDef = name => { const g = findTerm(name); return TERM_PLAIN[name] || (g && g[2]) || '' };
 const TERM_SHORT = { 'Canephora / robusta': 'Canephora (robusta)', 'First crack / primer crack': 'Primer crack', 'Rate of Rise (RoR)': 'RoR (cuánto sube por minuto)' };
 const termShort = name => TERM_SHORT[name] || name;
-function stationRecap(i){const r=RELATED[i];if(!r)return '';const k=r.theory[0];return `<section class="station-recap" aria-label="Palabras clave de la estación"><dl>${r.recap.map(n=>`<div><dt>${termShort(n)}</dt><dd>${termDef(n)}</dd></div>`).join('')}</dl>${k!=null?`<button class="link-btn" data-a="openTheory" data-v="${k}">Leer el apunte: ${THEORY[k][0]}</button>`:''}</section>`}
+function stationRecap(i){const r=RELATED[i];if(!r)return '';const k=r.theory[0];return `<section class="station-recap" aria-label="Palabras clave de la estación"><dl>${r.recap.map(n=>`<div><dt>${termShort(n)}</dt><dd>${termDef(n)}</dd></div>`).join('')}</dl>${k!=null?`<button class="link-btn" data-a="openTheory" data-v="${k}">Lectura avanzada: ${THEORY[k][0]}</button>`:''}</section>`}
 
 /* ---------- Glosario dentro del paso ----------
    term('mucílago', 'Mucílago') dibuja la palabra como un botón: al tocarla se abre
@@ -61,7 +61,67 @@ const TERM_PLAIN = {
   'Acidez': 'Sensación viva y jugosa, como la de una fruta. No es lo mismo que agrio.',
   'Cuerpo': 'Peso o textura de la bebida en la boca: liviana como el té o densa como la leche.',
   'Persistencia': 'Cuánto dura el sabor en la boca después de tragar.',
-  'Catación': 'Forma ordenada de probar y comparar cafés, siempre con los mismos pasos.'
+  'Catación': 'Forma ordenada de probar y comparar cafés, siempre con los mismos pasos.',
+  /* El resto del glosario, también en simple (se muestran en la página del glosario). */
+  'Actividad de agua (aw)': 'Cuánta agua del grano está “libre” para que crezcan hongos o pasen reacciones. No es lo mismo que la humedad.',
+  'Agtron': 'Escala con números para medir qué tan claro u oscuro quedó un café tostado.',
+  'Aroma': 'Lo que olés en el café: seco, recién molido o ya preparado.',
+  'Astringencia': 'Sensación de boca seca o áspera, como la de un té muy cargado.',
+  'Brix': 'Medida de cuánta azúcar tiene un jugo. En café ayuda a saber qué tan maduro está el fruto.',
+  'Cama africana': 'Mesa alta con malla donde se seca el café: el aire pasa por arriba y por abajo.',
+  'Canalización': 'En espresso, cuando el agua encuentra un camino fácil y pasa por ahí en vez de mojar todo el café por igual.',
+  'Chaff / cascarilla': 'Piel muy fina del grano que se suelta al tostarlo.',
+  'Desgasificación': 'Salida del gas (dióxido de carbono) que el café guarda después del tueste.',
+  'Fragancia': 'El olor del café molido en seco, antes de echarle agua.',
+  'Inmersión': 'Forma de preparar en la que el café queda sumergido en el agua un rato, como en la prensa francesa.',
+  'Malla / screen size': 'Tamaño del grano verde, medido con zarandas de agujeros de distinto diámetro.',
+  'Molienda': 'Partir el grano tostado en pedacitos. El tamaño cambia cómo pasa el agua y cuánto le saca al café.',
+  'Puck': 'La pastilla de café molido y prensado que queda en el portafiltro del espresso.',
+  'Tueste': 'Calentar el café verde hasta que toma color, aroma y sabor.',
+  'Variedad': 'Tipo de planta dentro de una especie, como pasa con las variedades de uva o de manzana.',
+  'V60': 'Cafetera de filtro con forma de cono: se echa el agua a mano sobre el café y la bebida cae por un agujero.',
+  'Bourbon': 'Una familia de variedades de arabica. Es el nombre de la planta, no de un proceso.',
+  'Typica': 'Una de las variedades más antiguas de arabica; de ella descienden muchas otras.',
+  'Geisha / Gesha': 'Variedad de arabica conocida por sus aromas muy marcados cuando se cultiva y se procesa bien.',
+  'Desmucilaginado': 'Sacar el mucílago con una máquina, después de despulpar.',
+  'Fermentación anaeróbica': 'Fermentación casi sin aire, en un recipiente cerrado.',
+  'Fermentación aeróbica': 'Fermentación con aire, por ejemplo en un tanque abierto.',
+  'Inóculo': 'Levaduras o bacterias que se agregan a propósito para guiar una fermentación.',
+  'pH': 'Número que dice qué tan ácido o alcalino es un líquido. Menos de 7 es ácido.',
+  'Reposo / estabilización': 'Tiempo que el café descansa después de secarse, para que su humedad quede pareja.',
+  'Quaker': 'Grano que queda pálido después del tueste. Suele venir de un fruto que no estaba maduro.',
+  'Pérdida de masa': 'Cuánto peso pierde el café al tostarse, porque se le va el agua y algunos gases.',
+  'Carga térmica': 'Cuánto calor recibe el café dentro del tostador.',
+  'Tiempo de desarrollo': 'Los minutos que pasan desde el primer crack hasta que se saca el café del tostador.',
+  'Ratio de desarrollo (DTR)': 'Qué parte del tueste total corresponde al desarrollo, en porcentaje.',
+  'Convección': 'Calor que llega por el aire caliente que se mueve alrededor del grano.',
+  'Conducción': 'Calor que pasa por contacto, por ejemplo del tambor caliente al grano.',
+  'Radiación': 'Calor que llega sin contacto, como el del sol o el de una brasa.',
+  'Bloom / preinfusión': 'El primer mojado del café: un poco de agua para que suelte el gas antes de seguir vertiendo.',
+  'Bypass': 'Agregar agua a la bebida ya preparada, sin que pase por el café.',
+  'Agitación': 'Mover el agua o el café mientras se prepara, por ejemplo revolviendo.',
+  'Lecho de café': 'El café molido que queda dentro del filtro o del portafiltro mientras pasa el agua.',
+  'Percolación': 'Cuando el agua atraviesa el café molido y sale por abajo, como en un filtrado.',
+  'Distribución de partículas': 'La mezcla de tamaños que deja un molino: siempre salen pedacitos más chicos y más grandes.',
+  'Uniformidad de molienda': 'Qué tan parecidos entre sí quedan los pedacitos de café molido.',
+  'Agua de preparación': 'El agua con la que hacés el café. Sus minerales cambian el sabor y también afectan a la máquina.',
+  'Bicarbonato': 'Componente del agua que neutraliza la acidez. Es lo que más aporta a la alcalinidad.',
+  'Magnesio': 'Mineral del agua. Junto con el calcio forma la dureza.',
+  'Calcio': 'Mineral del agua. Aporta dureza y puede dejar sarro.',
+  'Buffer / capacidad tampón': 'Cuánto aguanta un líquido sin cambiar su acidez cuando se le agrega algo ácido o alcalino.',
+  'Turbidez': 'Qué tan turbia se ve el agua o la bebida, por partículas muy chicas que flotan.',
+  'Sabor': 'Lo que sentís al probar: la suma del gusto en la lengua y los aromas que suben a la nariz.',
+  'Retronasal': 'Los aromas que sentís desde adentro de la boca, cuando suben a la nariz mientras probás.',
+  'Ortonasal': 'Los aromas que sentís al oler por la nariz.',
+  'Balance': 'Cuando ningún atributo tapa a los demás y la taza se siente armónica.',
+  'Uniformidad': 'Que varias tazas del mismo café sepan igual.',
+  'Taza limpia': 'Una taza sin sabores raros ni defectos.',
+  'Amargor': 'Uno de los gustos básicos. Puede ser parte del perfil de un café; cuánto se siente depende del café y de cómo se preparó.',
+  'Salinidad': 'Gusto salado. En algunos cafés puede aparecer como una nota más.',
+  'Umami': 'Gusto sabroso, como el del caldo. En café se evalúa con cuidado.',
+  'Cupping score': 'Puntaje que recibe un café en una catación, según una planilla con criterios definidos.',
+  'Lote': 'Una cantidad de café que se identifica y se maneja como una unidad.',
+  'Microlote': 'Un lote chico y diferenciado por su origen, variedad, cosecha o proceso.'
 };
 const findTerm = k => GLOSSARY.find(x => x[0].toLowerCase() === k.toLowerCase());
 function term(label, key = label) {
@@ -72,6 +132,7 @@ on({
   /* La definición aparece debajo del párrafo (no en medio de la frase). Tocar otra palabra
      del mismo párrafo la reemplaza; tocar la misma, la cierra. */
   term: (v, el) => {
+    if (!P.termTip) { P.termTip = 1; sv(); const tip = $('.term-tip'); if (tip) tip.remove() }
     const name = decodeURIComponent(v), host = el.closest('p, li') || el, open = host.nextElementSibling;
     const was = open && open.classList.contains('term-def') ? open : null;
     if (was) { was.remove(); host.querySelectorAll('.term[aria-expanded="true"]').forEach(b => b.setAttribute('aria-expanded', 'false')); if (was.dataset.term === name) return }
@@ -83,13 +144,24 @@ on({
   }
 });
 
+/* La primera vez que un paso trae palabras del glosario, una línea avisa que se pueden tocar.
+   Desaparece para siempre cuando la persona toca una (P.termTip). */
+function termTip() {
+  if (P.termTip || $('.term-tip')) return;
+  const t = $('.step-body .term'); if (!t) return;
+  (t.closest('p, li') || t).insertAdjacentHTML('afterend', '<p class="term-tip">Las palabras subrayadas se pueden tocar: te muestran qué significan.</p>');
+}
+
 /* ---------- Estado y acciones ---------- */
 Object.assign(S, { openTerm: '', glossaryQuery: '', theoryOpen: -1 });
 
 function filterGlossary(raw) {
   const q = raw.trim().toLowerCase(); let n = 0;
   document.querySelectorAll('.glossary-entry').forEach(el => { const ok = el.dataset.term.includes(q); el.hidden = !ok; if (ok) n++ });
-  const c = $('#glossaryCount'); if (c) c.textContent = q ? n + ' términos encontrados' : GLOSSARY.length + ' términos en el glosario';
+  const c = $('#glossaryCount'); if (c) c.textContent = q ? (n === 1 ? '1 término encontrado' : n + ' términos encontrados') : GLOSSARY.length + ' términos en el glosario';
+  /* Sin resultados: se dice qué se buscó y cómo seguir. */
+  const empty = $('#glossaryEmpty'), txt = $('#glossaryEmptyText');
+  if (empty && txt) { empty.hidden = !(q && n === 0); txt.textContent = `No encontramos «${raw.trim()}». Probá con otra palabra o con una categoría, como «tueste» o «medición».` }
 }
 function glossaryAfter() {
   if (S.glossaryQuery) filterGlossary(S.glossaryQuery);
@@ -101,6 +173,7 @@ function theoryAfter() {
 
 on({
   glossary: () => { S.openTerm = ''; S.glossaryQuery = ''; routeTo('/academia/glosario') },
+  glossaryClear: () => { S.glossaryQuery = ''; const i = $('#glossarySearch'); if (i) { i.value = ''; i.focus() } filterGlossary('') },
   openTerm: v => { S.openTerm = decodeURIComponent(v); S.glossaryQuery = ''; routeTo('/academia/glosario') },
   openModule: v => go(+v),
   openTheory: v => { S.theoryOpen = +v; routeTo('/academia/apuntes') },

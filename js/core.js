@@ -20,7 +20,13 @@ const num = (n, d = 1) => (+n).toFixed(d).replace('.', ',');
 /* ---------- Progreso persistente (este navegador) ---------- */
 let P = { max: 0 };
 try { P = JSON.parse(localStorage.getItem('cl2')) || P } catch (e) {}
-const sv = () => { try { localStorage.setItem('cl2', JSON.stringify(P)) } catch (e) {} };
+/* Si el navegador no deja guardar (modo privado, sin espacio), se avisa una sola vez por visita. */
+let storeWarned = false;
+function storeFailed() {
+  if (storeWarned) return; storeWarned = true;
+  setTimeout(() => toast('Este navegador no permite guardar tu avance. Podés seguir, pero se pierde al cerrar la pestaña.', null, null, 9000), 600);
+}
+const sv = () => { try { localStorage.setItem('cl2', JSON.stringify(P)); return true } catch (e) { storeFailed(); return false } };
 
 /* ---------- Estado de la sesión ----------
    sp: espacio actual (home | ac | lb | de | ca)
@@ -33,13 +39,19 @@ let S = {
 
 /* ---------- Preguntas de control de cada estación ---------- */
 const QA = {
-  c: { q: '¿Qué se retira durante el despulpado?', o: ['La piel y la mayor parte de la pulpa', 'El pergamino', 'La película plateada'], a: 0, e: ['Correcto: el despulpado separa piel y pulpa; el mucílago queda en el grano.', 'El pergamino se retira después, en el trillado, sobre café seco.', 'La película plateada sigue pegada a la semilla.'] },
+  c: { q: '¿Qué parte del fruto es lo que después llamamos grano de café?', o: ['Las semillas', 'La pulpa', 'La piel'], a: 0, e: ['Correcto: las semillas son los granos. Son verdes hasta que se tuestan.', 'La pulpa es la parte carnosa que rodea las semillas; se saca durante el proceso.', 'La piel es la cubierta de afuera; también se saca.'] },
   p: { q: 'En el proceso natural, ¿cuándo se retiran las cubiertas?', o: ['Antes de secar', 'Una vez seco el fruto', 'Nunca'], a: 1, e: ['En natural el fruto se seca entero.', 'Correcto: se seca entero y después se trilla.', 'Sí se retiran, en el trillado, para obtener café verde.'] },
   d: { q: '¿Por qué se remueve el café durante el secado?', o: ['Para que seque parejo y reducir el riesgo de moho', 'Para lavarlo otra vez', 'Para que pierda más sabor'], a: 0, e: ['Correcto: la remoción ayuda a que todos los granos pierdan agua de forma pareja y evita zonas húmedas donde crece moho.', 'El lavado ya terminó antes del secado.', 'El objetivo es estabilizar el grano, no perder sabor; un mal secado sí puede dañarlo.'] },
   r: { q: '¿Qué le pasa al grano durante el tueste?', o: ['Solo cambia de color', 'Pierde humedad y masa, se expande y cambia su química', 'Gana peso'], a: 1, e: ['El color es solo lo visible: hay cambios físicos y químicos.', 'Correcto: varios procesos ocurren a la vez.', 'Al perder agua y compuestos, pierde masa.'] },
-  s: { q: 'Un instrumento indica una bebida muy concentrada. ¿Garantiza que a todos les parezca intensa?', o: ['Sí, siempre', 'No: mide sólidos disueltos y la percepción varía', 'Solo si es lavado'], a: 1, e: ['La percepción no es una medida directa.', 'Correcto: el instrumento y la persona miden cosas distintas.', 'El proceso no cambia esa diferencia.'] }
+  s: { q: 'Un café tiene acidez 5 y amargor 1. ¿Qué te dice eso?', o: ['Que es un café malo', 'Que es muy ácido y poco amargo', 'Que tiene poca cafeína'], a: 1, e: ['El perfil describe, no califica. Un café muy ácido puede gustarte mucho o poco.', 'Correcto: el perfil describe cuánto se siente cada atributo, no si el café es bueno o malo.', 'El perfil habla de lo que sentís en la boca, no de la cafeína.'] }
 };
 /* Se responden en una ventana al avanzar de paso: ver quizDlgHTML() en js/academia/estaciones.js. */
+
+/* ---------- Opción respondida ----------
+   Además del color, la opción correcta y la elegida llevan ícono y texto,
+   así no dependen solo del color: "✓ … correcta" / "✗ … tu respuesta". */
+const optLabel = (text, isRight, isChosen, answered) => !answered || (!isRight && !isChosen) ? text
+  : `<span class="opt-mark" aria-hidden="true">${isRight ? '✓' : '✗'}</span>${text}<span class="opt-tag">${isRight ? (isChosen ? 'correcta · tu respuesta' : 'correcta') : 'tu respuesta'}</span>`;
 
 /* ---------- Qué hacer ----------
    doIt('Tocá cada capa', '2 de 5') dibuja la instrucción del paso justo encima del control
@@ -128,9 +140,10 @@ document.addEventListener('keydown', e => {
 /* ---------- Aviso breve ----------
    toast('Texto')                       aviso simple (3,5 s)
    toast('Texto', 'Deshacer', fn)       aviso con un botón de acción (7 s).
+   toast('Texto', null, null, 9000)     aviso simple con otra duración.
    El foco pasa al botón (el elemento que se tocó ya no existe), y el aviso
    no se cierra mientras el botón tenga el foco o el puntero encima. */
-function toast(m, label, fn) {
+function toast(m, label, fn, ms) {
   const t = $('#tt');
   const hide = () => { t.classList.remove('show'); clearTimeout(toast.h); toast.h = setTimeout(() => { t.classList.remove('has-action'); t.textContent = '' }, 350) };
   const arm = ms => { clearTimeout(toast.t); toast.t = setTimeout(hide, ms) };
@@ -147,5 +160,5 @@ function toast(m, label, fn) {
     t.classList.add('show');
     b.focus({ preventScroll: true });
   } else t.classList.add('show');
-  arm(fn ? 7000 : 3500);
+  arm(ms || (fn ? 7000 : 3500));
 }

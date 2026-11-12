@@ -10,13 +10,14 @@
      #/academia/recorrido-completo
      #/academia/glosario  ·  #/academia/apuntes
      #/laboratorio/<herramienta>        filtrado, espresso, agua, molienda, tds
-     #/laboratorio/nuevo-registro  ·  #/laboratorio/bitacora
+     #/laboratorio/nuevo-registro (anotar una preparación)  ·  #/laboratorio/bitacora
      #/desafios
      #/capacitarse  ·  #/capacitarse/<curso>
    ============================================================ */
 
-const LOGO = 'https://academiadebaristas.com.ar/wp-content/uploads/2024/11/Acade_logo-blanco01.png';
-const HERO_PHOTO = 'https://academiadebaristas.com.ar/wp-content/uploads/2026/05/Sin-titulo-2-1.webp';
+/* Logo y foto de portada: copias locales (antes se cargaban desde el sitio de la Academia). */
+const LOGO = 'img/logo-academia.png';
+const HERO_PHOTO = 'img/equipo.webp';
 const SITE = 'https://academiadebaristas.com.ar/';
 
 /* Los cuatro espacios del campus: [clave, nombre, dirección] */
@@ -82,7 +83,9 @@ function routeTo(path) {
 /* Mostrar la pantalla de la dirección actual. restore: volver a la posición de lectura. */
 function showRoute(restore) {
   const path = hashPath();
-  if (!applyPath(path)) { history.replaceState(null, '', '#/'); applyPath('/') }
+  /* Dirección que no existe (enlace viejo o mal copiado): se va al inicio y se avisa. */
+  const lost = !applyPath(path);
+  if (lost) { history.replaceState(null, '', '#/'); applyPath('/') }
   shownPath = hashPath();
   const y = restore && history.state && history.state.y;
   /* Cambio dentro de la misma página (otra herramienta del laboratorio, otro término):
@@ -96,6 +99,7 @@ function showRoute(restore) {
   showRoute.booted = true; showRoute.page = page;
   const v = $('#v'); v.classList.remove('enter'); void v.offsetWidth; v.classList.add('enter');
   clearTimeout(showRoute.t); showRoute.t = setTimeout(() => v.classList.remove('enter'), 900);
+  if (lost) toast('No encontramos esa página. Te trajimos al inicio.', null, null, 6000);
 }
 /* Al cambiar de pantalla, el foco va al título: así el teclado y los lectores
    de pantalla empiezan a leer la pantalla nueva y no quedan en un botón que ya no existe. */
@@ -103,7 +107,8 @@ function showRoute(restore) {
 const pageKey = () => S.sp + '|' + (S.sp === 'ac' ? S.i + (S.recap ? 'r' : '') : S.sp === 'lb' ? (S.workMode === 'experiment' ? 'x' : S.workMode) : S.sp === 'ca' ? S.cu : '');
 function focusHeading() {
   /* Si la pantalla abre un término o apunte puntual, el foco va ahí; si no, al título. */
-  const h = $('#v .glossary-entry[open] summary') || $('#v .theory-card.open button') || $('#v h1, #v h2');
+  /* El título visible de la pantalla: el h1 oculto de cada sección solo dice "Academia", "Laboratorio"... */
+  const h = $('#v .glossary-entry[open] summary') || $('#v .theory-card.open button') || $('#v h1:not(.sr-only), #v h2');
   if (!h) return;
   if (h.matches('h1, h2')) h.setAttribute('tabindex', '-1');
   try { h.focus({ preventScroll: true }) } catch (e) { h.focus() }
@@ -136,10 +141,10 @@ function crumbTrail() {
     if (S.i === -2) c.push([0, 'Glosario']);
     else if (S.i === -3) c.push([0, 'Apuntes']);
     else if (S.i >= 0 && S.i < SC.length) { c.push(['/academia/' + SC[S.i].slug, SC[S.i].t]); if (S.recap) c.push([0, 'Lo que aprendiste']) }
-    else if (S.i >= SC.length) c.push([0, 'Recorrido completo']);
+    else if (S.i >= SC.length) c.push([0, SC.every((_, i) => stDone(i)) ? 'Recorrido completo' : 'Tu recorrido']);
   } else if (S.sp === 'lb') {
     c.push(['/laboratorio', 'Laboratorio']);
-    c.push([0, S.workMode === 'record' ? 'Nuevo registro' : S.workMode === 'history' ? 'Bitácora' : LB.find(t => t[0] === S.lb)[1]]);
+    c.push([0, S.workMode === 'record' ? (isEditing() ? 'Editar anotación' : 'Anotar una preparación') : S.workMode === 'history' ? 'Mi bitácora' : LB.find(t => t[0] === S.lb)[1]]);
   } else if (S.sp === 'de') c.push(['/desafios', 'Desafíos']);
   else if (S.sp === 'ca') { c.push(['/capacitarse', 'Cursos']); if (S.cu >= 0) c.push([0, CRS[S.cu].t]) }
   c[c.length - 1][0] = 0;  // el último es la página actual

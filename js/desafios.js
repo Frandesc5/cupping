@@ -43,13 +43,26 @@ try {
     }
 } catch (e) {}
 const CH_TOTAL = Object.values(CHBANK).reduce((n, qs) => n + qs.length, 0);
-/* Una estación por vez y una pregunta por vez (básico → intermedio → avanzado).
-   Al responder: explicación y botón a la pregunta siguiente; al final de una estación, a la siguiente estación. */
+/* Una estación por vez y una pregunta por vez (fácil → intermedia → difícil).
+   Al responder: explicación y botón a la pregunta siguiente; al final de una estación, a la siguiente estación.
+   Si la respuesta no es la correcta, se dice cuál era y se puede probar de nuevo. */
 const CH_LV = ['Básico', 'Intermedio', 'Avanzado'];
+/* Las claves guardadas siguen siendo Básico/Intermedio/Avanzado; a la vista van estos nombres. */
+const CH_LV_NAME = { 'Básico': 'Fácil', 'Intermedio': 'Intermedia', 'Avanzado': 'Difícil' };
 const chDone = m => CH_LV.every(l => S.chAnswers[m + '|' + l] != null);
-function des(){const names=Object.keys(CHBANK),li=CH_LV.indexOf(S.chLevel),q=CHBANK[S.chModule].find(x=>x[0]===S.chLevel),key=S.chModule+'|'+S.chLevel,ans=S.chAnswers[key],done=Object.keys(S.chAnswers).length,offset=(names.indexOf(S.chModule)+li)%3,opts=q[3].map((_,i)=>q[3][(i+offset)%3]),correct=(q[4]-offset+3)%3,nextMod=names[names.indexOf(S.chModule)+1],nextLv=CH_LV[li+1];
-const next=nextLv?`<button type="button" class="b p" data-a=chlv data-v="${li+1}">Siguiente pregunta</button>`:nextMod?`<button type="button" class="b p" data-a=chmodule data-v="${nextMod}">Seguir con ${nextMod}</button>`:'';
-return `<h2>Entrená tu criterio</h2><p class=m>Tres preguntas por estación, de lo básico a lo profesional. Elegí una estación y respondé.</p><div class="seg ch-modules" role="group" aria-label="Estación">${names.map(n=>`<button type="button" data-a=chmodule data-v="${n}" aria-pressed="${S.chModule===n}">${n}${chDone(n)?' ✓':''}</button>`).join('')}</div><div class="stage ch-nav">${viewerNav('chlv',li,3,S.chLevel,'Pregunta',CH_LV.map((l,j)=>S.chAnswers[S.chModule+'|'+l]!=null?j:-1),nextMod?{act:'chmodule',v:nextMod,name:nextMod}:null)}</div><div class="panel quiz ch-question"><div class=k>${q[1]}</div><h3>${q[2]}</h3>${opts.map((o,i)=>`<button class="opt ${ans!=null?(i===correct?'ok':i===ans?'no':''):''}" data-a=chanswer data-v="${i}" ${ans!=null?'disabled':''}>${o}</button>`).join('')}${ans!=null?`<p><b>${ans===correct?'¡Bien!':'No es esa.'}</b> ${q[5]}</p><div class=bar>${next}<button type="button" class=b data-a=chreset>Volver a intentar</button></div>`:''}</div><div class=panel><div class=k>Tu recorrido</div><div class=challenge-progress><i style="width:${Math.round(done/CH_TOTAL*100)}%"></i></div><p class=m>Respondiste ${done} de ${CH_TOTAL} preguntas. Podés volver a cualquiera cuando quieras.</p></div>`}
+/* Las opciones se muestran rotadas (la correcta no cae siempre primera): posición de la correcta ya rotada. */
+const chOffset = (m, l) => (Object.keys(CHBANK).indexOf(m) + CH_LV.indexOf(l)) % 3;
+const chRight = (m, l) => (CHBANK[m].find(x => x[0] === l)[4] - chOffset(m, l) + 3) % 3;
+/* Respuestas correctas de una estación (0 a 3). */
+const chScore = m => CH_LV.filter(l => S.chAnswers[m + '|' + l] === chRight(m, l)).length;
+function des(){
+  const names=Object.keys(CHBANK),li=CH_LV.indexOf(S.chLevel),q=CHBANK[S.chModule].find(x=>x[0]===S.chLevel),key=S.chModule+'|'+S.chLevel,ans=S.chAnswers[key],d=ans!=null,offset=chOffset(S.chModule,S.chLevel),opts=q[3].map((_,i)=>q[3][(i+offset)%3]),correct=chRight(S.chModule,S.chLevel),ok=ans===correct,nextMod=names[names.indexOf(S.chModule)+1],nextLv=CH_LV[li+1];
+  const answered=Object.keys(S.chAnswers).length,rights=names.reduce((n,m)=>n+chScore(m),0);
+  /* Estación de la Academia a la que pertenecen estas preguntas. */
+  const si=SC.findIndex(c=>c.n===S.chModule),label=n=>{const c=SC.find(x=>x.n===n);return c?stName(c):n};
+  const next=nextLv?`<button type="button" class="b p" data-a=chlv data-v="${li+1}">Siguiente pregunta</button>`:nextMod?`<button type="button" class="b p" data-a=chmodule data-v="${nextMod}">Seguir con ${label(nextMod)}</button>`:`<a class="b p" href="#/academia">Volver a la Academia</a>`;
+  const mark=l=>{const a=S.chAnswers[S.chModule+'|'+l];return a==null?'':a===chRight(S.chModule,l)?' ✓':' ✗'};
+  return `<h2>Desafíos</h2><p class=m>Preguntas para practicar lo que viste en la Academia. Hay 3 por estación: fácil, intermedia y difícil.</p><div class="seg ch-modules" role="group" aria-label="Estación">${names.map((n,k)=>`<button type="button" data-a=chmodule data-v="${n}" aria-pressed="${S.chModule===n}" aria-label="Estación ${k+1}: ${label(n)}, ${chScore(n)} de 3 correctas">${k+1} · ${label(n)} <span class="ch-score">${chScore(n)}/3</span></button>`).join('')}</div>${si>=0&&!stDone(si)?`<p class="ch-note">Todavía no hiciste esta estación. Podés responder igual o <a class="link-btn" href="#${stepPath(si)}">ir a la estación</a> primero.</p>`:''}<div class="seg ch-levels picker-desktop" role="group" aria-label="Pregunta">${CH_LV.map((l,j)=>`<button type="button" data-a=chlv data-v="${j}" aria-pressed="${j===li}">${j+1} · ${CH_LV_NAME[l]}${mark(l)}</button>`).join('')}</div><div class="stage viewer-box ch-nav">${viewerNav('chlv',li,3,CH_LV_NAME[S.chLevel],'Pregunta',CH_LV.map((l,j)=>S.chAnswers[S.chModule+'|'+l]!=null?j:-1),nextMod?{act:'chmodule',v:nextMod,name:label(nextMod)}:null)}</div><div class="panel quiz ch-question"><div class=k>${q[1]} · pregunta ${li+1} de 3</div><h3>${q[2]}</h3>${opts.map((o,i)=>`<button class="opt ${d?(i===correct?'ok':i===ans?'no':''):''}" data-a=chanswer data-v="${i}" ${d?'disabled':''}>${optLabel(o,i===correct,i===ans,d)}</button>`).join('')}${d?`<p><b>${ok?'¡Bien!':`No es esa. La correcta es «${opts[correct]}».`}</b> ${q[5]}</p><div class=bar>${next}${ok?'':`<button type="button" class=b data-a=chreset>Probar de nuevo</button>`}</div>`:''}</div><div class=panel><div class=k>Tu avance en Desafíos</div><div class=challenge-progress><i style="width:${Math.round(answered/CH_TOTAL*100)}%"></i></div><p class=m>Respondiste ${answered} de ${CH_TOTAL} · ${rights} ${rights===1?'correcta':'correctas'}.</p></div>`}
 
 on({
   /* Al cambiar de estación se arranca por la primera pregunta sin responder; en el celu, la vista va a la pregunta. */

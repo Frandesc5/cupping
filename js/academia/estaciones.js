@@ -6,22 +6,26 @@
    ============================================================ */
 
 /* Cada estación:
-   n nombre corto · slug dirección · mt/md título y descripción en el menú
+   n nombre corto (también es la clave de sus Desafíos) · nv nombre corto visible, si es distinto · slug dirección · mt/md título y descripción en el menú
    t título · goal objetivo de la estación
    tab clave de S con el paso actual · vis clave de S con los pasos abiertos
    after() dibujos que se actualizan después de insertar el HTML
    steps: k clave interna · slug dirección · label nombre · view() contenido (la consigna va adentro, con doIt())
-          need() tareas del paso: true si está hecha o el texto de lo que falta */
-/* Lo que falta mientras el desafío del paso no se respondió. */
-const QUIZ_MISS = 'Falta el desafío: se abre con el botón de abajo.', QUIZ_LATER = 'Después vas a responder un desafío.';
+          need() tareas del paso: true si está hecha o el texto de lo que falta.
+          Todos los pasos tienen tarea: un paso se completa al hacer lo que pide su consigna, no al abrirlo. */
+/* Lo que falta mientras la pregunta de repaso del paso no se respondió.
+   ("Desafíos" queda solo para el espacio del campus; dentro de un paso es una "pregunta de repaso".) */
+const QUIZ_MISS = 'Respondé la pregunta de repaso.', QUIZ_LATER = 'Al final hay una pregunta de repaso.';
+/* Tarea "recorré todo": completa cuando se vieron las n opciones; mientras tanto dice cuántas van. */
+const seenAll = (key, n, text) => () => { const k = Math.min(S[key].length, n); return [k >= n || `${text} (${k} de ${n}).`] };
 const SC = [
   { n: 'Fruto', slug: 'fruto', mt: 'La planta y el fruto', md: 'Especies, altitud, madurez y las capas del fruto.', t: 'La planta y el fruto',
     goal: 'Conocé de dónde viene el café: las especies, cómo influyen la altitud y la madurez, y qué capas tiene el fruto.',
     tab: 't1', vis: 't1v', after: frutoAfter,
     steps: [
-      { k: 'sp', slug: 'especies', label: 'Especies', view: sp1 },
-      { k: 'al', slug: 'altitud', label: 'Altitud', view: alt1 },
-      { k: 'ma', slug: 'madurez', label: 'Madurez', view: mad1 },
+      { k: 'sp', slug: 'especies', label: 'Especies', view: sp1, need: seenAll('spSeen', 2, 'Tocá las dos especies') },
+      { k: 'al', slug: 'altitud', label: 'Altitud', view: alt1, need: seenAll('altSeen', 2, 'Mové la altitud hasta una zona baja y una zona alta') },
+      { k: 'ma', slug: 'madurez', label: 'Madurez', view: mad1, need: () => [!!S.madOk || 'Deslizá la maduración hasta «Maduro».'] },
       { k: 'an', slug: 'anatomia', label: 'Anatomía', view: cherry,
         quiz: 'c', ready: () => S.seen.length >= 5,
         need: () => [S.seen.length >= 5 || `Tocá las 5 capas del fruto (${S.seen.length} de 5).`, S.qa.c != null || (S.seen.length >= 5 ? QUIZ_MISS : QUIZ_LATER)] }
@@ -33,19 +37,19 @@ const SC = [
       { k: 'process', slug: 'procesos', label: 'Procesos', view: postProcessView,
         quiz: 'p', ready: () => S.pv.length >= 3,
         need: () => [S.pv.length >= 3 || `Tocá 3 etapas de una ruta (${Math.min(S.pv.length, 3)} de 3).`, S.qa.p != null || (S.pv.length >= 3 ? QUIZ_MISS : QUIZ_LATER)] },
-      { k: 'fermentation', slug: 'fermentaciones', label: 'Fermentaciones', view: postFermentationView },
+      { k: 'fermentation', slug: 'fermentaciones', label: 'Fermentaciones', view: postFermentationView, need: seenAll('fermSeen', 5, 'Tocá los 5 tipos de fermentación') },
       { k: 'drying', slug: 'secado', label: 'Secado', view: postDryingView,
         quiz: 'd', need: () => [S.qa.d != null || QUIZ_MISS] }
     ] },
-  { n: 'Verde', slug: 'cafe-verde', mt: 'Café verde', md: 'Cómo se elige un buen café verde: defectos y calidad.', t: 'El café verde',
+  { n: 'Verde', nv: 'Café verde', slug: 'cafe-verde', mt: 'Café verde', md: 'Cómo se elige un buen café verde: defectos y calidad.', t: 'El café verde',
     goal: 'Aprendé a evaluar un lote de café verde: defectos, clasificación, humedad, densidad y trazabilidad.',
     tab: 't3', vis: 't3v', after: verdeAfter,
     steps: [
       { k: 'de', slug: 'defectos', label: 'Defectos', view: green3,
         need: () => { const left = GB2.filter((t, i) => t > 0 && t < 14 && !S.sy.includes(i)).length; return [left === 0 || `Sacá los granos con defectos (quedan ${left}).`] } },
-      { k: 'cl', slug: 'clasificar', label: 'Clasificar', view: clas },
-      { k: 'hd', slug: 'humedad-y-densidad', label: 'Humedad y densidad', view: hum },
-      { k: 'tz', slug: 'tamano-y-origen', label: 'Tamaño y origen', view: tam }
+      { k: 'cl', slug: 'clasificar', label: 'Clasificar', view: clas, need: seenAll('prSeen', 3, 'Probá las 3 muestras') },
+      { k: 'hd', slug: 'humedad-y-densidad', label: 'Humedad y densidad', view: hum, need: () => [!!(S.hdMoved.h && S.hdMoved.m) || 'Mové la humedad y la masa de la muestra.'] },
+      { k: 'tz', slug: 'tamano-y-origen', label: 'Tamaño y origen', view: tam, need: seenAll('tzSeen', 5, 'Tocá las 5 etapas del camino del lote') }
     ] },
   { n: 'Tueste', slug: 'tueste', mt: 'Tueste', md: 'Qué le pasa al grano dentro del tostador.', t: 'El tueste',
     goal: 'Entendé qué le pasa al grano en el tostador: sus fases, la curva de temperatura, los grados de tueste y las fallas más comunes.',
@@ -57,17 +61,17 @@ const SC = [
         need: () => [S.hitMedio || 'Elegí cuándo sacarlo para lograr un tueste medio.'] },
       { k: 'gr', slug: 'grados', label: 'Grados', view: gra,
         need: () => [S.gro.length >= 3 || 'Ordená los tres granos del más claro al más oscuro.'] },
-      { k: 'fa', slug: 'fallas', label: 'Fallas', view: fal }
+      { k: 'fa', slug: 'fallas', label: 'Fallas', view: fal, need: seenAll('faSeen', 6, 'Tocá las 6 opciones, de «Ideal» a «Subdesarrollo»') }
     ] },
   { n: 'Preparación', slug: 'preparacion', mt: 'Preparación', md: 'Armá una receta: ratio, agua y molienda.', t: 'La preparación',
     goal: 'Armá una receta y entendé las variables que cambian la taza: el ratio, el agua, la molienda y la medición.',
     tab: 't5', vis: 't5v', after: prepAfter,
     steps: [
       { k: 're', slug: 'receta', label: 'Receta', view: prepRecipe,
-        need: () => [!!(S.hitV60 || S.hitEsp) || 'Lográ el desafío del ratio. Pista: 15 g de café con 240 g de agua dan 1:16.'] },
-      { k: 'ag', slug: 'agua', label: 'Agua', view: agua },
-      { k: 'mo', slug: 'molienda', label: 'Molienda', view: () => mol(true) },
-      { k: 'me', slug: 'medir', label: 'Medir', view: () => med(true) }
+        need: () => [!!(S.hitV60 || S.hitEsp) || 'Llegá al ratio objetivo. Pista: 15 g de café con 240 g de agua dan 1:16.'] },
+      { k: 'ag', slug: 'agua', label: 'Agua', view: agua, need: () => [!!S.hitAgua || 'Llevá la dureza y la alcalinidad a la zona verde.'] },
+      { k: 'mo', slug: 'molienda', label: 'Molienda', view: () => mol(true), need: seenAll('grSeen', 5, 'Mové el punto de molienda por los 5 tamaños') },
+      { k: 'me', slug: 'medir', label: 'Medir', view: () => med(true), need: () => [!!S.hitMed || 'Mové los valores hasta sacar el punto de la zona verde y volvé a meterlo.'] }
     ] },
   { n: 'Sensorial', slug: 'sensorial', mt: 'Sensorial', md: 'Aprendé a describir lo que sentís en la taza.', t: 'La experiencia sensorial',
     goal: 'Aprendé a describir lo que percibís: el perfil de un café, la rueda de sabores, la cata y los sesgos.',
@@ -75,8 +79,8 @@ const SC = [
     steps: [
       { k: 'pf', slug: 'perfil', label: 'Perfil', view: sens3,
         quiz: 's', need: () => [S.qa.s != null || QUIZ_MISS] },
-      { k: 'ru', slug: 'rueda', label: 'Rueda', view: rue },
-      { k: 'ca', slug: 'cata', label: 'Cata', view: cat },
+      { k: 'ru', slug: 'rueda', label: 'Rueda', view: rue, need: () => [!!S.hitRueda || 'Elegí una familia y un sabor concreto.'] },
+      { k: 'ca', slug: 'cata', label: 'Cata', view: cat, need: seenAll('cpSeen', 6, 'Recorré las 6 etapas de la cata') },
       { k: 'sb', slug: 'sesgos', label: 'Sesgos', view: ses,
         need: () => { const n = Object.keys(S.sb).length; return [n >= 3 || `Respondé las 3 situaciones (${n} de 3).`] } }
     ] }
@@ -95,7 +99,8 @@ function openStep(c, k) { S[c.tab] = k; if (!S[c.vis].includes(k)) S[c.vis].push
 const stepPath = i => '/academia/' + SC[i].slug + '/' + curStep(SC[i]).slug;
 /* Enlace a un paso de la estación actual: se puede abrir en otra pestaña; con un clic normal cambia de paso. */
 const stepLink = (c, s, cls, text, extra = '') => `<a class="${cls}" href="#/academia/${c.slug}/${s.slug}" data-a="step" data-v="${s.k}" ${extra}>${text}</a>`;
-const nextStationHref = () => '#' + (SC[S.i + 1] ? stepPath(S.i + 1) : '/academia/recorrido-completo');
+/* Nombre corto que se muestra (tira de estaciones, Desafíos). */
+const stName = c => c.nv || c.n;
 /* Pantalla de cierre de la estación: se pasa por ahí antes de ir a la siguiente. */
 const recapPath = i => '/academia/' + SC[i].slug + '/repaso';
 
@@ -110,45 +115,66 @@ if (!Array.isArray(P.done)) {
   if (m > 0) { P.v = [...Array(Math.min(m + 1, SC.length)).keys()]; P.last = Math.min(m, SC.length - 1) }
   sv();
 }
-const PROGRESS_KEYS = ['t1', 't1v', 'seen', 'postTab', 'postTabsSeen', 'pv', 't3', 't3v', 'sy', 't4', 't4v', 't5', 't5v', 'hitV60', 'hitEsp', 't6', 't6v', 'qa', 'gro', 'sb', 'hitMedio'];
+const PROGRESS_KEYS = ['t1', 't1v', 'seen', 'postTab', 'postTabsSeen', 'pv', 't3', 't3v', 'sy', 't4', 't4v', 't5', 't5v', 'hitV60', 'hitEsp', 't6', 't6v', 'qa', 'gro', 'sb', 'hitMedio',
+  'spSeen', 'altSeen', 'madOk', 'fermSeen', 'prSeen', 'hdMoved', 'tzSeen', 'faSeen', 'hitAgua', 'grSeen', 'hitMed', 'hitRueda', 'cpSeen'];
+/* Avance guardado antes de que cada paso tuviera su tarea (sin la marca v2): en las estaciones
+   ya completas, las tareas nuevas se dan por hechas, así sus pasos no vuelven a verse pendientes. */
+if (P.st && !P.st.v2) {
+  const all = n => [...Array(n).keys()];
+  const DONE_BEFORE = [
+    { spSeen: ['ar', 'ca'], altSeen: ['lo', 'hi'], madOk: true },
+    { fermSeen: all(5) },
+    { prSeen: all(3), hdMoved: { h: 1, m: 1 }, tzSeen: all(5) },
+    { faSeen: all(6) },
+    { hitAgua: true, grSeen: [1, 2, 3, 4, 5], hitMed: true },
+    { hitRueda: true, cpSeen: all(6) }
+  ];
+  P.done.forEach(i => Object.assign(P.st, DONE_BEFORE[i] || {}));
+}
 if (P.st) for (const k of PROGRESS_KEYS) if (P.st[k] != null) S[k] = P.st[k];
-function saveProgress() { P.st = {}; for (const k of PROGRESS_KEYS) P.st[k] = S[k]; sv() }
+function saveProgress() { P.st = { v2: 1 }; for (const k of PROGRESS_KEYS) P.st[k] = S[k]; sv() }
 
 const doneSt = i => P.done.includes(i);
-const startedSt = i => (P.v || []).includes(i);
+/* Empezada: se abrió y tiene al menos un paso completo. Abrirla para mirar no cuenta. */
+const startedSt = i => (P.v || []).includes(i) && (doneSt(i) || stepsDone(SC[i]) > 0);
 const doneCount = () => SC.filter((_, i) => doneSt(i)).length;
 const stDone = i => doneSt(i) || SC[i].ok();
 
 /* ---------- Tira de estaciones (el mapa del recorrido) ---------- */
 function strip() {
-  return `<nav class="strip" aria-label="Estaciones del recorrido">${SC.map((c, i) => `<a class="${stDone(i) ? 'd' : ''} ${i == S.i ? 'c' : ''}" href="#${stepPath(i)}" ${i == S.i ? 'aria-current="step"' : ''}>${c.n}${stDone(i) ? '<span class="sr-only"> (completa)</span>' : ''}</a>`).join('')}</nav>`;
+  return `<nav class="strip" aria-label="Estaciones del recorrido">${SC.map((c, i) => `<a class="${stDone(i) ? 'd' : ''} ${i == S.i ? 'c' : ''}" href="#${stepPath(i)}" ${i == S.i ? 'aria-current="step"' : ''}>${stName(c)}${stDone(i) ? '<span class="sr-only"> (completa)</span>' : ''}</a>`).join('')}</nav>`;
 }
 
 /* ---------- Pasos de la estación ---------- */
-/* Línea de pasos: círculos unidos por una línea. El tramo se pinta de verde cuando
-   los dos pasos que une están completos; el paso actual lleva un aro marrón. */
+/* Línea de pasos: círculos unidos por una línea. Tres estados: sin abrir (número en gris),
+   abierto pero sin terminar (número con borde oscuro) y completo (✓). El tramo se pinta cuando
+   los dos pasos que une están completos; el paso actual lleva un aro. */
 function stepperHTML(c) {
   const cur = curStep(c);
   return c.steps.map((s, j) => {
-    const done = stepDone(c, s), here = s === cur, linked = j > 0 && done && stepDone(c, c.steps[j - 1]);
-    return `<li class="${linked ? 'is-linked' : ''}">${stepLink(c, s, 'step-pill ' + (done ? 'is-done ' : '') + (here ? 'is-current' : ''), `<span class="step-n" aria-hidden="true">${done ? '✓' : j + 1}</span><span class="step-l">${s.label}</span><span class="sr-only">${done ? ' (completo)' : ''}</span>`, here ? 'aria-current="step"' : '')}</li>`;
+    const done = stepDone(c, s), here = s === cur, open = !done && stepOpened(c, s), linked = j > 0 && done && stepDone(c, c.steps[j - 1]);
+    return `<li class="${linked ? 'is-linked' : ''}">${stepLink(c, s, 'step-pill ' + (done ? 'is-done ' : open ? 'is-open ' : '') + (here ? 'is-current' : ''), `<span class="step-n" aria-hidden="true">${done ? '✓' : j + 1}</span><span class="step-l">${s.label}</span><span class="sr-only">${done ? ' (completo)' : open ? ' (empezado)' : ''}</span>`, here ? 'aria-current="step"' : '')}</li>`;
   }).join('');
 }
 
-/* ---------- Desafío del paso ----------
-   Cuando lo demás del paso está hecho, el botón para avanzar abre el desafío en una ventana.
-   Al responder se ve la explicación y el botón para seguir; se puede cerrar y quedarse en el paso. */
+/* ---------- Pregunta de repaso del paso ----------
+   Cuando lo demás del paso está hecho, el botón principal ("Responder y seguir") abre la pregunta en una ventana.
+   Al responder se ve la explicación. Si la respuesta no es la correcta, se dice cuál era y se puede
+   probar de nuevo o seguir igual; se puede cerrar y quedarse en el paso. */
 const quizDue = s => !!s.quiz && S.qa[s.quiz] == null && (!s.ready || s.ready());
 function quizDlgHTML() {
-  const c = SC[S.i], j = stepIdx(c), s = c.steps[j], next = c.steps[j + 1], z = QA[s.quiz], p = S.qa[s.quiz], d = p != null;
+  const c = SC[S.i], j = stepIdx(c), s = c.steps[j], next = c.steps[j + 1], z = QA[s.quiz], p = S.qa[s.quiz], d = p != null, right = p === z.a;
   let cont = '';
   if (d) {
-    const others = c.steps.filter(x => !stepDone(c, x));
-    cont = next ? stepLink(c, next, 'b p', `Ir a ${next.label}`)
-      : c.ok() ? `<a class="b p" href="#${recapPath(S.i)}">Ver lo que aprendiste</a>`
-      : others.length ? stepLink(c, others[0], 'b p', `Completar ${others[0].label}`) : '';
+    const others = c.steps.filter(x => !stepDone(c, x)), cls = right ? 'b p' : 'b';
+    cont = next ? stepLink(c, next, cls, right ? `Ir a ${next.label}` : 'Seguir igual')
+      : c.ok() ? `<a class="${cls}" href="#${recapPath(S.i)}">${right ? 'Ver lo que aprendiste' : 'Seguir igual'}</a>`
+      : others.length ? stepLink(c, others[0], cls, `Completar ${others[0].label}`) : '';
   }
-  return `<div class="k">Desafío · ${s.label}</div><h3 id="quiz-dlg-title">${z.q}</h3><div class="quiz-dlg-opts">${z.o.map((o, i) => `<button type="button" class="opt ${d ? (i === z.a ? 'ok' : i === p ? 'no' : '') : ''}" data-a="quizAns" data-v="${i}" ${d ? 'disabled' : ''}>${o}</button>`).join('')}</div>${d ? `<p class="quiz-dlg-fb" tabindex="-1"><b>${p === z.a ? '¡Bien!' : 'No es esa.'}</b> ${z.e[p]}</p>` : ''}<div class="bar">${cont}<button type="button" class="b" data-a="quizClose">${d ? 'Quedarme en este paso' : 'Volver al paso'}</button></div>`;
+  const fb = d ? `<p class="quiz-dlg-fb" tabindex="-1"><b>${right ? '¡Bien!' : `No es esa. La correcta es «${z.o[z.a]}».`}</b> ${z.e[p]}</p>` : '';
+  const retry = d && !right ? `<button type="button" class="b p" data-a="quizRetry">Probar de nuevo</button>` : '';
+  const close = !d ? 'Volver al paso' : right ? 'Quedarme en este paso' : '';
+  return `<div class="k">Pregunta de repaso · ${s.label}</div><h3 id="quiz-dlg-title">${z.q}</h3><div class="quiz-dlg-opts">${z.o.map((o, i) => `<button type="button" class="opt ${d ? (i === z.a ? 'ok' : i === p ? 'no' : '') : ''}" data-a="quizAns" data-v="${i}" ${d ? 'disabled' : ''}>${optLabel(o, i === z.a, i === p, d)}</button>`).join('')}</div>${fb}<div class="bar">${retry}${cont}${close ? `<button type="button" class="b" data-a="quizClose">${close}</button>` : ''}</div>`;
 }
 function quizDlg() {
   let dl = $('#quiz-dlg');
@@ -164,16 +190,16 @@ function quizDlg() {
 /* Pie de cada paso: qué falta y cuál es el próximo paso. Siempre hay una acción principal. */
 function stepFootHTML(c) {
   const j = stepIdx(c), s = c.steps[j], miss = stepMissing(c, s), prev = c.steps[j - 1], next = c.steps[j + 1];
-  const ok = c.ok(), nextSt = SC[S.i + 1], pending = c.steps.filter(x => !stepDone(c, x));
+  const ok = c.ok(), pending = c.steps.filter(x => !stepDone(c, x)), others = pending.filter(x => x !== s);
   const status = miss.length
     ? `<div class="step-status is-pending"><b>Para completar este paso:</b><ul>${miss.map(m => `<li>${m}</li>`).join('')}</ul></div>`
     : `<div class="step-status is-done"><b><span class="tick ${S.tickDone.has(footKey()) ? '' : 'pop'}" aria-hidden="true">✓</span> Paso completo.</b>${ok ? ' Completaste toda la estación.' : ''}</div>`;
   const back = prev ? stepLink(c, prev, 'b', 'Volver a ' + prev.label) : '<span></span>';
   /* Acción principal: avanzar de paso; en el último, ir al cierre de la estación (y desde ahí a la próxima).
      Si el último paso está a medias, no se saca a la persona de ahí: la tarea es completarlo. */
-  const others = pending.filter(x => x !== s);
   let main = '';
-  if (quizDue(s)) main = `<button type="button" class="b p" data-a="quizOpen">${next ? `Ir a ${next.label}` : 'Terminar la estación'}</button>`;
+  /* Con la pregunta de repaso pendiente, el botón lo dice: no promete ir a otro lado y después abre una ventana. */
+  if (quizDue(s)) main = `<button type="button" class="b p" data-a="quizOpen">${next ? 'Responder y seguir' : others.length ? 'Responder la pregunta' : 'Responder y terminar la estación'}</button>`;
   else if (next) main = stepLink(c, next, 'b p', `Ir a ${next.label}`);
   else if (ok) main = `<a class="b p" href="#${recapPath(S.i)}">Ver lo que aprendiste</a>`;
   else if (!miss.length) main = stepLink(c, others[0], 'b p', `Completar ${others[0].label}`);
@@ -183,21 +209,12 @@ function stepFootHTML(c) {
   return `${status}<div class="step-actions">${back}${main}</div>${stationNote}`;
 }
 
-/* Se vuelve a llamar cada vez que algo puede completar un paso (deslizadores,
-   desafíos, bandeja...). Actualiza pasos, progreso y pie sin redibujar el contenido. */
-/* ---------- Pie del paso: aparece cuando la persona baja ----------
-   El recuadro con "Paso completo" y los botones queda oculto hasta que la persona baja a propósito
-   (dedo, rueda del mouse o teclado) y llega a verlo; ahí aparece con una animación corta.
-   Los movimientos automáticos de la vista (bringIntoView, cambio de paso) no lo destapan.
-   Si el paso es corto y el recuadro ya se ve al abrirlo, aparece igual (no hay nada que bajar).
-   Ya visto en este paso, no se vuelve a animar al redibujar. El ✓ rebota una sola vez por paso. */
+/* ---------- Pie del paso: aparece al entrar en pantalla ----------
+   El recuadro con "Paso completo" y los botones aparece con una animación corta cuando entra en la
+   pantalla, sea cual sea la forma de llegar: rueda, dedo, teclado, barra de desplazamiento o lector
+   de pantalla. Si el foco entra al recuadro (Tab), se muestra en el acto: nunca queda un botón
+   enfocado e invisible. Ya visto en este paso, no se vuelve a animar. El ✓ rebota una sola vez por paso. */
 const footKey = () => S.i + ':' + curStep(SC[S.i]).k;
-let userScrollAt = 0;
-/* El gesto de bajar también cuenta aunque la página ya no pueda moverse (si quedó al fondo por un movimiento automático). */
-const markUserScroll = () => { userScrollAt = Date.now(); requestAnimationFrame(checkFoot) };
-addEventListener('wheel', markUserScroll, { passive: true });
-addEventListener('touchmove', markUserScroll, { passive: true });
-addEventListener('keydown', e => { if (/^(Arrow(Up|Down)|Page(Up|Down)|Home|End| )$/.test(e.key)) markUserScroll() });
 /* El recuadro "se ve" cuando su parte de arriba entra en la pantalla (por encima de la barra de abajo del celu). */
 const footInView = ft => { const r = ft.getBoundingClientRect(), nb = $('#nb'), bottom = nb && nb.offsetParent ? nb.getBoundingClientRect().top : innerHeight; return r.top < bottom - 40 && r.bottom > 0 };
 function showFoot() {
@@ -219,14 +236,16 @@ function revealFoot() {
 function checkFoot() {
   const p = revealFoot.pending; if (!p) return;
   if (!p.ft.isConnected) { revealFoot.pending = null; return }
-  if (Date.now() - userScrollAt < 1500 && footInView(p.ft)) showFoot();
+  if (footInView(p.ft)) showFoot();
 }
 addEventListener('scroll', checkFoot, { passive: true });
+addEventListener('resize', checkFoot);
+document.addEventListener('focusin', e => { if (e.target.closest && e.target.closest('#step-foot')) showFoot() });
 document.addEventListener('animationend', e => { if (e.target.classList && e.target.classList.contains('tick') && S.sp === 'ac' && S.i >= 0 && S.i < SC.length) { S.tickDone.add(footKey()); e.target.classList.remove('pop') } });
 Object.assign(S, { footIn: new Set(), tickDone: new Set() });
 
 /* Aviso "Estación completa": sale junto con el recuadro del pie (o, si el recuadro ya está a la vista,
-   en el momento en que se completa). Si hay un desafío abierto, espera a que se cierre. */
+   en el momento en que se completa). Si la pregunta de repaso está abierta, espera a que se cierre. */
 function celebrateAtFoot() {
   const ft = $('#step-foot'), dl = $('#quiz-dlg');
   if (S.celebrate !== S.i || !ft || !ft.classList.contains('is-in') || !footInView(ft) || (dl && dl.open)) return;
@@ -237,6 +256,8 @@ function celebrateAtFoot() {
 }
 document.addEventListener('close', e => { if (e.target.id === 'quiz-dlg') celebrateAtFoot() }, true);
 
+/* Se llama cada vez que algo puede completar un paso (deslizadores, preguntas, bandeja...).
+   Actualiza pasos, progreso y pie sin redibujar el contenido. */
 function bar() {
   if (S.sp !== 'ac' || S.i < 0 || S.i >= SC.length) return;
   const c = SC[S.i], ok = c.ok();
@@ -244,7 +265,7 @@ function bar() {
   const put = (el, html) => { if (el && el._h !== html) { el.innerHTML = html; el._h = html } };
   const st = $('#stepper'), ft = $('#step-foot');
   put(st, stepperHTML(c)); put(ft, stepFootHTML(c));
-  const tab = document.querySelectorAll('.strip button')[S.i];
+  const tab = document.querySelectorAll('.strip a')[S.i];
   if (tab) tab.classList.toggle('d', ok || doneSt(S.i));
   if (ok && !doneSt(S.i)) { P.done = (P.done || []).concat(S.i) }
   saveProgress();
@@ -269,11 +290,16 @@ function stationView() {
    el apunte para seguir leyendo y el paso a la próxima estación. */
 function recapView() {
   if (S.celebrate === S.i) S.celebrate = null; /* la pantalla de cierre ya festeja: el aviso no hace falta */
-  const c = SC[S.i], nx = SC[S.i + 1], n = doneCount();
+  const c = SC[S.i], nx = SC[S.i + 1], n = doneCount(), pend = SC.findIndex((_, j) => !stDone(j));
+  /* Próximo paso: la estación siguiente; en la última, cerrar el recorrido solo si están las 6 completas. */
+  const main = nx ? `<a class="b p" href="#${stepPath(S.i + 1)}">Ir a la estación ${S.i + 2} · ${nx.t}</a>`
+    : pend < 0 ? `<a class="b p" href="#/academia/recorrido-completo">Terminar el recorrido</a>`
+    : `<a class="b p" href="#${stepPath(pend)}">Ir a la estación que te falta: ${SC[pend].t}</a>`;
   return `${strip()}
   <header class="station-head"><div class="k">Estación ${S.i + 1} de ${SC.length} · completa</div><h2>Lo que aprendiste</h2><p class="station-goal">Terminaste «${c.t}». Estas son las ideas clave para llevarte. Llevás ${n} de ${SC.length} estaciones.</p></header>
   ${stationRecap(S.i)}
-  <div class="bar recap-actions"><a class="b p" href="${nextStationHref()}">${nx ? `Ir a ${nx.n}` : 'Terminar el recorrido'}</a><a class="b" href="#${stepPath(S.i)}">Volver a la estación</a></div>`;
+  <div class="bar recap-actions">${main}<a class="b" href="#${stepPath(S.i)}">Volver a la estación</a></div>
+  ${CHBANK[c.n] ? `<p class="recap-more"><a class="link-btn" href="#/desafios" data-a="openChallenge" data-v="${c.n}|">¿Querés practicar? Hay 3 preguntas sobre esta estación en Desafíos.</a></p>` : ''}`;
 }
 
 /* Cambiar de paso: la dirección refleja el paso (sin sumar entradas al historial),
@@ -289,7 +315,9 @@ function goStep(k) {
 }
 
 function completeView() {
-  return `<div class="k">Camino completado</div><h2>De la cereza a la taza</h2>${finHTML()}<p>Recorriste las seis estaciones:</p>${SC.map(c => `<p>✓ ${c.t}</p>`).join('')}<p class="m">Podés volver a cualquier estación desde el mapa, o poner a prueba lo que aprendiste.</p>${strip()}<div class="bar"><a class="b p" href="#/desafios">Ir a Desafíos</a><button class="b" data-a="go" data-v="0">Repetir desde la estación 1</button></div>`;
+  const pend = SC.map((_, i) => i).filter(i => !stDone(i));
+  if (pend.length) return `<div class="k">Tu recorrido</div><h2>${pend.length === 1 ? 'Te falta 1 estación' : `Te faltan ${pend.length} estaciones`}</h2><p class="m">Llevás ${SC.length - pend.length} de ${SC.length}. Cuando completes todas, acá vas a ver el cierre del recorrido.</p><ul class="done-list">${SC.map((c, i) => `<li class="${stDone(i) ? 'is-done' : ''}"><a href="#${stepPath(i)}"><span aria-hidden="true">${stDone(i) ? '✓' : '○'}</span> Estación ${i + 1} · ${c.t}<span class="sr-only">${stDone(i) ? ' (completa)' : ' (pendiente)'}</span></a></li>`).join('')}</ul><div class="bar"><a class="b p" href="#${stepPath(pend[0])}">Continuar con ${SC[pend[0]].t}</a><a class="b" href="#/academia">Ver el mapa</a></div>`;
+  return `<div class="k">Camino completado</div><h2>De la cereza a la taza</h2>${finHTML()}<p>Recorriste las seis estaciones:</p>${SC.map(c => `<p>✓ ${c.t}</p>`).join('')}<p class="m">Podés volver a cualquier estación desde el mapa, o poner a prueba lo que aprendiste.</p>${strip()}<div class="bar"><a class="b p" href="#/desafios">Ir a Desafíos</a><button class="b" data-a="go" data-v="0">Repasar desde la estación 1</button></div>`;
 }
 
 /* Al entrar a una estación (desde un enlace, el menú o la dirección). */
@@ -322,7 +350,7 @@ function academiaAfter() {
   if (S.i < 0 || S.i >= SC.length || S.recap) return;
   S.pl = 0;
   const c = SC[S.i]; if (c.after) c.after();
-  revealFoot(); bar(); celebrateAtFoot();
+  revealFoot(); bar(); celebrateAtFoot(); termTip();
   /* La dirección siempre muestra el paso actual: #/academia/<estación>/<paso>. */
   const p = stepPath(S.i);
   if (hashPath() !== p) { try { history.replaceState(history.state, '', '#' + p) } catch (e) {} shownPath = p }
@@ -338,6 +366,11 @@ on({
     S.qa[s.quiz] = +v; const dl = quizDlg(); dl.innerHTML = quizDlgHTML(); bar();
     const b = dl.querySelector('.bar .b.p') || dl.querySelector('.quiz-dlg-fb'); if (b) b.focus();
   },
+  quizRetry: () => {
+    const s = curStep(SC[S.i]); if (!s.quiz) return;
+    delete S.qa[s.quiz]; const dl = quizDlg(); dl.innerHTML = quizDlgHTML(); bar();
+    const b = dl.querySelector('.opt'); if (b) b.focus();
+  },
   quizClose: () => { const dl = $('#quiz-dlg'); if (dl && dl.open) dl.close() },
   academyMenu: () => routeTo('/academia')
 });
@@ -348,24 +381,44 @@ const SOON = [
   ['Transformación', [['Curvas de tueste', 'Lectura de perfiles, energía y desarrollo.'], ['Control de calidad', 'Muestras, catación y consistencia de lotes.']]],
   ['De la molienda a la taza', [['Espresso', 'Máquina, receta, calibración y servicio.'], ['Filtrados', 'V60, Origami, AeroPress y otros métodos.'], ['Agua y molienda', 'Minerales, dureza, alcalinidad y granulometría.'], ['Análisis sensorial', 'Cata, protocolos y evaluación de café.']]]
 ];
-/* Próxima estación sugerida: la última abierta si no está completa; si no, la primera pendiente. */
+/* Próxima estación sugerida: la última abierta, si está empezada y sin terminar; si no, la primera pendiente.
+   Abrir una estación solo para mirarla no cambia el "seguí donde lo dejaste". */
 function suggestedStation() {
-  if (P.last != null && !stDone(P.last)) return P.last;
-  const i = SC.findIndex((_, j) => !stDone(j));
-  return i;
+  if (P.last != null && SC[P.last] && !stDone(P.last) && startedSt(P.last)) return P.last;
+  return SC.findIndex((_, j) => !stDone(j));
 }
+
+/* ---------- El avance vive en este navegador ----------
+   Aviso corto (portada personal y mapa) y forma de empezar de cero. */
+const storeNote = () => `<p class="store-note">Tu avance se guarda solo en este navegador.${P.last != null ? ' <button type="button" class="link-btn" data-a="resetAsk">Reiniciar mi avance</button>' : ''}</p>`;
+function resetDlg() {
+  let dl = $('#reset-dlg');
+  if (!dl) {
+    dl = document.createElement('dialog'); dl.id = 'reset-dlg'; dl.className = 'confirm-dlg'; dl.setAttribute('aria-labelledby', 'reset-dlg-title');
+    dl.addEventListener('click', e => { if (e.target === dl) dl.close() });
+    document.body.append(dl);
+  }
+  return dl;
+}
+on({
+  resetAsk: () => { const dl = resetDlg(); dl.innerHTML = `<h3 id="reset-dlg-title">¿Borrar tu avance en las ${SC.length} estaciones?</h3><p>La bitácora no se borra.</p><div class="bar"><button type="button" class="b danger" data-a="resetDo">Borrar avance</button><button type="button" class="b" data-a="resetCancel" autofocus>Cancelar</button></div>`; if (!dl.open) dl.showModal() },
+  resetCancel: () => { const dl = $('#reset-dlg'); if (dl && dl.open) dl.close() },
+  /* Se borra lo guardado y se recarga: así todas las estaciones arrancan de cero. */
+  resetDo: () => { try { localStorage.removeItem('cl2') } catch (e) {} history.replaceState(null, '', '#/'); location.reload() }
+});
 
 /* ---------- Página de la Academia: mapa de la planta a la taza ----------
    El mapa isométrico (js/academia/mapa.js) con "Estás acá" en la estación actual.
-   Glosario, apuntes y lo que viene van al final, chicos. */
+   Glosario y apuntes, arriba junto al título; lo que viene, al final, chico. */
 const SOON_COUNT = () => SOON.reduce((n, g) => n + g[1].length, 0);
 function academyMenu() {
   const done = doneCount(), cur = suggestedStation();
   const allDone = cur < 0 ? `<div class="path-end"><p><b>Completaste las ${SC.length} estaciones.</b> Repasá la que quieras o poné a prueba lo que aprendiste.</p><a class="b p" href="#/desafios">Ir a Desafíos</a></div>` : '';
   /* El título va dentro del cielo del mapa. En computadora, a la derecha, un panel que acompaña al bajar;
      en el celu, un botón flotante con la acción principal. */
-  const head = `<h2>Recorré las estaciones.</h2><p>De la planta a la taza, en ${SC.length} estaciones. Llevás ${done} de ${SC.length}.</p><div class="map-progress" aria-hidden="true">${SC.map((_, i) => `<i class="${stDone(i) ? 'is-done' : i === cur ? 'is-cur' : ''}"></i>`).join('')}</div>`;
-  const more = `<p class="path-more">Para consultar: el <button type="button" class="link-btn" data-a="glossary">glosario</button> y los <button type="button" class="link-btn" data-a="theory">apuntes</button>.</p>
+  /* Glosario y apuntes van arriba, a la vista sin bajar (en el celu antes quedaban debajo de las seis islas). */
+  const head = `<h2>Recorré las estaciones.</h2><p>${done ? `De la planta a la taza, en ${SC.length} estaciones. Llevás ${done} de ${SC.length}.` : `Son ${SC.length} estaciones, de la planta a la taza. Empezá por la primera.`}</p><div class="map-progress" aria-hidden="true">${SC.map((_, i) => `<i class="${stDone(i) ? 'is-done' : i === cur ? 'is-cur' : ''}"></i>`).join('')}</div><div class="map-links"><button type="button" class="b sm" data-a="glossary">Glosario</button><button type="button" class="b sm" data-a="theory">Apuntes</button></div>`;
+  const more = `${storeNote()}
   <details class="academy-soon"><summary>Próximamente: ${SOON_COUNT()} temas más</summary>${SOON.map(g => `<h3 class="soon-h">${g[0]}</h3><ul>${g[1].map(m => `<li><b>${m[0]}</b> <span class="m">${m[1]}</span></li>`).join('')}</ul>`).join('')}</details>`;
   const now = cur >= 0 ? `<div class="map-now">${mapNowHTML(cur)}</div>` : allDone;
   const fab = cur >= 0 ? `<a class="b p map-fab" href="#${stepPath(cur)}">${mapFabLabel(cur)}</a>` : `<a class="b p map-fab" href="#/desafios">Ir a Desafíos</a>`;

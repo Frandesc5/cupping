@@ -274,13 +274,14 @@ function isoTunnel(o, x, y, w, len, h) {
 }
 
 /* ---------- Lugares de cada estación ---------- */
-/* MAP_TOP deja lugar arriba para el título, que va dentro del cielo. */
-const MAP_W = 400, MAP_IW = 118, MAP_ID = 118, MAP_IH = 30, MAP_GAP = 262, MAP_TOP = 170;
+/* MAP_TOP deja lugar arriba para el título, el avance y los botones de glosario y apuntes, que van dentro del cielo.
+   place: el lugar del mapa (ambientación) · hint: aclaración corta cuando el nombre del lugar es jerga. */
+const MAP_W = 400, MAP_IW = 118, MAP_ID = 118, MAP_IH = 30, MAP_GAP = 262, MAP_TOP = 250;
 const MAP_H = MAP_TOP + 5 * MAP_GAP + 230;
 const MAP_PLACES = [
   { place: 'La finca', top: '#a7c48a', col: '#8c6b4a', ic: '<path d="M12 21V11"/><path d="M12 13c-5 0-7-4-7-8 4 0 7 3 7 8zM12 11c4 0 6-3 6-7-4 0-6 3-6 7z"/>',
     land: o => isoMount(o, 4, 4, 62, 54, 70, '#8fae74', true) + isoMount(o, 50, 2, 50, 46, 48, '#9db886') + [[74, 64], [92, 66], [74, 84], [92, 86], [74, 104], [92, 104], [56, 98]].map(([x, y]) => isoTree(o, x, y, .9, '#6f8a5e', true)).join('') + isoTree(o, 20, 96, 1.2) },
-  { place: 'El beneficio', top: '#ead9b2', col: '#a07c58', ic: '<circle cx="17" cy="6" r="3"/><path d="M3 15h16M5 15v5M17 15v5"/><path d="M4 13c2-2 4-2 6 0s4 2 6 0"/>',
+  { place: 'El beneficio', hint: 'donde se procesa', top: '#ead9b2', col: '#a07c58', ic: '<circle cx="17" cy="6" r="3"/><path d="M3 15h16M5 15v5M17 15v5"/><path d="M4 13c2-2 4-2 6 0s4 2 6 0"/>',
     /* Marquesina a la izquierda; camas africanas a la derecha (una con cerezas: proceso natural). */
     land: o => isoTunnel(o, 6, 8, 42, 74, 30) + isoBed(o, 58, 10, 52, 18, 14, 'pergamino', 2) + isoBed(o, 58, 38, 52, 18, 14, 'cereza', 3) + isoBed(o, 62, 66, 44, 16, 14, 'pergamino', 4)
       + isoTree(o, 110, 104, 1) + `<g class="map-float">${isoAt(o, 96, 4, 96, (x, y) => `<circle cx="${x}" cy="${y}" r="11" fill="#f0d27e"/>`)}</g>` },
@@ -332,7 +333,7 @@ function mapWorld(cur, head = '') {
   const pos = i => { const f = mapFront(i); return `left:${(f[0] / MAP_W * 100).toFixed(2)}%;top:${((f[1] + 10) / MAP_H * 100).toFixed(2)}%` };
   const nodes = SC.map((c, i) => {
     const ok = stDone(i), here = i === cur;
-    return `<button type="button" class="map-node ${ok ? 'is-done' : ''} ${here ? 'is-cur' : ''}" data-a="mapNode" data-v="${i}" style="${pos(i)}" aria-label="Estación ${i + 1}: ${c.t}${ok ? ' (completa)' : here ? ' (estás acá)' : ''}">${here ? '<span class="map-ring"></span>' : ''}<span class="map-badge"><svg viewBox="0 0 24 24" aria-hidden="true">${MAP_PLACES[i].ic}</svg></span>${ok ? '<span class="map-check" aria-hidden="true">✓</span>' : ''}<span class="map-name" aria-hidden="true">${MAP_PLACES[i].place}</span></button>`;
+    return `<button type="button" class="map-node ${i % 2 ? '' : 'is-left'} ${ok ? 'is-done' : ''} ${here ? 'is-cur' : ''}" data-a="mapNode" data-v="${i}" style="${pos(i)}" aria-label="Estación ${i + 1}: ${c.t}${ok ? ' (completa)' : here ? ' (estás acá)' : ''}">${here ? '<span class="map-ring"></span>' : ''}<span class="map-badge"><svg viewBox="0 0 24 24" aria-hidden="true">${MAP_PLACES[i].ic}</svg></span>${ok ? '<span class="map-check" aria-hidden="true">✓</span>' : ''}<span class="map-name" aria-hidden="true"><b>${i + 1} · ${c.t}</b><small>${MAP_PLACES[i].place}${MAP_PLACES[i].hint ? ', ' + MAP_PLACES[i].hint : ''}</small></span></button>`;
   }).join('');
   const me = cur >= 0 ? (() => { const f = mapFront(cur); return `<div class="map-me" style="left:${(f[0] / MAP_W * 100).toFixed(2)}%;top:calc(${((f[1] + 10) / MAP_H * 100).toFixed(2)}% - 44px)" aria-hidden="true"><span>Estás acá</span><i></i></div>` })() : '';
   return `<div class="map-world"><div class="map-sky-head">${head}</div>${mapScene()}${nodes}${me}</div>`;
@@ -342,9 +343,9 @@ function mapWorld(cur, head = '') {
 function mapNowHTML(i) {
   const c = SC[i], started = startedSt(i), j = stepIdx(c);
   const chips = c.steps.map((s, k) => `<span class="${started && k === j ? 'is-cur' : stepDone(c, s) ? 'is-done' : ''}">${s.label}</span>`).join('');
-  return `<div class="map-place">Estás acá · ${MAP_PLACES[i].place}</div><h3>${c.t}</h3><p class="m">${c.md}</p><div class="map-steps">${chips}</div><a class="b p" href="#${stepPath(i)}">${started ? `Continuar con ${curStep(c).label}` : 'Empezar'}</a>`;
+  return `<div class="map-place">Estás acá · Estación ${i + 1} de ${SC.length}</div><h3>${c.t}</h3><p class="m">${c.md}</p><div class="map-steps">${chips}</div><a class="b p" href="#${stepPath(i)}">${started ? `Continuar con ${curStep(c).label}` : 'Empezar'}</a>`;
 }
-const mapFabLabel = i => { const c = SC[i]; return startedSt(i) ? `Continuar: ${curStep(c).label}` : doneCount() ? `Empezar: ${MAP_PLACES[i].place}` : 'Empezar el recorrido' };
+const mapFabLabel = i => { const c = SC[i]; return startedSt(i) ? `Continuar: ${curStep(c).label}` : doneCount() ? `Empezar: ${c.t}` : 'Empezar por la estación 1' };
 
 /* ---------- Ficha de cada estación ---------- */
 function mapSheetHTML(i) {

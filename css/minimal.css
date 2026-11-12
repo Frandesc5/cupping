@@ -91,12 +91,14 @@ h3 { font-family: var(--font); font-weight: 600; letter-spacing: -.01em }
 .stepper li.is-linked::before { background: var(--ink) }
 .step-pill.is-done { color: var(--muted) }
 
-/* Palabras del glosario */
-.term { text-decoration-color: var(--line-strong) }
+/* Palabras del glosario: el subrayado marrón se mantiene para que se note que se pueden tocar */
+.term { text-decoration-color: var(--terra) }
+.step-pill.is-open:not(.is-current) .step-n { border-color: var(--muted) }
 
 /* Ventanas (desafío y ficha del mapa) */
 #quiz-dlg, #map-dlg { border: 0 }
 .map-steps span.is-cur { background: var(--ink) }
+.confirm-dlg { border: 0 }
 
 /* Portada: sobre el fondo gris de la presentación, el botón secundario va en blanco */
 .home-hero .b:not(.p) { background: #fff }

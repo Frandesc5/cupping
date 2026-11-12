@@ -1,26 +1,26 @@
 /* ============================================================
    Portada
    Cambia según el avance guardado en este navegador:
-   · nueva     (nunca abriste una estación): presentación del campus y "Empezá por…"
-   · en curso  (empezaste la Academia o usaste el Laboratorio): panel personal — seguir donde lo dejaste y
-               sugerencias para reforzar lo aprendido (el mapa de estaciones está en la Academia)
-   · completa  (6 de 6): felicitación, desafíos pendientes y cursos presenciales
+   · nueva     (ninguna estación empezada ni registros en la bitácora): presentación del campus,
+               con un solo botón principal ("Empezar por la estación 1")
+   · en curso  (empezaste la Academia o usaste el Laboratorio): panel personal. Lo primero es
+               "Seguí donde lo dejaste" con el botón "Continuar"; no se repite la presentación.
+   · completa  (6 de 6): desafíos pendientes y cursos presenciales
    ============================================================ */
 
 const CH_LEVELS = ['Básico', 'Intermedio', 'Avanzado'];
-const homeMode = () => P.last == null && !BIT.length ? 'new' : SC.every((_, i) => stDone(i)) ? 'complete' : 'progress';
+const homeMode = () => !SC.some((_, i) => startedSt(i)) && !BIT.length ? 'new' : SC.every((_, i) => stDone(i)) ? 'complete' : 'progress';
 function homeView() { const m = homeMode(); return m === 'new' ? campusHome() : personalHome(m) }
 
 /* ---------- Panel personal ---------- */
 function personalHome(mode) {
   const n = SC.length, done = SC.filter((_, i) => stDone(i)).length, list = suggestions();
-  const h = mode === 'complete' ? `Completaste las ${n} estaciones`
-    : P.last == null ? 'Seguí practicando' : done === 0 ? 'Ya empezaste el recorrido' : done < n / 2 ? 'Buen comienzo' : done === n / 2 ? 'Vas por la mitad del recorrido' : 'Te falta poco para terminar';
   const first = mode === 'complete' ? list.find(x => x.a === 'openChallenge') : null;
-  return heroHTML() + `<section class="me-head"><h2>${h}</h2>
-    <div class="menu-progress"><div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${done}" aria-label="Estaciones completas"><i style="width:${Math.round(done / n * 100)}%"></i></div><span>${done} de ${n} estaciones completas</span></div></section>
-  <div class="me-stack">${mode === 'complete' ? completeCard(first) : homeResume()}${lastTestCard()}${suggestHTML(first ? list.filter(x => x !== first) : list, mode)}${courseTeaser(mode)}</div>
-  ${spacesRow()}`;
+  return `<section class="me-head"><h1>${mode === 'complete' ? `Completaste las ${n} estaciones` : 'Hola de nuevo'}</h1></section>
+  <div class="me-stack">${mode === 'complete' ? completeCard(first) : homeResume()}
+    <div class="menu-progress"><div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${done}" aria-label="Estaciones completas"><i style="width:${Math.round(done / n * 100)}%"></i></div><span>${done} de ${n} estaciones completas</span><a class="link-btn" href="#/academia">Ver el mapa</a></div>
+    ${lastTestCard()}${suggestHTML(first ? list.filter(x => x !== first) : list, mode)}${courseTeaser(mode)}</div>
+  ${spacesRow()}${storeNote()}`;
 }
 
 /* Seguí donde lo dejaste: la estación sugerida, el paso y sus puntitos de avance. */
@@ -52,16 +52,16 @@ function suggestions() {
     const m = SC[i].n; if (!CHBANK[m]) continue;
     const lvl = CH_LEVELS.find(l => S.chAnswers[m + '|' + l] == null); if (!lvl) continue;
     const hechos = CH_LEVELS.filter(l => S.chAnswers[m + '|' + l] != null).length;
-    ch.push({ ico: '◇', t: `Desafíos de ${SC[i].mt.charAt(0).toLowerCase() + SC[i].mt.slice(1)}`, s: `Nivel ${lvl.toLowerCase()} · ${hechos} de 3 niveles hechos`, href: '#/desafios', a: 'openChallenge', v: m + '|' + lvl });
+    ch.push({ ico: 'de', t: `Desafíos de ${SC[i].mt.charAt(0).toLowerCase() + SC[i].mt.slice(1)}`, s: `${hechos} de 3 preguntas respondidas`, href: '#/desafios', a: 'openChallenge', v: m + '|' + lvl });
   }
   const lab = [];
   /* Con registros en la bitácora, la práctica ya está en la tarjeta 'Tu última prueba'. */
-  if (!BIT.length && stDone(4)) lab.push({ ico: '⌁', t: 'Probá tu receta en el Laboratorio', s: 'Ajustá variables y guardá la prueba en tu bitácora', href: '#/laboratorio/filtrado' });
+  if (!BIT.length && stDone(4)) lab.push({ ico: 'lb', t: 'Probá tu receta en el Laboratorio', s: 'Armá una receta en el simulador y guardala en tu bitácora', href: '#/laboratorio/filtrado' });
   return [...ch.slice(0, lab.length ? 2 : 3), ...lab].slice(0, 3);
 }
 function suggestHTML(list, mode) {
   const body = list.length
-    ? `<ul class="suggest-list">${list.map(x => `<li><a class="suggest-card" href="${x.href}" ${x.a ? `data-a="${x.a}"` : ''} ${x.v ? `data-v="${x.v}"` : ''}><span class="suggest-ico" aria-hidden="true">${x.ico}</span><span><b>${x.t}</b><small>${x.s}</small></span></a></li>`).join('')}</ul>`
+    ? `<ul class="suggest-list">${list.map(x => `<li><a class="suggest-card" href="${x.href}" ${x.a ? `data-a="${x.a}"` : ''} ${x.v ? `data-v="${x.v}"` : ''}><span class="suggest-ico" aria-hidden="true">${SPACE_ICONS[x.ico]}</span><span><b>${x.t}</b><small>${x.s}</small></span></a></li>`).join('')}</ul>`
     : `<p class="me-empty">${mode === 'complete' ? 'Respondiste todos los desafíos de las estaciones que completaste.' : 'Cuando completes una estación, acá vas a ver desafíos y prácticas para reforzarla.'}</p>`;
   return `<section class="me-suggest" aria-labelledby="sug-h"><h2 id="sug-h" class="me-h">Para reforzar lo que viste</h2>${body}</section>`;
 }
@@ -69,14 +69,16 @@ function suggestHTML(list, mode) {
 /* Cursos: en tono suave mientras avanzás; destacados al terminar el recorrido. */
 function courseTeaser(mode) {
   const bp = CRS.find(c => c.slug === 'barista-profesional'), ci = CRS.find(c => c.slug === 'curso-intensivo');
-  if (mode !== 'complete') return `<aside class="course-teaser"><div class="k">¿Querés aprenderlo en persona?</div><a href="#/capacitarse/${bp.slug}">${bp.t} · ${bp.d} en ${bp.s}</a></aside>`;
-  return `<aside class="course-teaser is-strong"><div class="k">Seguí formándote</div><p>Llevá lo que aprendiste a la barra, con el equipo de la Academia.</p><a href="#/capacitarse/${bp.slug}">${bp.t} · ${bp.d}</a><a href="#/capacitarse/${ci.slug}">${ci.t} · ${ci.d}</a></aside>`;
+  const link = (c, where) => `<a href="${COURSES_URL}" target="_blank" rel="noopener">${c.t} · ${c.d}${where && c.s ? ' en ' + c.s : ''} ↗</a>`;
+  if (mode !== 'complete') return `<aside class="course-teaser"><div class="k">¿Querés aprenderlo en persona?</div>${link(bp, true)}</aside>`;
+  return `<aside class="course-teaser is-strong"><div class="k">Seguí formándote</div><p>Llevá lo que aprendiste a la barra, con el equipo de la Academia.</p>${link(bp)}${link(ci)}</aside>`;
 }
 
-/* Los cuatro espacios, en una fila chica al pie (solo en computadora: en celular están en la barra inferior). */
+/* Los cuatro espacios, en una fila chica al pie (solo en computadora: en celular están en la barra inferior).
+   Mismos íconos que la barra de abajo (SPACE_ICONS, en js/app.js). */
 function spacesRow() {
-  const rows = [['academia', '◉', 'Academia', 'Módulos del origen a la taza'], ['laboratorio', '⌁', 'Laboratorio', 'Simuladores y bitácora'], ['desafios', '◇', 'Desafíos', 'Casos por módulo y nivel'], ['capacitarse', '▤', 'Cursos', 'Online y presenciales']];
-  return `<nav class="spaces-row" aria-label="Espacios del campus">${rows.map(r => `<a href="#/${r[0]}"><span aria-hidden="true">${r[1]}</span><span><b>${r[2]}</b><small>${r[3]}</small></span></a>`).join('')}</nav>`;
+  const rows = [['academia', 'ac', 'Academia', '6 estaciones, de la planta a la taza'], ['laboratorio', 'lb', 'Laboratorio', 'Simulador y bitácora'], ['desafios', 'de', 'Desafíos', 'Preguntas por estación y nivel'], ['capacitarse', 'ca', 'Cursos', 'Online y presenciales']];
+  return `<nav class="spaces-row" aria-label="Espacios del campus">${rows.map(r => `<a href="#/${r[0]}"><span class="space-ico" aria-hidden="true">${SPACE_ICONS[r[1]]}</span><span><b>${r[2]}</b><small>${r[3]}</small></span></a>`).join('')}</nav>`;
 }
 
 
@@ -91,8 +93,8 @@ function lastTestCard() {
   const b = BIT[0]; if (!b) return '';
   const line = ['1:' + nf(b.w / b.d), b.t ? nf(b.t) + ' °C' : null, b.tds ? 'TDS ' + nf(b.tds, 2) + ' %' : b.s ? dur(b.s) : null].filter(Boolean).join(' · ');
   return `<section class="lab-last" aria-labelledby="lab-last-h">
-    <span class="suggest-ico" aria-hidden="true">⌁</span>
-    <div class="lab-last-body"><div class="k">Tu última prueba · ${esc(recDate(b))}</div>
+    <span class="suggest-ico" aria-hidden="true">${SPACE_ICONS.lb}</span>
+    <div class="lab-last-body"><div class="k">Tu última anotación · ${esc(recDate(b))}</div>
       <h2 id="lab-last-h"><a href="#/laboratorio/bitacora">${esc(b.n)}</a>${b.m ? ` <span class="m">· ${esc(b.m)}</span>` : ''}</h2>
       <p class="lab-last-line">${line}</p></div>
     <div class="lab-last-actions"><button class="b sm" data-a="repeatLast" aria-label="Repetir la receta">Repetir</button><button class="b sm" data-a="tuneLast" aria-label="Ajustar en el simulador">Ajustar</button></div>
@@ -123,58 +125,41 @@ function loadRecipe(b) {
 
 on({
   /* Abre Desafíos directamente en el módulo y nivel sugeridos. */
-  openChallenge: v => { const [m, l] = v.split('|'); S.chModule = m; S.chLevel = l; routeTo('/desafios') },
+  /* Sin nivel ("Fruto|"), va a la primera pregunta sin responder de esa estación. */
+  openChallenge: v => { const [m, l] = v.split('|'); S.chModule = m; S.chLevel = l || CH_LEVELS.find(x => S.chAnswers[m + '|' + x] == null) || CH_LEVELS[0]; routeTo('/desafios') },
   /* Registro nuevo con la misma receta; el resultado (TDS, bebida, notas) queda en blanco para la prueba nueva. */
-  repeatLast: () => { const b = BIT[0]; if (!b) return; const p = prefillFromRecord(b); delete p.x; delete p.y; delete p.z; S.prefill = p; S.be = ''; S.bm = ''; routeTo('/laboratorio/nuevo-registro'); toast('Receta cargada: anotá el resultado de esta prueba') },
+  repeatLast: () => { const b = BIT[0]; if (!b) return; const p = prefillFromRecord(b); delete p.x; delete p.y; delete p.z; S.prefill = p; S.prefillFrom = 'rec'; S.editId = null; S.be = ''; S.bm = ''; routeTo('/laboratorio/nuevo-registro'); toast('Receta cargada: anotá el resultado de esta prueba') },
   /* Abre el simulador con la receta cargada, para cambiar una variable y ver qué pasa. */
   tuneLast: () => { const b = BIT[0]; if (!b) return; routeTo('/laboratorio/' + loadRecipe(b)); toast('Tu receta está cargada en el simulador') }
 });
 
 /* ---------- Portada para quien entra por primera vez ---------- */
-/* Próximo paso sugerido: empezar, continuar o pasar a Desafíos. */
-function nextStep() {
-  const done = doneCount();
-  let k, h, p, href, cta;
-  if (P.last == null) {
-    k = '¿Primera vez en .campus?'; h = 'Empezá por ' + SC[0].t.toLowerCase();
-    p = 'Aprendé en la Academia, probá en el Laboratorio y medite en Desafíos. Tu avance queda guardado en este dispositivo.';
-    href = '#/academia/' + SC[0].slug; cta = 'Empezar el recorrido';
-  } else if (done >= SC.length) {
-    k = 'Recorrido completo'; h = 'Poné a prueba lo que aprendiste';
-    p = 'Completaste las ' + SC.length + ' estaciones. En Desafíos hay casos de nivel básico a avanzado.';
-    href = '#/desafios'; cta = 'Ir a Desafíos';
-  } else {
-    const i = doneSt(P.last) ? SC.findIndex((_, j) => !doneSt(j)) : P.last;
-    k = 'Continuá donde lo dejaste'; h = 'Estación ' + (i + 1) + ' · ' + SC[i].t;
-    p = done + ' de ' + SC.length + ' estaciones completas.';
-    href = '#/academia/' + SC[i].slug; cta = 'Continuar';
-  }
-  return `<section class="next-step" aria-label="Tu próximo paso"><div><div class="k">${k}</div><h2>${h}</h2><p class="m">${p}</p></div><a class="b p" href="${href}">${cta}</a></section>`;
-}
-/* Presentación del campus: la ven todos, tengan avance o no. */
+/* Presentación del campus. Una sola acción principal: empezar por la estación 1.
+   El mapa queda como enlace secundario y los cursos, en la franja del final. */
 function heroHTML() {
   return `<section class="home-hero">
   <div class="hero-copy">
     <h1>Aprendé.<br>Experimentá.<br>Crecé.</h1>
-    <p>El campus de la Academia de Baristas: estaciones para entender el café de la planta a la taza, un laboratorio para probar recetas y desafíos para poner a prueba tu criterio.</p>
-    <div class="action-row"><a class="b p" href="#/academia">Entrar a la Academia</a><a class="b" href="#/capacitarse">Ver cursos</a></div>
+    <p>Aprendé café desde cero, paso a paso y a tu ritmo. Son ${SC.length} estaciones interactivas, de la planta a la taza. No hace falta saber nada antes.</p>
+    <div class="action-row"><a class="b p" href="#/academia/${SC[0].slug}">Empezar por la estación 1</a><a class="link-btn hero-map-link" href="#/academia">Ver el mapa de las ${SC.length} estaciones</a></div>
+    <p class="hero-note">Tu avance queda guardado en este dispositivo.</p>
   </div>
   <figure class="hero-photo-wrap"><img class="hero-photo" src="${HERO_PHOTO}" width="1200" height="900" alt="Equipo de Academia de Baristas" fetchpriority="high" decoding="async"><figcaption class="photo-note">Aprender café también es compartirlo.</figcaption></figure>
 </section>`;
 }
 
 function campusHome() {
+  /* [dirección, ícono, qué se hace, nombre del espacio, descripción, enlace] — en el orden sugerido. */
   const cards = [
-    ['academia', 'Academia', 'Recorré las estaciones de formación, desde el origen hasta la taza.', '01', '◉'],
-    ['laboratorio', 'Laboratorio', 'Diseñá pruebas, ajustá variables y analizá resultados.', '02', '⌁'],
-    ['desafios', 'Desafíos', 'Poné a prueba tu criterio profesional.', '03', '◇'],
-    ['capacitarse', 'Cursos', 'Capacitaciones online y presenciales para seguir formándote.', '04', '▤']
+    ['academia', 'ac', '1 · Aprendé', 'Academia', `${SC.length} estaciones interactivas, de la planta a la taza. Empezá por acá.`, 'Ir a la Academia'],
+    ['laboratorio', 'lb', '2 · Practicá', 'Laboratorio', 'Armá recetas en el simulador y anotá los cafés que preparás.', 'Ir al Laboratorio'],
+    ['desafios', 'de', '3 · Ponete a prueba', 'Desafíos', 'Preguntas cortas sobre cada estación, de fácil a difícil.', 'Ir a Desafíos'],
+    ['capacitarse', 'ca', '4 · Seguí en persona', 'Cursos', 'Cursos presenciales con el equipo de la Academia.', 'Ver cursos']
   ];
   return heroHTML() + `
-${nextStep()}
 <section class="home-spaces" aria-label="Los cuatro espacios del campus">
-<div class="section-intro"><div><div class="k">.campus</div><h2>Un recorrido.<br>Cuatro espacios.</h2></div><p class="m">Aprendé en la Academia, probá en el Laboratorio, poné a prueba tu criterio en Desafíos y seguí formándote con los Cursos.</p></div>
-<div class="section-grid">${cards.map(c => `<a class="section-card" href="#/${c[0]}"><span class="card-top"><span class="section-icon" aria-hidden="true">${c[4]}</span></span><span><strong>${c[1]}</strong><small>${c[2]}</small><span class="card-link">Explorar </span></span></a>`).join('')}</div>
+<div class="section-intro"><div><div class="k">.campus</div><h2>Un recorrido.<br>Cuatro espacios.</h2></div><p class="m">Aprendé en la Academia, practicá en el Laboratorio, ponete a prueba en Desafíos y seguí formándote con los Cursos.</p></div>
+<div class="section-grid">${cards.map(c => `<a class="section-card" href="#/${c[0]}"><span class="card-top"><span class="section-icon" aria-hidden="true">${SPACE_ICONS[c[1]]}</span></span><span><span class="card-space">${c[3]}</span><strong>${c[2]}</strong><small>${c[4]}</small><span class="card-link">${c[5]}</span></span></a>`).join('')}</div>
 </section>
 <div class="learning-banner"><div class="learning-mark" aria-hidden="true">AB<span>.</span></div><div><div class="k">Aprender haciendo</div><h3>La teoría cobra sentido<br>cuando pasa por tus manos.</h3><p>Un campus para acompañar tu formación y conectar el conocimiento con la práctica.</p></div><a class="b" href="#/capacitarse">Conocé los cursos</a></div>`;
 }
