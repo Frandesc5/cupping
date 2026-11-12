@@ -26,13 +26,6 @@ function isoBox(o, x, y, z, w, d, h, col, top) {
 /* Techo a dos aguas, cumbrera a lo largo de x. */
 const isoRoof = (o, x, y, z, w, d, rh, col) => isoPoly([isoP(o, x + w, y, z), isoP(o, x + w, y + d, z), isoP(o, x + w, y + d / 2, z + rh)], isoShade(col, .8))
   + isoPoly([isoP(o, x, y + d, z), isoP(o, x + w, y + d, z), isoP(o, x + w, y + d / 2, z + rh), isoP(o, x, y + d / 2, z + rh)], col);
-/* Montaña: pirámide con dos caras visibles y, si se pide, nieve en la punta. */
-function isoMount(o, x, y, w, d, h, col, snow) {
-  const a = isoP(o, x + w / 2, y + d / 2, h), r = isoP(o, x + w, y, 0), f = isoP(o, x + w, y + d, 0), l = isoP(o, x, y + d, 0);
-  let s = isoPoly([r, f, a], isoShade(col, .84)) + isoPoly([l, f, a], isoShade(col, .7));
-  if (snow) { const m = q => [a[0] + (q[0] - a[0]) * .28, a[1] + (q[1] - a[1]) * .28]; s += isoPoly([a, m(r), m(f), m(l)], '#fbfbf8') }
-  return s;
-}
 /* Cilindro: tanques y tazas. */
 function isoCyl(o, x, y, z, r, h, col, top) {
   const b = isoP(o, x, y, z), t = isoP(o, x, y, z + h), rx = r * 1.2247, ry = r * .7071;
@@ -101,33 +94,38 @@ function isoCoolTray(o, x, y, z) {
   s += `<ellipse cx="${c[0]}" cy="${c[1]}" rx="${rx}" ry="${ry}" fill="none" stroke="#1c1c1c" stroke-width="1.2"/><ellipse cx="${c[0]}" cy="${c[1]}" rx="${irx}" ry="${iry}" fill="none" stroke="#5a5a5a" stroke-width=".6"/>`;
   return s;
 }
-/* Mesa de cata: bowls de cerámica con la costra de café, cucharitas de cata junto a cada uno,
-   un vaso de enjuague con cucharas y la planilla con un lápiz. */
+/* Mesa de cata: mesa atrás con dos filas de bowls (con la costra de café y su cucharita), la planilla y el vaso de
+   enjuague en la punta, y una mesita al costado para preparar: hervidor de cuello de cisne, molino y balanza. */
 function isoCupping(o) {
-  const T = 16, poly = a => a.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
-  let s = [[14, 22], [100, 22], [14, 82], [100, 82]].map(([x, y]) => isoBox(o, x, y, 0, 4, 4, T - 3, '#6e4f37')).join('');
-  s += isoBox(o, 10, 18, T - 3, 96, 70, 3, '#8a6748', '#efe9de');
-  /* Planilla y lápiz (atrás a la izquierda) */
-  const sh = [isoP(o, 14, 22, T + .1), isoP(o, 30, 22, T + .1), isoP(o, 30, 34, T + .1), isoP(o, 14, 34, T + .1)];
-  s += `<polygon points="${poly(sh)}" fill="#fff" stroke="#d9d4ca" stroke-width=".6"/>`;
-  for (let k = 1; k < 5; k++) { const a = isoP(o, 16, 22 + k * 2.3, T + .2), b = isoP(o, 28, 22 + k * 2.3, T + .2); s += `<path d="M${a[0]} ${a[1]}L${b[0]} ${b[1]}" stroke="#cfc9bd" stroke-width=".5"/>` }
-  { const a = isoP(o, 32, 23, T + .6), b = isoP(o, 33, 33, T + .6); s += `<path d="M${a[0]} ${a[1]}L${b[0]} ${b[1]}" stroke="#e0b440" stroke-width="2" stroke-linecap="round"/>` }
-  /* Vaso de enjuague con dos cucharas (atrás a la derecha) */
-  const gb = isoP(o, 96, 28, T), gt = isoP(o, 96, 28, T + 10);
-  [[-1.5, -9], [2, -11]].forEach(([dx, dy]) => { s += `<path d="M${gt[0] + dx} ${gt[1] + 6}L${gt[0] + dx + 2} ${gt[1] + dy}" stroke="#b9bcbf" stroke-width="1.2" stroke-linecap="round"/><ellipse cx="${gt[0] + dx + 2.4}" cy="${gt[1] + dy - 1}" rx="2" ry="1.4" fill="#d8dadc" stroke="#9ea2a6" stroke-width=".5"/>` });
-  s += `<path d="M${gb[0] - 4.4} ${gb[1]}L${gt[0] - 4.8} ${gt[1]}h9.6L${gb[0] + 4.4} ${gb[1]}z" fill="#dcebf0" opacity=".7" stroke="#9fb9c2" stroke-width=".7"/><ellipse cx="${gt[0]}" cy="${gt[1]}" rx="4.8" ry="2" fill="#e8f2f5" stroke="#9fb9c2" stroke-width=".7"/><ellipse cx="${gb[0]}" cy="${gb[1] - 3}" rx="4.4" ry="1.7" fill="#bcd8e2" opacity=".8"/>`;
-  /* Bowls de cata en dos filas, cada uno con su cucharita al lado */
-  const spoon = (x, y) => { const a = isoP(o, x, y, T + .4), b = isoP(o, x + 9, y + 1, T + .4); return `<path d="M${a[0]} ${a[1]}L${b[0]} ${b[1]}" stroke="#a7abaf" stroke-width="1.3" stroke-linecap="round"/><ellipse cx="${a[0] - 1.6}" cy="${a[1] - .4}" rx="2.6" ry="1.8" fill="#dfe1e3" stroke="#8f9397" stroke-width=".6"/><ellipse cx="${a[0] - 1.5}" cy="${a[1] - .6}" rx="1.5" ry=".9" fill="#b9bcbf"/>` };
-  const bowl = (x, y, k) => {
-    let b = isoCyl(o, x, y, T, 6.5, 4.5, '#ece9e3', '#f6f4ef');
-    const c = isoP(o, x, y, T + 4.5);
-    b += `<ellipse cx="${c[0]}" cy="${c[1]}" rx="6.6" ry="3.8" fill="#6b3f26"/><ellipse cx="${c[0] - .6}" cy="${c[1] - .3}" rx="5" ry="2.8" fill="#8a5a36"/>`;
-    for (let j = 0; j < 5; j++) { const u = isoRnd(900 + k * 9 + j) * 2 - 1, v = isoRnd(950 + k * 9 + j) * 2 - 1; b += `<circle cx="${(c[0] + u * 4).toFixed(1)}" cy="${(c[1] + v * 2).toFixed(1)}" r=".7" fill="#c49a6c"/>` }
-    return b;
-  };
+  const T = 16, wood = '#6e4f37', poly = a => a.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+  let s = [[19, 23], [83, 23], [19, 51], [83, 51]].map(([x, y]) => isoBox(o, x, y, 0, 2.5, 2.5, T - 3, wood)).join('');
+  s += isoBox(o, 18, 22, T - 3, 68, 32, 3, '#8a6748', '#efe9de');
   let k = 0;
-  /* Dos filas de tres, simétricas y centradas en la mesa, con la cucharita delante de cada bowl. */
-  [[38, 44], [58, 44], [78, 44], [38, 66], [58, 66], [78, 66]].sort((a, b) => (a[0] + a[1]) - (b[0] + b[1])).forEach(([x, y]) => { s += spoon(x - 4, y + 9) + bowl(x, y, k++) });
+  [31, 45].forEach(y => [28, 42, 56, 70].forEach(x => {
+    const c = isoP(o, x, y, T + 3.6);
+    s += isoCyl(o, x, y, T, 4.6, 3.6, '#ece9e3', '#f6f4ef');
+    s += `<ellipse cx="${c[0]}" cy="${c[1]}" rx="4.9" ry="2.8" fill="#6b3f26"/><ellipse cx="${c[0] - .5}" cy="${c[1] - .2}" rx="3.5" ry="2" fill="#8a5a36"/>`;
+    for (let j = 0; j < 4; j++) { const u = isoRnd(900 + k * 9 + j) * 2 - 1, v = isoRnd(950 + k * 9 + j) * 2 - 1; s += `<circle cx="${(c[0] + u * 2.8).toFixed(1)}" cy="${(c[1] + v * 1.4).toFixed(1)}" r=".55" fill="#c49a6c"/>` }
+    const a1 = isoP(o, x - 3, y + 6, T + .4), b1 = isoP(o, x + 4, y + 6.6, T + .4);
+    s += `<path d="M${a1[0]} ${a1[1]}L${b1[0]} ${b1[1]}" stroke="#a7abaf" stroke-width="1" stroke-linecap="round"/><ellipse cx="${a1[0] - 1.2}" cy="${a1[1] - .3}" rx="2" ry="1.3" fill="#dfe1e3" stroke="#8f9397" stroke-width=".5"/>`;
+    k++;
+  }));
+  /* Planilla con lápiz y vaso de enjuague */
+  s += `<polygon points="${poly([isoP(o, 77, 25, T + .1), isoP(o, 85, 25, T + .1), isoP(o, 85, 36, T + .1), isoP(o, 77, 36, T + .1)])}" fill="#fff" stroke="#d9d4ca" stroke-width=".6"/>`;
+  for (let j = 1; j < 5; j++) { const a1 = isoP(o, 78, 25 + j * 2.1, T + .2), b1 = isoP(o, 84, 25 + j * 2.1, T + .2); s += `<path d="M${a1[0]} ${a1[1]}L${b1[0]} ${b1[1]}" stroke="#cfc9bd" stroke-width=".5"/>` }
+  { const a1 = isoP(o, 79, 37.5, T + .5), b1 = isoP(o, 85, 38.5, T + .5); s += `<path d="M${a1[0]} ${a1[1]}L${b1[0]} ${b1[1]}" stroke="#e0b440" stroke-width="1.6" stroke-linecap="round"/>` }
+  const gb = isoP(o, 80, 47, T), gt = isoP(o, 80, 47, T + 7.5);
+  s += `<path d="M${gt[0] - 1} ${gt[1] + 5}L${gt[0] - 2} ${gt[1] - 4}M${gt[0] + 1} ${gt[1] + 5}L${gt[0] + 3} ${gt[1] - 4}" stroke="#b9bcbf" stroke-width="1" stroke-linecap="round"/>`;
+  s += `<path d="M${gb[0] - 3.7} ${gb[1]}L${gt[0] - 4.1} ${gt[1]}h8.2L${gb[0] + 3.7} ${gb[1]}z" fill="#dcebf0" opacity=".7" stroke="#9fb9c2" stroke-width=".6"/><ellipse cx="${gt[0]}" cy="${gt[1]}" rx="4.1" ry="1.8" fill="#e8f2f5" stroke="#9fb9c2" stroke-width=".6"/>`;
+  /* Mesita de preparación */
+  const T2 = 14;
+  s += [[93, 25], [109, 25], [93, 47], [109, 47]].map(([x, y]) => isoBox(o, x, y, 0, 2, 2, T2 - 2, wood)).join('');
+  s += isoBox(o, 92, 24, T2 - 2, 20, 26, 2, '#8a6748', '#a98563');
+  s += isoCyl(o, 99, 31, T2, 3.4, 5.5, '#b9b9b6', '#d4d4d1') + isoCyl(o, 99, 31, T2 + 5.5, 1.6, .9, '#2b2b2b');
+  { const a1 = isoP(o, 101.8, 31, T2 + 1.5), b1 = isoP(o, 104.5, 31, T2 + 6.5), c1 = isoP(o, 106.2, 31, T2 + 6); s += `<path d="M${a1[0]} ${a1[1]}L${b1[0]} ${b1[1]}L${c1[0]} ${c1[1]}" fill="none" stroke="#b9b9b6" stroke-width="1" stroke-linecap="round"/>` }
+  s += isoBox(o, 94, 40, T2, 6.5, 6.5, .8, '#1f1f1f', '#2c2c2c') + isoCyl(o, 97.25, 43.25, T2 + .8, 2.6, 1.6, '#f4f2ee', '#6b3f26');
+  s += isoBox(o, 103, 40, T2, 6, 6, 3.5, '#2f2f2f') + isoCyl(o, 106, 43, T2 + 3.5, 2.3, 5.5, '#3a3a3a');
+  { const hb = isoP(o, 106, 43, T2 + 9), ht = isoP(o, 106, 43, T2 + 13.5); s += `<path d="M${hb[0] - 1.7} ${hb[1]}L${ht[0] - 4.2} ${ht[1]}h8.4L${hb[0] + 1.7} ${hb[1]}z" fill="#d9cbb5" stroke="#b3a487" stroke-width=".5"/><ellipse cx="${ht[0]}" cy="${ht[1]}" rx="4.2" ry="2.4" fill="#e6dccb" stroke="#b3a487" stroke-width=".5"/>` }
   return s;
 }
 /* Máquina de espresso roja de dos grupos, apoyada en z = T, con su frente hacia +y. */
@@ -214,12 +212,6 @@ function isoRoastery(o) {
   s += isoCoolTray(o, xf + 17, yc + 4, T);
   /* Humo del tambor */
   s += `<g class="map-smoke">${isoAt(o, x0 + 4, yc - 4, zc + R + 14, (x, y) => `<circle cx="${x}" cy="${y}" r="5" fill="#e3dfd7"/><circle cx="${x + 5}" cy="${y - 10}" r="7" fill="#ebe7e0"/>`)}</g>`;
-  /* Saco de yute abierto con café verde, y algunos granos caídos */
-  const sb = isoP(o, 100, 94, 0);
-  s += `<path d="M${sb[0] - 12} ${sb[1] - 22}q-3 16 1 22q11 5 22 0q4-6 1-22z" fill="#c9ad7c" stroke="#9c8358" stroke-width="1"/><path d="M${sb[0] - 9} ${sb[1] - 14}q9 3 18 0M${sb[0] - 10} ${sb[1] - 7}q10 3 20 0" stroke="#b0955f" stroke-width=".8" fill="none"/>`;
-  s += `<ellipse cx="${sb[0]}" cy="${sb[1] - 22}" rx="13" ry="5" fill="#b8975f" stroke="#9c8358" stroke-width="1"/><ellipse cx="${sb[0]}" cy="${sb[1] - 22.5}" rx="10" ry="3.6" fill="#7f9a5a"/>`;
-  for (let k = 0; k < 9; k++) { const u = isoRnd(40 + k), v = isoRnd(80 + k); s += `<ellipse cx="${(sb[0] - 8 + u * 16).toFixed(1)}" cy="${(sb[1] - 24 + v * 3).toFixed(1)}" rx="1.6" ry="1.1" fill="#9db37a" stroke="#6f8a4e" stroke-width=".4"/>` }
-  [[86, 104], [90, 110], [94, 106]].forEach(([x, y]) => { const p = isoP(o, x, y, 0); s += `<ellipse cx="${p[0]}" cy="${p[1]}" rx="1.8" ry="1.2" fill="#9db37a" stroke="#6f8a4e" stroke-width=".4"/>` });
   return s;
 }
 /* Cama africana: mesa sobre patas, borde de madera, malla tensada y una capa despareja de granos.
@@ -279,22 +271,165 @@ function isoTunnel(o, x, y, w, len, h) {
    place: el lugar del mapa (ambientación) · hint: aclaración corta cuando el nombre del lugar es jerga. */
 const MAP_W = 400, MAP_IW = 118, MAP_ID = 118, MAP_IH = 30, MAP_GAP = 262, MAP_TOP = 250;
 const MAP_H = MAP_TOP + 5 * MAP_GAP + 230;
+
+/* ---------- Forma de las islas y de los cerros ----------
+   La usan este dibujo SVG y el mapa 3D (js/tres.js), así los dos muestran exactamente la misma isla.
+   Puntos del mundo: [x, y, z] (z es la altura). Los números al azar son fijos (isoRnd), así cada isla
+   siempre tiene la misma forma. */
+
+/* Contorno: radio del borde según el ángulo, desde el centro de la isla. Un cuadrado de puntas muy redondeadas,
+   más ancho en las diagonales para que todo lo de arriba quede sobre la isla, con ondas propias de cada isla. */
+const isleRimR = (i, a) => 64 / Math.pow(Math.abs(Math.cos(a)) ** 4 + Math.abs(Math.sin(a)) ** 4, .25) * (1.05 + .04 * Math.sin(a * 3 + i * 1.7) + .03 * Math.sin(a * 7 + i * 2.9));
+/* Isla: pasto arriba (anillos desde el centro) y roca facetada abajo que se angosta hasta una punta.
+   top y rock: triángulos [a, b, c, tono 0..1] · frags: piedras sueltas [x, y, z, radio]. */
+function isleShape(i) {
+  const N = 32, L = 6, RG = 6, CX = MAP_IW / 2, CY = MAP_ID / 2, rnd = isoRnd;
+  const rim = Array.from({ length: N }, (_, j) => { const a = j / N * Math.PI * 2; return [a, isleRimR(i, a) * (1 + (rnd(i * 61 + j) - .5) * .04)] });
+  const at = (j, k, z) => { const [a, r] = rim[j % N]; return [CX + Math.cos(a) * r * k, CY + Math.sin(a) * r * k, z] };
+  const top = [], rock = [];
+  for (let r = 0; r < RG; r++) for (let j = 0; j < N; j++) {
+    const k0 = r / RG, k1 = (r + 1) / RG, s0 = i * 5000 + r * 100 + j;
+    if (r === 0) top.push([[CX, CY, 0], at(j + 1, k1, 0), at(j, k1, 0), rnd(s0)]);
+    else { top.push([at(j, k0, 0), at(j + 1, k1, 0), at(j, k1, 0), rnd(s0)]); top.push([at(j, k0, 0), at(j + 1, k0, 0), at(j + 1, k1, 0), rnd(s0 + 50)]) }
+  }
+  const D = 84 + rnd(i * 13) * 16;
+  const rings = Array.from({ length: L }, (_, k) => rim.map(([a, r], j) => {
+    if (k === 0) return at(j, 1, 0);
+    const f = k / L, rr = r * (1 - Math.pow(f, 1.5)) * (1 + (rnd(i * 900 + k * 40 + j) - .5) * .2);
+    return [CX + Math.cos(a) * rr, CY + Math.sin(a) * rr, -4 - D * Math.pow(f, 1.25) + (rnd(i * 300 + k * 40 + j) - .5) * 8];
+  }));
+  const tip = [CX + (rnd(i * 7) - .5) * 14, CY + (rnd(i * 9) - .5) * 14, -4 - D - 8];
+  for (let k = 0; k < L; k++) for (let j = 0; j < N; j++) {
+    const u0 = rings[k][j], u1 = rings[k][(j + 1) % N], s0 = i * 9000 + k * 100 + j;
+    if (k === L - 1) { rock.push([u0, tip, u1, rnd(s0)]); continue }
+    const d0 = rings[k + 1][j], d1 = rings[k + 1][(j + 1) % N];
+    rock.push([u0, d1, u1, rnd(s0)]); rock.push([u0, d0, d1, rnd(s0 + 50)]);
+  }
+  const frags = Array.from({ length: 5 }, (_, k) => [CX + (rnd(i * 21 + k) - .5) * 60, CY + (rnd(i * 27 + k) - .5) * 60, -4 - D * (.75 + rnd(i * 23 + k) * .4) - 10, 2 + rnd(i * 40 + k) * 3.5]);
+  return { CX, CY, D, top, rock, frags };
+}
+/* Cerro de zona cafetera: redondeado, con las hileras del cafetal siguiendo las curvas de nivel y árboles de sombra.
+   verts: [x, y, z, hilera (1) o pasto (0), variación 0..1] · tris: índices · trees: [x, y, z, radio, tono]. */
+function hillShape(cx, cy, rx, ry, h, seed, RINGS = 28, SEG = 56) {
+  const rnd = isoRnd, cl = (v, a, b) => Math.max(a, Math.min(b, v));
+  const rim = a => 1 + .1 * Math.sin(a * 3 + seed) + .06 * Math.sin(a * 5 + seed * 2.3);
+  const zAt = (t, a) => h * Math.pow(Math.cos(t * Math.PI / 2), 1.5) * (1 + .06 * Math.sin(a * 4 + seed) * Math.sin(t * Math.PI));
+  const xyAt = (t, a) => [cl(cx + Math.cos(a) * rx * t * rim(a), 1.5, MAP_IW - 1.5), cl(cy + Math.sin(a) * ry * t * rim(a), 1.5, MAP_ID - 1.5)];
+  const verts = [[cx, cy, zAt(0, 0), 0, 0]], tris = [], trees = [];
+  for (let i = 1; i <= RINGS; i++) {
+    const t = i / RINGS;
+    for (let j = 0; j < SEG; j++) {
+      const a = j / SEG * Math.PI * 2, k = i * SEG + j, z = i === RINGS ? 0 : zAt(t, a), [x, y] = xyAt(t, a);
+      const band = (z / 4.2 + .3 * Math.sin(a * 2 + seed)) % 1, row = t > .25 && t < .95 && band < .42;
+      verts.push([x, y, z, row ? 1 : 0, rnd(k + seed * (row ? 13 : 7))]);
+    }
+  }
+  const at = (i, j) => i === 0 ? 0 : 1 + (i - 1) * SEG + (j % SEG);
+  for (let j = 0; j < SEG; j++) tris.push([0, at(1, j + 1), at(1, j)]);
+  for (let i = 1; i < RINGS; i++) for (let j = 0; j < SEG; j++) {
+    const p = at(i, j), q = at(i, j + 1), d = at(i + 1, j), e = at(i + 1, j + 1);
+    tris.push([p, q, d], [q, e, d]);
+  }
+  const n = Math.round(rx * ry / 55);
+  for (let k = 0; k < n; k++) {
+    const t = .12 + rnd(seed * 50 + k) * .7, a = rnd(seed * 80 + k) * Math.PI * 2, [x, y] = xyAt(t, a), r = 2.6 + rnd(seed * 20 + k) * 2.4;
+    trees.push([x, y, zAt(t, a) + r * .55, r, .9 + rnd(k + seed) * .25]);
+  }
+  return { verts, tris, trees };
+}
+/* Cerros de la finca: [cx, cy, rx, ry, altura, semilla]. */
+const FINCA_HILLS = [[36, 32, 33, 29, 56, 1], [84, 26, 26, 22, 38, 2.6], [16, 66, 14, 12, 18, 4.1]];
+
+/* ---------- Dibujo de caras sombreadas ----------
+   Cada triángulo se aclara u oscurece según hacia dónde mira (luz desde arriba a la izquierda) y se dibuja
+   de atrás hacia adelante. */
+const ISO_L = [.45, .18, 1].map((v, _, a) => v / Math.hypot(...a));
+const isoMix = (h1, h2, t) => { const a = parseInt(h1.slice(1), 16), b = parseInt(h2.slice(1), 16); return '#' + [16, 8, 0].map(sh => Math.round((a >> sh & 255) + ((b >> sh & 255) - (a >> sh & 255)) * t).toString(16).padStart(2, '0')).join('') };
+/* Luz sobre la cara (a, b, c). inner: un punto de adentro del volumen (la normal se da vuelta para mirar hacia afuera);
+   sin inner, la normal mira hacia arriba. Devuelve 0 si la cara mira hacia atrás (no se ve: no hace falta dibujarla). */
+function isoLight(a, b, c, inner) {
+  const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], v = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
+  let n = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
+  const l = Math.hypot(...n) || 1; n = n.map(x => x / l);
+  const flip = inner ? n[0] * ((a[0] + b[0] + c[0]) / 3 - inner[0]) + n[1] * ((a[1] + b[1] + c[1]) / 3 - inner[1]) + n[2] * ((a[2] + b[2] + c[2]) / 3 - inner[2]) < 0 : n[2] < 0;
+  if (flip) n = n.map(x => -x);
+  if (n[0] + n[1] + n[2] < -.05) return 0;
+  return .62 + .5 * Math.max(0, n[0] * ISO_L[0] + n[1] * ISO_L[1] + n[2] * ISO_L[2]);
+}
+const isoDepth = (...ps) => ps.reduce((s, p) => s + p[0] + p[1] + p[2], 0) / ps.length;
+const isoFacet = (o, pts, fill) => `<polygon points="${pts.map(p => isoP(o, p[0], p[1], p[2])).map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ')}" fill="${fill}" stroke="${fill}" stroke-width=".5" stroke-linejoin="round"/>`;
+const isoDraw = items => items.sort((a, b) => a[0] - b[0]).map(x => x[1]).join('');
+
+/* Base de la isla: roca facetada, piedras sueltas debajo y el pasto arriba. */
+function isoIsleBase(i, o) {
+  const m = MAP_PLACES[i], S = isleShape(i), inner = [S.CX, S.CY, -S.D / 2];
+  const rockA = isoShade(m.col, .78), rockB = isoShade(m.col, 1.12), items = [];
+  S.rock.forEach(([a, b, c, t]) => { const f = isoLight(a, b, c, inner); if (f) items.push([isoDepth(a, b, c), isoFacet(o, [a, b, c], isoShade(isoMix(rockA, rockB, t), f))]) });
+  S.frags.forEach(([x, y, z, r], k) => {
+    const p = isoP(o, x, y, z), c = isoShade(m.col, .8 + isoRnd(k + i) * .3), h = r * 1.3;
+    items.push([x + y + z, `<polygon points="${p[0]},${p[1] - h} ${p[0] + r},${p[1] - h * .3} ${p[0] + r * .7},${p[1] + h * .7} ${p[0] - r * .7},${p[1] + h * .7} ${p[0] - r},${p[1] - h * .3}" fill="${isoShade(c, .8)}"/><polygon points="${p[0]},${p[1] - h} ${p[0] + r},${p[1] - h * .3} ${p[0]},${p[1] + h * .1} ${p[0] - r},${p[1] - h * .3}" fill="${isoShade(c, 1.05)}"/>`]);
+  });
+  return isoDraw(items)
+    + S.top.map(([a, b, c, t]) => isoFacet(o, [a, b, c], isoShade(m.top, .93 + t * .14))).join('');
+}
+/* Cerros de la finca, con sus árboles de sombra, mezclados de atrás hacia adelante. */
+function isoHills(o) {
+  const items = [];
+  FINCA_HILLS.forEach(([cx, cy, rx, ry, h, seed]) => {
+    const H = hillShape(cx, cy, rx, ry, h, seed, 16, 28);
+    H.tris.forEach(([ia, ib, ic]) => {
+      const a = H.verts[ia], b = H.verts[ib], c = H.verts[ic], f = isoLight(a, b, c); if (!f) return;
+      const col = a[3] ? isoMix('#4f7a45', '#7fa565', a[4] * .25) : isoMix('#7fa565', '#9dbb7c', a[4] * .6);
+      items.push([isoDepth(a, b, c), isoFacet(o, [a, b, c], isoShade(col, f))]);
+    });
+    H.trees.forEach(([x, y, z, r, f]) => { const p = isoP(o, x, y, z); items.push([x + y + z + r, `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${(r * 1.1).toFixed(1)}" fill="${isoShade('#3f6a3c', f * .85)}"/><circle cx="${(p[0] - r * .3).toFixed(1)}" cy="${(p[1] - r * .35).toFixed(1)}" r="${(r * .6).toFixed(1)}" fill="${isoShade('#3f6a3c', f * 1.1)}"/>`]) });
+  });
+  return isoDraw(items);
+}
+/* Saco de yute abierto con café verde y algunos granos caídos alrededor. */
+function isoOpenSack(o, x, y) {
+  const b = isoP(o, x, y, 0);
+  let s = `<path d="M${b[0] - 10} ${b[1] - 15}q-2 12 1 15q9 4 18 0q3-3 1-15z" fill="#c9ad7c" stroke="#9c8358" stroke-width="1"/><path d="M${b[0] - 8} ${b[1] - 9}q8 3 16 0" stroke="#b0955f" stroke-width=".8" fill="none"/>`;
+  s += `<ellipse cx="${b[0]}" cy="${b[1] - 15}" rx="11" ry="4.4" fill="#b8975f" stroke="#9c8358" stroke-width="1"/><ellipse cx="${b[0]}" cy="${b[1] - 15.4}" rx="8.6" ry="3.2" fill="#7f9a5a"/>`;
+  for (let k = 0; k < 8; k++) { const u = isoRnd(40 + k), v = isoRnd(80 + k); s += `<ellipse cx="${(b[0] - 6 + u * 12).toFixed(1)}" cy="${(b[1] - 16.5 + v * 2.5).toFixed(1)}" rx="1.4" ry="1" fill="#9db37a" stroke="#6f8a4e" stroke-width=".4"/>` }
+  [[x + 10, y + 10], [x + 14, y + 14], [x + 6, y + 13]].forEach(([gx, gy]) => { const p = isoP(o, gx, gy, 0); s += `<ellipse cx="${p[0]}" cy="${p[1]}" rx="1.8" ry="1.2" fill="#9db37a" stroke="#6f8a4e" stroke-width=".4"/>` });
+  return s;
+}
+/* Pallet de madera con sacos de yute acostados: de a dos por capa y cada capa cruzada respecto de la de abajo. */
+function isoPallet(o) {
+  const PX = 86, PY = 15, PW = 26, PD = 28, pine = '#c9a170', LH = 4.4, base = 3.8;
+  let s = '';
+  [PX, PX + PW / 2 - 1.5, PX + PW - 3].forEach(x => { s += isoBox(o, x, PY, 0, 3, PD, .8, isoShade(pine, .9)) });
+  [PY, PY + PD / 2 - 1.5, PY + PD - 3].forEach(y => [PX, PX + PW / 2 - 1.5, PX + PW - 3].forEach(x => { s += isoBox(o, x, y, .8, 3, 3, 2.2, isoShade(pine, .85)) }));
+  s += isoBox(o, PX, PY, 3, PW, PD, .8, pine);
+  for (let L = 0; L < 5; L++) [.25, .75].forEach((f, j) => {
+    const col = isoShade('#c9ad7c', .9 + isoRnd(L * 7 + j) * .16), z = base + LH * L;
+    const [x, y, w, d] = L % 2 === 0 ? [PX + .3, PY + PD * f - PD / 4 + .3, PW - .6, PD / 2 - .6] : [PX + PW * f - PW / 4 + .3, PY + .3, PW / 2 - .6, PD - .6];
+    s += isoBox(o, x, y, z, w, d, LH, col, isoShade(col, 1.08));
+    /* Lomo del saco: un abultado más claro en el medio de la cara de arriba */
+    const c = isoP(o, x + w / 2, y + d / 2, z + LH + .2);
+    s += `<ellipse cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" rx="${((w + d) * .3).toFixed(1)}" ry="${((w + d) * .14).toFixed(1)}" fill="${isoShade(col, 1.14)}" opacity=".7"/>`;
+  });
+  return s;
+}
 const MAP_PLACES = [
   { place: 'La finca', top: '#a7c48a', col: '#8c6b4a', ic: '<path d="M12 21V11"/><path d="M12 13c-5 0-7-4-7-8 4 0 7 3 7 8zM12 11c4 0 6-3 6-7-4 0-6 3-6 7z"/>',
-    land: o => isoMount(o, 4, 4, 62, 54, 70, '#8fae74', true) + isoMount(o, 50, 2, 50, 46, 48, '#9db886') + [[74, 64], [92, 66], [74, 84], [92, 86], [74, 104], [92, 104], [56, 98]].map(([x, y]) => isoTree(o, x, y, .9, '#6f8a5e', true)).join('') + isoTree(o, 20, 96, 1.2) },
+    land: o => isoHills(o) + [[74, 64], [92, 66], [74, 84], [92, 86], [74, 104], [92, 104], [56, 98]].map(([x, y]) => isoTree(o, x, y, .9, '#6f8a5e', true)).join('') + isoTree(o, 20, 96, 1.2) },
   { place: 'El beneficio', hint: 'donde se procesa', top: '#ead9b2', col: '#a07c58', ic: '<circle cx="17" cy="6" r="3"/><path d="M3 15h16M5 15v5M17 15v5"/><path d="M4 13c2-2 4-2 6 0s4 2 6 0"/>',
     /* Marquesina a la izquierda; camas africanas a la derecha (una con cerezas: proceso natural). */
     land: o => isoTunnel(o, 6, 8, 42, 74, 30) + isoBed(o, 58, 10, 52, 18, 14, 'pergamino', 2) + isoBed(o, 58, 38, 52, 18, 14, 'cereza', 3) + isoBed(o, 62, 66, 44, 16, 14, 'pergamino', 4)
       + isoTree(o, 110, 104, 1) + `<g class="map-float">${isoAt(o, 96, 4, 96, (x, y) => `<circle cx="${x}" cy="${y}" r="11" fill="#f0d27e"/>`)}</g>` },
   { place: 'El puerto', top: '#dcd6c8', col: '#8f8a7c', ic: '<path d="M3 20V9l9-5 9 5v11"/><path d="M8 20v-5h8v5"/>',
     land: o => isoBox(o, 10, 10, 0, 64, 52, 34, '#d8cfbf', '#e6dfd1') + isoRoof(o, 10, 10, 34, 64, 52, 20, '#9a7c62') + isoBox(o, 72, 30, 0, 1, 18, 22, '#7a6a55') + [[84, 74], [96, 70], [90, 84], [30, 90], [42, 92]].map(([x, y]) => isoSack(o, x, y)).join('')
+      + isoAt(o, MAP_IW + 30, 8, -19, (x, y) => `<ellipse cx="${x}" cy="${y}" rx="42" ry="24" fill="#8fc3d4" opacity=".55"/>`)
       + `<g class="map-boat">${isoAt(o, MAP_IW + 4, 20, -6, (x, y) => `<path d="M${x + 6} ${y + 4}h52l-8 12h-38z" fill="#5c625a"/><rect x="${x + 14}" y="${y - 8}" width="12" height="12" fill="#c0503d"/><rect x="${x + 27}" y="${y - 8}" width="12" height="12" fill="#6f8a5e"/><rect x="${x + 40}" y="${y - 8}" width="12" height="12" fill="#c9ad7c"/>`)}</g>` },
   { place: 'La tostadora', top: '#e6d3bc', col: '#94705a', ic: '<ellipse cx="12" cy="12" rx="5" ry="8" transform="rotate(20 12 12)"/><path d="M10 5c3 5 3 9 0 14"/>',
-    land: o => isoRoastery(o) + isoTree(o, 12, 100, 1) },
+    /* El tostador de la Academia y su mesa, achicados (.72) y corridos hacia atrás; pallet con sacos y saco abierto. */
+    land: o => { const pv = isoP(o, 54, 48, 0), tg = isoP(o, 52, 40, 0); return isoTree(o, 10, 62, 1) + `<g transform="translate(${tg[0]} ${tg[1]}) scale(.72) translate(${-pv[0]} ${-pv[1]})">${isoRoastery(o)}</g>` + isoOpenSack(o, 40, 82) + isoPallet(o) } },
   { place: 'La barra', top: '#dde2d8', col: '#8b9187', ic: '<path d="M5 4h14l-5 8h-4z"/><path d="M7 15h10v5H7z"/>',
     land: o => isoTree(o, 104, 20, 1) + isoTree(o, 20, 24, .9, '#6f8a5e') + isoBar(o) },
   { place: 'La mesa de cata', top: '#f0e4d1', col: '#a88a68', ic: '<path d="M4 10h13v4a6 6 0 0 1-13 0z"/><path d="M17 11h2a2 2 0 0 1 0 4h-2"/><path d="M8 7c-1-1 1-2 0-3M12 7c-1-1 1-2 0-3"/>',
-    land: o => isoCupping(o) + isoTree(o, 104, 104, 1) }
+    land: o => isoCupping(o) + isoTree(o, 100, 98, 1) }
 ];
 const mapOrigin = i => [i % 2 ? 268 : 132, MAP_TOP + i * MAP_GAP];
 const mapFront = i => isoP(mapOrigin(i), MAP_IW / 2, MAP_ID, 0);
@@ -313,20 +448,21 @@ function mapTiles(a, b, lit) {
 }
 /* Una isla con su lugar, en el origen o. */
 function mapIsland(i, o) {
-  const m = MAP_PLACES[i], sh = isoP(o, MAP_IW / 2, MAP_ID / 2, -MAP_IH - 30);
-  return `<ellipse cx="${sh[0]}" cy="${sh[1] + 40}" rx="70" ry="14" fill="#000" opacity=".06"/>` + isoBox(o, 0, 0, -MAP_IH, MAP_IW, MAP_ID, MAP_IH, m.col, m.top) + m.land(o);
+  return isoIsleBase(i, o) + MAP_PLACES[i].land(o);
 }
 function mapScene() {
   let s = [[70, 40, 1], [320, 300, .8], [60, 600, .7], [330, 900, .9], [80, 1250, .7]].map(([x, y, k]) => `<g opacity=".8" transform="translate(${x} ${y}) scale(${k})" fill="#fff"><ellipse rx="26" ry="9"/><ellipse cx="-12" cy="-5" rx="13" ry="9"/><ellipse cx="12" cy="-7" rx="15" ry="11"/></g>`).join('');
-  /* Camino de baldosas (detrás de las islas); verde en lo ya recorrido. */
-  for (let i = 0; i < SC.length - 1; i++) s += mapTiles(mapFront(i), isoP(mapOrigin(i + 1), MAP_IW / 2, 0, 0), stDone(i));
-  /* Toda la isla se puede tocar para abrir su ficha (el botón redondo sigue siendo el acceso con teclado). */
-  MAP_PLACES.forEach((m, i) => { s += `<g class="map-isle" data-a="mapNode" data-v="${i}">${mapIsland(i, mapOrigin(i))}</g>` });
+  /* Cada isla y, después, el tramo de camino que sale de ella (pasa por delante de su roca y llega por detrás
+     a la siguiente). Toda la isla se puede tocar para abrir su ficha (el botón redondo sigue siendo el acceso con teclado). */
+  MAP_PLACES.forEach((m, i) => {
+    s += `<g class="map-isle" data-a="mapNode" data-v="${i}">${mapIsland(i, mapOrigin(i))}</g>`;
+    if (i < SC.length - 1) s += mapTiles(mapFront(i), isoP(mapOrigin(i + 1), MAP_IW / 2, 0, 0), stDone(i));
+  });
   return `<svg class="map-scene" viewBox="0 0 ${MAP_W} ${MAP_H}" aria-hidden="true">${s}</svg>`;
 }
 /* Isla sola, para la portada de cada estación. */
 function islandThumb(i) {
-  return `<svg class="isle-svg" viewBox="0 0 230 250" aria-hidden="true">${mapIsland(i, [115, 102])}</svg>`;
+  return `<svg class="isle-svg" viewBox="0 0 230 290" aria-hidden="true">${mapIsland(i, [115, 102])}</svg>`;
 }
 
 /* head: título y avance, que se muestran dentro del cielo, arriba del mapa. */

@@ -1080,3 +1080,6 @@ a.program-item { text-decoration: none }
    los botones de las estaciones siguen arriba de todo. */
 .t3-map { position: absolute; pointer-events: auto }
 .t3-map-on > .map-scene { visibility: hidden }
+/* El mapa grande tiene miles de caras: si algo se anima adentro del SVG, el navegador lo vuelve a pintar entero
+   en cada cuadro. Ahí el humo, el barco y el sol quedan quietos (en el mapa 3D sí se mueven). */
+.map-scene .map-smoke, .map-scene .map-boat, .map-scene .map-float { animation: none }
