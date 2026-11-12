@@ -77,8 +77,8 @@ const SCROLL_ON_RELEASE = [
   [/^al$/, '.alt-stage'],             // Fruto · Altitud: la montaña y la zona
   [/^mp$/, '.mad-pick'],              // Fruto · Madurez: el fruto y los azúcares
   [/^gr5$/, '.grind-explorer'],       // Molienda: el gráfico y la lectura
-  [/^w[123]$/, '.tds-stage'],         // Medir: el gráfico y el resultado
-  [/^(p|e)_/, '.lab-result']          // Receta: la lectura del ratio
+  [/^w[123]$/, '.tds-stage']          // Medir: el gráfico y el resultado
+  /* Filtrado y espresso no suben: tienen muchos deslizadores seguidos y hay que poder ajustarlos sin volver a bajar. */
 ];
 document.addEventListener('change', e => {
   const id = e.target && e.target.id, hit = id && SCROLL_ON_RELEASE.find(([re]) => re.test(id));
@@ -128,7 +128,15 @@ document.addEventListener('click', e => {
   if (el.tagName === 'A') { if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return; e.preventDefault() }
   fn(el.dataset.v, el, e);
 });
-document.addEventListener('input', e => { for (const fn of INPUTS) fn(e.target, e.target.dataset) });
+/* Al mover un deslizador, los textos de arriba (resultado, etiquetas) pueden cambiar de alto y empujar
+   la página. Se mide dónde estaba el deslizador antes de actualizar y se corrige el desplazamiento,
+   así queda quieto bajo el dedo o el mouse. */
+document.addEventListener('input', e => {
+  const t = e.target, range = t.type === 'range' && t.isConnected;
+  const top = range ? t.getBoundingClientRect().top : 0;
+  for (const fn of INPUTS) fn(t, t.dataset);
+  if (range && t.isConnected) { const d = t.getBoundingClientRect().top - top; if (Math.abs(d) >= 1) window.scrollBy(0, d) }
+});
 /* Elementos SVG con role=button: Enter y espacio equivalen a un clic. */
 document.addEventListener('keydown', e => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('[role=button][data-a]')) {

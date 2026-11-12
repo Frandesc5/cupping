@@ -193,7 +193,7 @@ th { color: var(--hl); font-weight: 600; letter-spacing: .02em }
 .stat b { display: block; font: 600 1.5rem var(--display); color: var(--primary) }
 
 label { display: flex; justify-content: space-between; gap: 12px; margin-top: 8px; font-size: .9rem; font-weight: 500; color: var(--muted) }
-label span { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums }
+label span { flex-shrink: 0; white-space: nowrap; color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums }
 
 /* Controles deslizantes */
 input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 40px; background: transparent; accent-color: var(--primary) }
