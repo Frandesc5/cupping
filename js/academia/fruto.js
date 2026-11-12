@@ -10,12 +10,12 @@ const L=[
 {n:'Semillas y película plateada',s:'Las semillas son la parte que normalmente llamamos granos de café. Son verdes hasta el tueste.',t:'Cada semilla presenta una película plateada fina, y su estructura y composición experimentan transformaciones durante el tueste.',f:'Lo habitual es encontrar dos semillas por fruto, aunque algunas cerezas contienen una sola.'}];
 const DY=[-144,-72,0,72,144],SC_=[.42,.42,.44,.5,.6],NM=['Piel','Pulpa','Mucílago','Pergamino','Semillas'];
 function cherry(){const g=(i,x)=>`<g class="ly ${S.sel===i?'on':''}" data-a="sel" data-v="${i}" role="button" tabindex="0" aria-label="${L[i].n}" style="--dy:${DY[i]}px;--sc:${SC_[i]}">${x}</g>`;
-return `<p class=m>La cereza tiene varias capas alrededor de las semillas. Varias se sacan durante el proceso, así que conocerlas ayuda a entender todo lo que sigue.</p>${doIt('Tocá “Separar capas” y después cada capa del fruto.', `<span id=do-n>${S.seen.length}</span> de 5`)}<div class="stage cherry-stage"><div class="cherry-top"><button class="b p" id="cherry-split" data-a="split">${S.split?'Volver a unir':'Separar capas'}</button></div><svg viewBox="0 0 300 400" id="cs" class="${S.split?'split ':''}${S.sel>=0?'dim':''}" role="group" aria-label="Cereza de café por capas">
+return `<p class=m>La cereza tiene varias capas alrededor de las semillas. Varias se sacan durante el proceso, así que conocerlas ayuda a entender todo lo que sigue.</p>${doIt('Tocá “Separar capas” y después cada capa del fruto.', `<span id=do-n>${S.seen.length}</span> de 5`)}<div class="stage cherry-stage"><div class="cherry-top"><button class="b p" id="cherry-split" data-a="split">${S.split?'Volver a unir':'Separar capas'}</button></div><div class="cherry-3d" data-t3="cherry"><svg viewBox="0 0 300 400" id="cs" class="${S.split?'split ':''}${S.sel>=0?'dim':''}" role="group" aria-label="Cereza de café por capas">
 ${g(0,`<ellipse cx="150" cy="200" rx="100" ry="118" fill="#C85C45"/><circle cx="150" cy="316" r="6" fill="#79543C"/>`)}${g(1,`<ellipse cx="150" cy="200" rx="88" ry="105" fill="#D98A6A"/>`)}
 ${g(2,`<ellipse cx="150" cy="200" rx="76" ry="90" fill="#E5CB87"/><path d="M95 160q10 10 0 22M205 230q-10 10 0 22" stroke="#fff" stroke-opacity=".6" fill="none" stroke-width="2"/>`)}
 ${g(3,`<ellipse cx="118" cy="200" rx="35" ry="62" fill="#D8C9A0" stroke="#A9B89B" stroke-width="2"/><ellipse cx="182" cy="200" rx="35" ry="62" fill="#D8C9A0" stroke="#A9B89B" stroke-width="2"/>`)}
 ${g(4,`<ellipse cx="121" cy="200" rx="26" ry="52" fill="#9BAA73" stroke="#CFD8C0" stroke-width="3"/><ellipse cx="179" cy="200" rx="26" ry="52" fill="#9BAA73" stroke="#CFD8C0" stroke-width="3"/><path d="M127 160q-8 40 0 80M173 160q8 40 0 80" stroke="#6f7d4d" stroke-width="3" fill="none"/>`)}
-${NM.map((n,i)=>`<text class="lbl" x="205" y="${204+DY[i]}">${n}</text>`).join('')}</svg><div class="viewer-nav"><button class="b viewer-arrow" data-a="prev" aria-label="Capa anterior"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><div class="viewer-now" id="viewer-now" aria-live="polite">${cherryNow()}</div><button class="b viewer-arrow" data-a="next" aria-label="Capa siguiente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button></div></div><div id="cp">${cp()}</div>`}
+${NM.map((n,i)=>`<text class="lbl" x="205" y="${204+DY[i]}">${n}</text>`).join('')}</svg></div><div class="viewer-nav"><button class="b viewer-arrow" data-a="prev" aria-label="Capa anterior"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><div class="viewer-now" id="viewer-now" aria-live="polite">${cherryNow()}</div><button class="b viewer-arrow" data-a="next" aria-label="Capa siguiente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button></div></div><div id="cp">${cp()}</div>`}
 /* Capa elegida y avance, en el centro de los controles del visualizado. */
 const cherryNow=()=>`<span>${S.sel>=0?NM[S.sel]:'Elegí una capa'}</span><div class="dots" aria-hidden="true">${L.map((_,i)=>`<i class="${S.seen.includes(i)?'s':''} ${S.sel===i?'c':''}"></i>`).join('')}</div>`;
 function cp(){const l=L[S.sel];let h=`<div class="panel">`;
@@ -46,6 +46,8 @@ function uc() {
   $('#cp').innerHTML = cp();
   $('#viewer-now').innerHTML = cherryNow();
   $('#cherry-split').textContent = S.split ? 'Volver a unir' : 'Separar capas';
+  /* La cereza en 3D (js/tres.js) lee S.split y S.sel: se le avisa que cambiaron. */
+  if (typeof T3 !== 'undefined') T3.poke(document.querySelector('.cherry-3d'));
   bar();
 }
 function setSel(i) { S.sel = ((i % 5) + 5) % 5; if (!S.seen.includes(S.sel)) S.seen.push(S.sel); S.det = 0; uc() }

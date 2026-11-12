@@ -21,8 +21,10 @@ const seenAll = (key, n, text) => () => { const k = Math.min(S[key].length, n); 
 const SC = [
   { n: 'Fruto', slug: 'fruto', mt: 'La planta y el fruto', md: 'Especies, altitud, madurez y las capas del fruto.', t: 'La planta y el fruto',
     goal: 'Conocé de dónde viene el café: las especies, cómo influyen la altitud y la madurez, y qué capas tiene el fruto.',
+    goalIni: 'Descubrí de dónde viene el café: la planta, sus especies, cómo influyen la altura y la madurez, y qué capas tiene el fruto.',
     tab: 't1', vis: 't1v', after: frutoAfter,
     steps: [
+      { k: 'in', slug: 'que-es-el-cafe', label: '¿Qué es el café?', view: iniFruto, ini: 1 },
       { k: 'sp', slug: 'especies', label: 'Especies', view: sp1, need: seenAll('spSeen', 2, 'Tocá las dos especies') },
       { k: 'al', slug: 'altitud', label: 'Altitud', view: alt1, need: seenAll('altSeen', 2, 'Mové la altitud hasta una zona baja y una zona alta') },
       { k: 'ma', slug: 'madurez', label: 'Madurez', view: mad1, need: () => [!!S.madOk || 'Deslizá la maduración hasta «Maduro».'] },
@@ -32,62 +34,80 @@ const SC = [
     ] },
   { n: 'Poscosecha', slug: 'poscosecha', mt: 'Poscosecha', md: 'Cómo el fruto se convierte en grano seco: lavado, natural y honey.', t: 'Del fruto al café seco',
     goal: 'Seguí el camino del fruto hasta el café seco: las rutas de proceso, las fermentaciones y los métodos de secado.',
+    goalIni: 'Descubrí cómo el fruto se convierte en un grano seco y por qué eso cambia el sabor del café.',
     tab: 'postTab', vis: 'postTabsSeen',
     steps: [
+      { k: 'in', slug: 'despues-de-la-cosecha', label: 'Después de la cosecha', view: iniPoscosecha, ini: 1 },
       { k: 'process', slug: 'procesos', label: 'Procesos', view: postProcessView,
         quiz: 'p', ready: () => S.pv.length >= 3,
         need: () => [S.pv.length >= 3 || `Tocá 3 etapas de una ruta (${Math.min(S.pv.length, 3)} de 3).`, S.qa.p != null || (S.pv.length >= 3 ? QUIZ_MISS : QUIZ_LATER)] },
-      { k: 'fermentation', slug: 'fermentaciones', label: 'Fermentaciones', view: postFermentationView, need: seenAll('fermSeen', 5, 'Tocá los 5 tipos de fermentación') },
-      { k: 'drying', slug: 'secado', label: 'Secado', view: postDryingView,
+      { k: 'fermentation', slug: 'fermentaciones', label: 'Fermentaciones', view: postFermentationView, full: 1, need: seenAll('fermSeen', 5, 'Tocá los 5 tipos de fermentación') },
+      { k: 'drying', slug: 'secado', label: 'Secado', view: postDryingView, full: 1,
         quiz: 'd', need: () => [S.qa.d != null || QUIZ_MISS] }
     ] },
   { n: 'Verde', nv: 'Café verde', slug: 'cafe-verde', mt: 'Café verde', md: 'Cómo se elige un buen café verde: defectos y calidad.', t: 'El café verde',
     goal: 'Aprendé a evaluar un lote de café verde: defectos, clasificación, humedad, densidad y trazabilidad.',
+    goalIni: 'Conocé el café verde y aprendé a reconocer los granos con defectos.',
     tab: 't3', vis: 't3v', after: verdeAfter,
     steps: [
+      { k: 'in', slug: 'que-es-el-cafe-verde', label: '¿Qué es el café verde?', view: iniVerde, ini: 1 },
       { k: 'de', slug: 'defectos', label: 'Defectos', view: green3,
         need: () => { const left = GB2.filter((t, i) => t > 0 && t < 14 && !S.sy.includes(i)).length; return [left === 0 || `Sacá los granos con defectos (quedan ${left}).`] } },
-      { k: 'cl', slug: 'clasificar', label: 'Clasificar', view: clas, need: seenAll('prSeen', 3, 'Probá las 3 muestras') },
-      { k: 'hd', slug: 'humedad-y-densidad', label: 'Humedad y densidad', view: hum, need: () => [!!(S.hdMoved.h && S.hdMoved.m) || 'Mové la humedad y la masa de la muestra.'] },
-      { k: 'tz', slug: 'tamano-y-origen', label: 'Tamaño y origen', view: tam, need: seenAll('tzSeen', 5, 'Tocá las 5 etapas del camino del lote') }
+      { k: 'cl', slug: 'clasificar', label: 'Clasificar', view: clas, full: 1, need: seenAll('prSeen', 3, 'Probá las 3 muestras') },
+      { k: 'hd', slug: 'humedad-y-densidad', label: 'Humedad y densidad', view: hum, full: 1, need: () => [!!(S.hdMoved.h && S.hdMoved.m) || 'Mové la humedad y la masa de la muestra.'] },
+      { k: 'tz', slug: 'tamano-y-origen', label: 'Tamaño y origen', view: tam, full: 1, need: seenAll('tzSeen', 5, 'Tocá las 5 etapas del camino del lote') }
     ] },
   { n: 'Tueste', slug: 'tueste', mt: 'Tueste', md: 'Qué le pasa al grano dentro del tostador.', t: 'El tueste',
     goal: 'Entendé qué le pasa al grano en el tostador: sus fases, la curva de temperatura, los grados de tueste y las fallas más comunes.',
+    goalIni: 'Entendé qué es tostar, qué le pasa al grano y en qué se diferencian un tueste claro, uno medio y uno oscuro.',
     tab: 't4', vis: 't4v', after: tuesteAfter,
     steps: [
+      { k: 'in', slug: 'que-es-tostar', label: '¿Qué es tostar?', view: iniTueste, ini: 1 },
       { k: 'fs', slug: 'fases', label: 'Fases', view: fas,
         quiz: 'r', need: () => [S.qa.r != null || QUIZ_MISS] },
-      { k: 'cu', slug: 'curva', label: 'Curva', view: cur,
+      { k: 'cu', slug: 'curva', label: 'Curva', view: cur, full: 1,
         need: () => [S.hitMedio || 'Elegí cuándo sacarlo para lograr un tueste medio.'] },
       { k: 'gr', slug: 'grados', label: 'Grados', view: gra,
         need: () => [S.gro.length >= 3 || 'Ordená los tres granos del más claro al más oscuro.'] },
-      { k: 'fa', slug: 'fallas', label: 'Fallas', view: fal, need: seenAll('faSeen', 6, 'Tocá las 6 opciones, de «Ideal» a «Subdesarrollo»') }
+      { k: 'fa', slug: 'fallas', label: 'Fallas', view: fal, full: 1, need: seenAll('faSeen', 6, 'Tocá las 6 opciones, de «Ideal» a «Subdesarrollo»') }
     ] },
   { n: 'Preparación', slug: 'preparacion', mt: 'Preparación', md: 'Armá una receta: ratio, agua y molienda.', t: 'La preparación',
     goal: 'Armá una receta y entendé las variables que cambian la taza: el ratio, el agua, la molienda y la medición.',
+    goalIni: 'Conocé los métodos de filtrado y el espresso, y armá tu primera receta.',
     tab: 't5', vis: 't5v', after: prepAfter,
     steps: [
+      { k: 'in', slug: 'filtrado', label: 'Filtrado', view: iniFiltrado, ini: 1 },
+      { k: 'in2', slug: 'espresso', label: 'Espresso', view: iniEspresso, ini: 1 },
       { k: 're', slug: 'receta', label: 'Receta', view: prepRecipe,
         need: () => [!!(S.hitV60 || S.hitEsp) || 'Llegá al ratio objetivo. Pista: 15 g de café con 240 g de agua dan 1:16.'] },
-      { k: 'ag', slug: 'agua', label: 'Agua', view: agua, need: () => [!!S.hitAgua || 'Llevá la dureza y la alcalinidad a la zona verde.'] },
-      { k: 'mo', slug: 'molienda', label: 'Molienda', view: () => mol(true), need: seenAll('grSeen', 5, 'Mové el punto de molienda por los 5 tamaños') },
-      { k: 'me', slug: 'medir', label: 'Medir', view: () => med(true), need: () => [!!S.hitMed || 'Mové los valores hasta sacar el punto de la zona verde y volvé a meterlo.'] }
+      { k: 'ag', slug: 'agua', label: 'Agua', view: agua, full: 1, need: () => [!!S.hitAgua || 'Llevá la dureza y la alcalinidad a la zona verde.'] },
+      { k: 'mo', slug: 'molienda', label: 'Molienda', view: () => mol(true), full: 1, need: seenAll('grSeen', 5, 'Mové el punto de molienda por los 5 tamaños') },
+      { k: 'me', slug: 'medir', label: 'Medir', view: () => med(true), full: 1, need: () => [!!S.hitMed || 'Mové los valores hasta sacar el punto de la zona verde y volvé a meterlo.'] }
     ] },
   { n: 'Sensorial', slug: 'sensorial', mt: 'Sensorial', md: 'Aprendé a describir lo que sentís en la taza.', t: 'La experiencia sensorial',
     goal: 'Aprendé a describir lo que percibís: el perfil de un café, la rueda de sabores, la cata y los sesgos.',
+    goalIni: 'Aprendé a probar un café y a describir lo que sentís.',
     tab: 't6', vis: 't6v', after: sensAfter,
     steps: [
+      { k: 'in', slug: 'como-se-prueba', label: '¿Cómo se prueba?', view: iniSensorial, ini: 1 },
       { k: 'pf', slug: 'perfil', label: 'Perfil', view: sens3,
         quiz: 's', need: () => [S.qa.s != null || QUIZ_MISS] },
-      { k: 'ru', slug: 'rueda', label: 'Rueda', view: rue, need: () => [!!S.hitRueda || 'Elegí una familia y un sabor concreto.'] },
-      { k: 'ca', slug: 'cata', label: 'Cata', view: cat, need: seenAll('cpSeen', 6, 'Recorré las 6 etapas de la cata') },
-      { k: 'sb', slug: 'sesgos', label: 'Sesgos', view: ses,
+      { k: 'ru', slug: 'rueda', label: 'Rueda', view: rue, full: 1, need: () => [!!S.hitRueda || 'Elegí una familia y un sabor concreto.'] },
+      { k: 'ca', slug: 'cata', label: 'Cata', view: cat, full: 1, need: seenAll('cpSeen', 6, 'Recorré las 6 etapas de la cata') },
+      { k: 'sb', slug: 'sesgos', label: 'Sesgos', view: ses, full: 1,
         need: () => { const n = Object.keys(S.sb).length; return [n >= 3 || `Respondé las 3 situaciones (${n} de 3).`] } }
     ] }
 ];
 
 /* ---------- Pasos ---------- */
-const curStep = c => c.steps.find(s => s.k === S[c.tab]) || c.steps[0];
+/* Paso actual. En principiante, mientras la explicación del comienzo no se abrió, se arranca por ella,
+   salvo que la persona haya elegido otro paso (S.pick: desde la línea de pasos o con una dirección).
+   El paso que cada módulo trae guardado de entrada (y marcado como abierto) no cuenta: no lo eligió nadie. */
+const curStep = c => {
+  const st = c.steps, s = st.find(x => x.k === S[c.tab]);
+  if (st[0].ini && !S[c.vis].includes(st[0].k) && !S.pick[c.tab]) return st[0];
+  return s || st[0];
+};
 const stepIdx = c => c.steps.indexOf(curStep(c));
 const stepOpened = (c, s) => S[c.vis].includes(s.k);
 /* Lo que falta para completar un paso (lista vacía = completo). */
@@ -115,7 +135,18 @@ if (!Array.isArray(P.done)) {
   if (m > 0) { P.v = [...Array(Math.min(m + 1, SC.length)).keys()]; P.last = Math.min(m, SC.length - 1) }
   sv();
 }
-const PROGRESS_KEYS = ['t1', 't1v', 'seen', 'postTab', 'postTabsSeen', 'pv', 't3', 't3v', 'sy', 't4', 't4v', 't5', 't5v', 'hitV60', 'hitEsp', 't6', 't6v', 'qa', 'gro', 'sb', 'hitMedio',
+/* ---------- Niveles ----------
+   P.lvl: 'ini' (principiante: lo esencial, explicado desde cero) o 'full' (completo: todos los pasos).
+   Quien ya tenía avance empieza en completo; quien llega por primera vez, en principiante.
+   Cada estación muestra solo los pasos de su nivel (ini: solo principiante · full: solo completo).
+   Lo hecho en un paso cuenta en los dos niveles; las estaciones completas se guardan por nivel
+   (P.doneIni y P.done), y completar una en el nivel completo la da por completa también en principiante. */
+if (P.lvl !== 'ini' && P.lvl !== 'full') { P.lvl = P.done.length || (P.v || []).length ? 'full' : 'ini'; sv() }
+const isIni = () => P.lvl === 'ini';
+S.pick = {};
+SC.forEach(c => { const all = c.steps; c.all = all; Object.defineProperty(c, 'steps', { get: () => all.filter(s => isIni() ? !s.full : !s.ini) }) });
+const lvlName = () => isIni() ? 'Principiante' : 'Completo';
+const PROGRESS_KEYS = ['pick', 't1', 't1v', 'seen', 'postTab', 'postTabsSeen', 'pv', 't3', 't3v', 'sy', 't4', 't4v', 't5', 't5v', 'hitV60', 'hitEsp', 't6', 't6v', 'qa', 'gro', 'sb', 'hitMedio',
   'spSeen', 'altSeen', 'madOk', 'fermSeen', 'prSeen', 'hdMoved', 'tzSeen', 'faSeen', 'hitAgua', 'grSeen', 'hitMed', 'hitRueda', 'cpSeen'];
 /* Avance guardado antes de que cada paso tuviera su tarea (sin la marca v2): en las estaciones
    ya completas, las tareas nuevas se dan por hechas, así sus pasos no vuelven a verse pendientes. */
@@ -134,7 +165,7 @@ if (P.st && !P.st.v2) {
 if (P.st) for (const k of PROGRESS_KEYS) if (P.st[k] != null) S[k] = P.st[k];
 function saveProgress() { P.st = { v2: 1 }; for (const k of PROGRESS_KEYS) P.st[k] = S[k]; sv() }
 
-const doneSt = i => P.done.includes(i);
+const doneSt = i => P.done.includes(i) || (isIni() && (P.doneIni || []).includes(i));
 /* Empezada: se abrió y tiene al menos un paso completo. Abrirla para mirar no cuenta. */
 const startedSt = i => (P.v || []).includes(i) && (doneSt(i) || stepsDone(SC[i]) > 0);
 const doneCount = () => SC.filter((_, i) => doneSt(i)).length;
@@ -267,9 +298,9 @@ function bar() {
   put(st, stepperHTML(c)); put(ft, stepFootHTML(c));
   const tab = document.querySelectorAll('.strip a')[S.i];
   if (tab) tab.classList.toggle('d', ok || doneSt(S.i));
-  if (ok && !doneSt(S.i)) { P.done = (P.done || []).concat(S.i) }
+  if (ok && !doneSt(S.i)) { if (isIni()) P.doneIni = (P.doneIni || []).concat(S.i); else P.done = (P.done || []).concat(S.i) }
   saveProgress();
-  if (ok && !S.dn[S.i]) { S.dn[S.i] = 1; S.celebrate = S.i; celebrateAtFoot() }
+  if (ok && !S.dn[P.lvl + S.i]) { S.dn[P.lvl + S.i] = 1; S.celebrate = S.i; celebrateAtFoot() }
 }
 
 function stationView() {
@@ -277,7 +308,7 @@ function stationView() {
   openStep(c, s.k);
   /* En el celu el objetivo se muestra solo en el primer paso, para que la consigna entre en la primera pantalla. */
   return `${strip()}
-  <header class="station-head has-isle"><div class="station-isle">${islandThumb(S.i)}</div><div class="station-head-txt"><div class="k">Estación ${S.i + 1} de ${SC.length} · ${MAP_PLACES[S.i].place}</div><h2>${c.t}</h2><p class="station-goal ${j ? 'is-later' : ''}">${c.goal}</p></div></header>
+  <header class="station-head has-isle"><div class="station-isle">${islandThumb(S.i)}</div><div class="station-head-txt"><div class="k">Estación ${S.i + 1} de ${SC.length} · ${MAP_PLACES[S.i].place} · Nivel ${lvlName().toLowerCase()} <button type="button" class="link-btn lvl-switch" data-a="lvl" data-v="${isIni() ? 'full' : 'ini'}">${isIni() ? 'Ver el nivel completo' : 'Ver la versión principiante'}</button></div><h2>${c.t}</h2><p class="station-goal ${j ? 'is-later' : ''}">${isIni() && c.goalIni ? c.goalIni : c.goal}</p></div></header>
   <ol class="stepper" id="stepper" aria-label="Pasos de esta estación">${stepperHTML(c)}</ol>
   <section class="step" aria-labelledby="step-title">
     <div class="step-head"><div class="k">Paso ${j + 1} de ${c.steps.length}</div><h3 id="step-title" tabindex="-1">${s.label}</h3></div>
@@ -307,7 +338,7 @@ function recapView() {
 function goStep(k) {
   const c = SC[S.i];
   if (!c.steps.some(s => s.k === k)) return;
-  openStep(c, k);
+  S.pick[c.tab] = 1; openStep(c, k);
   R(0);
   const st = $('#stepper');
   if (st && st.getBoundingClientRect().top < 0 || st && st.getBoundingClientRect().top > window.innerHeight * .4) st.scrollIntoView({ block: 'start' });
@@ -327,9 +358,10 @@ function enterStation(i, stepSlug) {
   const c = SC[i];
   if (c) {
     const s = stepSlug && c.steps.find(x => x.slug === stepSlug);
+    if (s && s !== c.steps[0]) S.pick[c.tab] = 1;
     openStep(c, s ? s.k : curStep(c).k);
     P.last = i; P.v = [...new Set([...(P.v || []), i])];
-    S.dn[i] = c.ok() ? 1 : 0;
+    S.dn[P.lvl + i] = c.ok() ? 1 : 0;
   }
   sv();
 }
@@ -372,7 +404,15 @@ on({
     const b = dl.querySelector('.opt'); if (b) b.focus();
   },
   quizClose: () => { const dl = $('#quiz-dlg'); if (dl && dl.open) dl.close() },
-  academyMenu: () => routeTo('/academia')
+  academyMenu: () => routeTo('/academia'),
+  /* Cambiar de nivel: la pantalla se redibuja con los pasos del nivel elegido. */
+  lvl: v => {
+    v = v === 'ini' ? 'ini' : 'full'; if (P.lvl === v) return;
+    P.lvl = v; sv(); R(0);
+    toast(v === 'ini' ? 'Nivel principiante: lo esencial de cada estación, explicado desde cero.' : 'Nivel completo: aparecen todos los pasos.');
+  },
+  /* Desde la portada: empezar en un nivel (principiante va directo a la estación 1). */
+  lvlStart: v => { P.lvl = v === 'full' ? 'full' : 'ini'; sv(); routeTo(P.lvl === 'ini' ? stepPath(0) : '/academia') }
 });
 
 /* Temas en preparación (se muestran plegados al final de la página de la Academia). */
@@ -417,7 +457,8 @@ function academyMenu() {
   /* El título va dentro del cielo del mapa. En computadora, a la derecha, un panel que acompaña al bajar;
      en el celu, un botón flotante con la acción principal. */
   /* Glosario y apuntes van arriba, a la vista sin bajar (en el celu antes quedaban debajo de las seis islas). */
-  const head = `<h2>Recorré las estaciones.</h2><p>${done ? `De la planta a la taza, en ${SC.length} estaciones. Llevás ${done} de ${SC.length}.` : `Son ${SC.length} estaciones, de la planta a la taza. Empezá por la primera.`}</p><div class="map-progress" aria-hidden="true">${SC.map((_, i) => `<i class="${stDone(i) ? 'is-done' : i === cur ? 'is-cur' : ''}"></i>`).join('')}</div><div class="map-links"><button type="button" class="b sm" data-a="glossary">Glosario</button><button type="button" class="b sm" data-a="theory">Apuntes</button></div>`;
+  const lvlPick = `<div class="lvl-pick" role="group" aria-label="Nivel">${[['ini', 'Principiante'], ['full', 'Completo']].map(([v, t]) => `<button type="button" data-a="lvl" data-v="${v}" aria-pressed="${P.lvl === v}">${t}</button>`).join('')}</div><p class="lvl-note">${isIni() ? 'Lo esencial de cada estación, explicado desde cero.' : 'Todos los pasos, con más detalle técnico.'}</p>`;
+  const head = `${lvlPick}<h2>Recorré las estaciones.</h2><p>${done ? `De la planta a la taza, en ${SC.length} estaciones. Llevás ${done} de ${SC.length}.` : `Son ${SC.length} estaciones, de la planta a la taza. Empezá por la primera.`}</p><div class="map-progress" aria-hidden="true">${SC.map((_, i) => `<i class="${stDone(i) ? 'is-done' : i === cur ? 'is-cur' : ''}"></i>`).join('')}</div><div class="map-links"><button type="button" class="b sm" data-a="glossary">Glosario</button><button type="button" class="b sm" data-a="theory">Apuntes</button></div>`;
   const more = `${storeNote()}
   <details class="academy-soon"><summary>Próximamente: ${SOON_COUNT()} temas más</summary>${SOON.map(g => `<h3 class="soon-h">${g[0]}</h3><ul>${g[1].map(m => `<li><b>${m[0]}</b> <span class="m">${m[1]}</span></li>`).join('')}</ul>`).join('')}</details>`;
   const now = cur >= 0 ? `<div class="map-now">${mapNowHTML(cur)}</div>` : allDone;

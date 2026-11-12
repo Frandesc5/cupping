@@ -450,11 +450,14 @@ function mapTiles(a, b, lit) {
 function mapIsland(i, o) {
   return isoIsleBase(i, o) + MAP_PLACES[i].land(o);
 }
-function mapScene() {
+/* Con el mapa 3D disponible, el dibujo SVG queda oculto debajo: se dibuja liviano (solo el tamaño y las nubes),
+   y completo solo si hace falta de respaldo (full, o si el 3D no está). Así entrar a la Academia es más rápido. */
+function mapScene(full) {
+  const lite = !full && typeof T3 !== 'undefined' && T3.ready;
   let s = [[70, 40, 1], [320, 300, .8], [60, 600, .7], [330, 900, .9], [80, 1250, .7]].map(([x, y, k]) => `<g opacity=".8" transform="translate(${x} ${y}) scale(${k})" fill="#fff"><ellipse rx="26" ry="9"/><ellipse cx="-12" cy="-5" rx="13" ry="9"/><ellipse cx="12" cy="-7" rx="15" ry="11"/></g>`).join('');
   /* Cada isla y, después, el tramo de camino que sale de ella (pasa por delante de su roca y llega por detrás
      a la siguiente). Toda la isla se puede tocar para abrir su ficha (el botón redondo sigue siendo el acceso con teclado). */
-  MAP_PLACES.forEach((m, i) => {
+  if (!lite) MAP_PLACES.forEach((m, i) => {
     s += `<g class="map-isle" data-a="mapNode" data-v="${i}">${mapIsland(i, mapOrigin(i))}</g>`;
     if (i < SC.length - 1) s += mapTiles(mapFront(i), isoP(mapOrigin(i + 1), MAP_IW / 2, 0, 0), stDone(i));
   });

@@ -46,7 +46,8 @@ function prepRecipe() {
 }
 function prepAfter() {
   if (S.t5 == 're') { if (S.mode == 'e') pe(); else pu() }
-  else ({ ag, mo, me })[S.t5]();
+  /* Los pasos de explicación del nivel principiante (filtrado, espresso) no tienen gráficos que actualizar. */
+  else { const f = ({ ag, mo, me })[S.t5]; if (f) f() }
 }
 
 on({

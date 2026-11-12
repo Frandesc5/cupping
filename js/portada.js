@@ -134,14 +134,14 @@ on({
 });
 
 /* ---------- Portada para quien entra por primera vez ---------- */
-/* Presentación del campus. Una sola acción principal: empezar por la estación 1.
-   El mapa queda como enlace secundario y los cursos, en la franja del final. */
+/* Presentación del campus. Una sola acción principal: empezar desde cero (nivel principiante, estación 1).
+   Ir al nivel completo queda como enlace secundario y los cursos, en la franja del final. */
 function heroHTML() {
   return `<section class="home-hero">
   <div class="hero-copy">
     <h1>Aprendé.<br>Experimentá.<br>Crecé.</h1>
-    <p>Aprendé café desde cero, paso a paso y a tu ritmo. Son ${SC.length} estaciones interactivas, de la planta a la taza. No hace falta saber nada antes.</p>
-    <div class="action-row"><a class="b p" href="#/academia/${SC[0].slug}">Empezar por la estación 1</a><a class="link-btn hero-map-link" href="#/academia">Ver el mapa de las ${SC.length} estaciones</a></div>
+    <p>Aprendé café paso a paso y a tu ritmo. Son ${SC.length} estaciones interactivas, de la planta a la taza. Si recién empezás, el nivel principiante te explica todo desde el principio.</p>
+    <div class="action-row"><a class="b p" href="#/academia/${SC[0].slug}" data-a="lvlStart" data-v="ini">Empezar desde cero</a><a class="link-btn hero-map-link" href="#/academia" data-a="lvlStart" data-v="full">Ya sé algo de café: ver el nivel completo</a></div>
     <p class="hero-note">Tu avance queda guardado en este dispositivo.</p>
   </div>
   <figure class="hero-photo-wrap"><img class="hero-photo" src="${HERO_PHOTO}" width="1200" height="900" alt="Equipo de Academia de Baristas" fetchpriority="high" decoding="async"><figcaption class="photo-note">Aprender café también es compartirlo.</figcaption></figure>

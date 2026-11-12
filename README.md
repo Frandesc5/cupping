@@ -25,6 +25,7 @@ js/academia/
   glosario.js, apuntes.js  contenidos de consulta
   recursos.js              vistas del glosario y los apuntes; palabras del glosario dentro de los pasos (term)
   estaciones.js            recorrido de 6 estaciones y página de la Academia
+  principiante.js          pasos de explicación del nivel principiante (qué es el café, qué es tostar, filtrado, espresso…)
   mapa.js                  mapa isométrico de la planta a la taza (islas, insignias y ficha)
 js/laboratorio.js          simulador, anotar una preparación y bitácora
 js/desafios.js             banco de preguntas

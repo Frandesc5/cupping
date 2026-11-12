@@ -1084,3 +1084,53 @@ a.program-item { text-decoration: none }
 /* El mapa grande tiene miles de caras: si algo se anima adentro del SVG, el navegador lo vuelve a pintar entero
    en cada cuadro. Ahí el humo, el barco y el sol quedan quietos (en el mapa 3D sí se mueven). */
 .map-scene .map-smoke, .map-scene .map-boat, .map-scene .map-float { animation: none }
+
+/* ---------- Niveles (principiante / completo) ---------- */
+.lvl-pick { display: inline-flex; gap: 2px; margin-bottom: 6px; padding: 3px; border-radius: 999px; background: rgba(255,255,255,.8); pointer-events: auto }
+.lvl-pick button { min-height: 40px; padding: 0 16px; border: 0; border-radius: 999px; background: none; color: var(--ink); font: 600 .9rem var(--font); cursor: pointer }
+.lvl-pick button[aria-pressed="true"] { background: var(--primary); color: var(--primary-ink) }
+.lvl-note { margin: 0 0 10px; font-size: .82rem; color: var(--muted) }
+.lvl-switch { margin-left: 6px; font-size: inherit }
+
+/* ---------- Pasos de explicación del nivel principiante (js/academia/principiante.js) ---------- */
+.ini-card { display: flex; gap: 14px; align-items: flex-start; margin: 10px 0; padding: 14px; border-radius: var(--radius); background: var(--surface-2) }
+.ini-card h4 { margin: 0 0 4px; font: 600 1.05rem var(--font) }
+.ini-card p { margin: 0 0 6px }
+.ini-art { flex: 0 0 110px; display: flex; justify-content: center }
+.ini-art svg { width: 110px; height: auto; max-height: 110px }
+.ini-duo, .ini-trio { display: grid; gap: 10px; margin: 10px 0 }
+.ini-duo { grid-template-columns: 1fr 1fr }
+.ini-trio { grid-template-columns: repeat(3, 1fr) }
+.ini-duo .ini-card, .ini-trio .ini-card { flex-direction: column; align-items: center; text-align: center; margin: 0 }
+.ini-duo .ini-art, .ini-trio .ini-art { flex: none }
+.ini-trio .ini-art svg { width: 72px; max-height: 72px }
+.ini-key { margin: 14px 0 10px; padding: 12px 14px; border-left: 4px solid var(--sage); border-radius: var(--radius-sm); background: var(--surface-2); font-weight: 600 }
+.ini-key span { display: block; margin-bottom: 2px; font-size: .75rem; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; color: var(--muted) }
+.ini-next { font-size: .92rem }
+.ini-table { display: grid; margin: 12px 0; border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; font-size: .92rem }
+.ini-table [role=row] { display: grid; grid-template-columns: 1fr 1.3fr 1.3fr }
+.ini-table [role=row] > span { padding: 8px 10px; border-top: 1px solid var(--line) }
+.ini-table .ini-th > span { border-top: 0; background: var(--surface-2); font-weight: 700 }
+.ini-table [role=rowheader] { font-weight: 600; color: var(--muted) }
+.ini-attrs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0 }
+.ini-attrs div { padding: 12px; border-radius: var(--radius-sm); background: var(--surface-2) }
+.ini-attrs dt { font-weight: 700 }
+.ini-attrs dd { margin: 2px 0 0; color: var(--muted); font-size: .92rem }
+@media (max-width: 650px) {
+  .ini-card { flex-direction: column; align-items: center; text-align: center }
+  .ini-trio, .ini-attrs { grid-template-columns: 1fr }
+  .ini-trio .ini-card { flex-direction: row; text-align: left }
+  .ini-table [role=row] { grid-template-columns: .9fr 1fr 1fr; font-size: .85rem }
+}
+
+/* ---------- Cereza por capas en 3D (Fruto · Anatomía, js/tres.js) ----------
+   El dibujo SVG da el tamaño y queda de respaldo; el lienzo va encima. */
+.cherry-3d { position: relative }
+.cherry-3d.t3-on > svg { visibility: hidden }
+.t3-cherry { position: absolute; inset: 0 }
+.t3-cherry > canvas { display: block; width: 100%; height: 100%; touch-action: pan-y; cursor: grab }
+.t3-cherry > canvas:active { cursor: grabbing }
+.t3-lbl { position: absolute; inset: 0; pointer-events: none; overflow: hidden }
+.t3-lbl .note { position: absolute; left: 0; top: 0; white-space: nowrap; font: 600 .82rem var(--font); color: var(--ink); transition: opacity .3s; will-change: transform }
+.t3-lbl .note.on { padding: 3px 9px; border-radius: 999px; background: var(--ink); color: #fff }
+

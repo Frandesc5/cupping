@@ -1,0 +1,7 @@
+# Archivos comprimidos locales
+*.rar
+*.zip
+
+# Sistema
+.DS_Store
+Thumbs.db

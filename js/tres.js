@@ -8,6 +8,7 @@
    - Cada isla muestra el estado de su estación: sin empezar (apagada y
      con niebla), la actual (con un brillo) y completa (con banderín y
      todas sus animaciones).
+   También la cereza por capas de Fruto · Anatomía (data-t3="cherry").
    Respeta "reducir movimiento": sin animaciones ni movimientos de cámara.
    ============================================================ */
 
@@ -39,7 +40,13 @@ const T3 = (() => {
     if (!els.length) return;
     if (state === 'idle') return load();
     if (state !== 'ready') return;
-    els.forEach(el => { try { mount(el) } catch (e) { console.warn('[3D] no se pudo montar', el.dataset.t3, e) } });
+    els.forEach(el => {
+      try { mount(el) } catch (e) {
+        console.warn('[3D] no se pudo montar', el.dataset.t3, e);
+        /* Si el mapa se había dibujado liviano esperando al 3D, vuelve el dibujo completo. */
+        const sv = el.querySelector('.map-scene'); if (sv && !sv.querySelector('.map-isle') && typeof mapScene === 'function') sv.outerHTML = mapScene(true);
+      }
+    });
     kick();
   }
   function mount(el) {
@@ -48,10 +55,11 @@ const T3 = (() => {
     views.add(v); v.canvas.__t3v = v; if (io) io.observe(v.canvas);
     el.classList.add('t3-on');
   }
+  /* Al salir de la pantalla: el mapa se guarda armado (v.keep) para volver rápido; el resto se libera. */
   function drop(v) {
     views.delete(v);
     if (io) io.unobserve(v.canvas);
-    try { v.dispose() } catch (e) {}
+    try { v.keep ? v.detach() : v.dispose() } catch (e) {}
   }
 
   /* ---------- Un solo bucle de animación para todos los gráficos ---------- */
@@ -64,9 +72,23 @@ const T3 = (() => {
     for (const v of [...views]) {
       if (!v.el.isConnected) { drop(v); continue }
       if (!v.vis) continue;
-      try { if (v.frame(now / 1000, dt)) again = true } catch (e) { console.warn('[3D]', e); drop(v); v.el.classList.remove('t3-on') }
+      try { if (v.frame(now / 1000, dt)) again = true } catch (e) { console.warn('[3D]', e); fail(v) }
     }
     if (again) kick(); else last = 0;
+  }
+
+  /* Avisar que cambió el estado (por ejemplo, la capa elegida): se vuelve a dibujar aunque no haya animación. */
+  function poke(el) {
+    const v = el && [...views].find(x => x.el === el);
+    if (!v) return false;
+    v.dirty = true; kick(); return true;
+  }
+
+  /* Si el 3D falla, se libera y vuelve el dibujo de respaldo (el mapa, si se había dibujado liviano, se dibuja completo). */
+  function fail(v) {
+    v.keep = false; drop(v); if (v === MAPC) MAPC = null;
+    const el = v.el; el.classList.remove('t3-on', 't3-map-on');
+    const s = el.querySelector('.map-scene'); if (s && !s.querySelector('.map-isle') && typeof mapScene === 'function') s.outerHTML = mapScene(true);
   }
 
   /* Al cambiar la página, se buscan gráficos nuevos. */
@@ -527,6 +549,174 @@ const T3 = (() => {
   }
 
   /* ============================================================
+     Cereza de café por capas (Fruto · Anatomía)
+     Fruto cortado en cuarto para ver adentro: piel, pulpa, mucílago,
+     el pergamino de cada semilla y las dos semillas con su película
+     plateada. Lee el estado de js/academia/fruto.js: S.split (capas
+     separadas) y S.sel (capa elegida). Tocar una capa la elige (sel).
+     Gira solo, despacio, y se puede girar arrastrando.
+     ============================================================ */
+  KINDS.cherry = el => {
+    const box = document.createElement('div'); box.className = 't3-cherry';
+    box.innerHTML = '<canvas class="t3-canvas" aria-hidden="true"></canvas><div class="t3-lbl" aria-hidden="true"></div>';
+    el.append(box);
+    const canvas = box.querySelector('canvas'), lbl = box.querySelector('.t3-lbl');
+    const r = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    r.setClearColor(0, 0); r.localClippingEnabled = true;
+    const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(28, .75, .1, 100);
+    scene.add(new THREE.HemisphereLight('#fff8ee', '#8a6a55', 1.5));
+    const key = new THREE.DirectionalLight('#ffffff', 2.4); key.position.set(3, 5, 4); scene.add(key);
+    const rim = new THREE.DirectionalLight('#ffe2c8', .9); rim.position.set(-4, 2, -3); scene.add(rim);
+
+    /* Corte en cuarto: se saca la parte donde x > 0 y z > 0 (la que mira a la cámara). */
+    const cut = [new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0), new THREE.Plane(new THREE.Vector3(0, 0, -1), 0)];
+    const M = (color, o = {}) => new THREE.MeshStandardMaterial(Object.assign({ color, roughness: .6, side: THREE.DoubleSide, transparent: true }, o));
+    const layers = [], root = new THREE.Group(); scene.add(root);
+    const layer = (i, meshes, clip) => {
+      const g = new THREE.Group(); g.userData.layer = i; root.add(g);
+      meshes.forEach(m => { m.userData.layer = i; if (clip) { m.material.clippingPlanes = cut; m.material.clipIntersection = true } g.add(m) });
+      layers.push(g); return g;
+    };
+    const ell = (rx, ry, rz, mat, seg = 48) => { const m = new THREE.Mesh(new THREE.SphereGeometry(1, seg, seg * .75), mat); m.scale.set(rx, ry, rz); return m };
+    /* Semilla: elipsoide con la cara de adentro plana (las dos semillas se miran) y la hendidura. */
+    const seedGeo = side => {
+      const g = new THREE.SphereGeometry(1, 40, 30), p = g.attributes.position;
+      for (let k = 0; k < p.count; k++) {
+        let x = p.getX(k), y = p.getY(k), z = p.getZ(k);
+        const inner = x * side < 0; if (inner) x *= .28;
+        const groove = inner ? Math.exp(-((z / .12) ** 2)) * .06 : 0;
+        p.setXYZ(k, x * .3 + side * groove, y * .62, z * .4);
+      }
+      g.computeVertexNormals(); return g;
+    };
+    layer(0, [ell(1, 1.12, 1, M('#c0503d', { roughness: .32, metalness: .05 })),
+      (() => { const m = new THREE.Mesh(new THREE.CylinderGeometry(.07, .1, .16, 12), M('#6b4a32')); m.position.y = -1.14; return m })(),
+      (() => { const m = new THREE.Mesh(new THREE.CylinderGeometry(.05, .05, .25, 8), M('#6f7d4d')); m.position.y = 1.2; return m })()], true);
+    layer(1, [ell(.9, 1.01, .9, M('#d98a6a', { roughness: .8 }))], true);
+    layer(2, [ell(.8, .9, .8, M('#e8cf8a', { roughness: .15, opacity: .92 }))], true);
+    const parch = side => { const m = new THREE.Mesh(seedGeo(side), M('#d8c9a0', { roughness: .9 })); m.scale.set(1.18, 1.14, 1.16); m.position.x = side * .31; return m };
+    layer(3, [parch(-1), parch(1)], true);
+    const seed = side => {
+      const m = new THREE.Mesh(seedGeo(side), M('#9baa73', { roughness: .55 })); m.position.x = side * .31;
+      const film = new THREE.Mesh(m.geometry, M('#e4e8da', { roughness: .3, opacity: .35, depthWrite: false })); film.scale.setScalar(1.025); m.add(film); film.userData.layer = 4;
+      return m;
+    };
+    layer(4, [seed(-1), seed(1)], false);
+
+    /* Caras del corte: cada capa es un volumen, así que donde el fruto está cortado se ve su grosor.
+       Son "tapas" planas en los dos planos del corte (x = 0 del lado z > 0, y z = 0 del lado x > 0)
+       con la forma de cada capa: un anillo entre su borde y el de la capa de adentro. */
+    const V2 = THREE.Vector2, N = 48;
+    /* Media elipse (u ≥ 0) de radios a y b, de abajo hacia arriba (o al revés). */
+    const halfArc = (a, b, rev) => Array.from({ length: N + 1 }, (_, k) => { const t = -Math.PI / 2 + (rev ? N - k : k) / N * Math.PI; return new V2(a * Math.cos(t), b * Math.sin(t)) });
+    /* Contorno de una semilla cortada por el plano z = 0 (misma forma que seedGeo), agrandado por sx, sy. */
+    const seedOutline = (sx, sy) => Array.from({ length: N }, (_, k) => { const t = k / N * Math.PI * 2, c = Math.cos(t); return new V2(.31 + sx * (c > 0 ? .3 * c : .084 * c + .06), sy * .62 * Math.sin(t)) });
+    const capMat = c => M(c, { roughness: .85 });
+    /* Una tapa en el plano x = 0 (coordenadas de la forma: u = z, v = y) o z = 0 (u = x, v = y). */
+    const cap = (i, shape, c, onX) => {
+      const m = new THREE.Mesh(new THREE.ShapeGeometry(shape, 24), capMat(c));
+      if (onX) m.rotation.y = -Math.PI / 2;
+      m.userData.layer = i; layers[i].add(m);
+    };
+    const ring = (a1, b1, a0, b0) => new THREE.Shape([...halfArc(a1, b1), ...halfArc(a0, b0, true)]);
+    const RAD = [[1, 1.12], [.9, 1.01], [.8, .9]];
+    [['#a8402f', true], ['#c96f4f', true]].forEach(([c], i) => {
+      const [a1, b1] = RAD[i], [a0, b0] = RAD[i + 1];
+      cap(i, ring(a1, b1, a0, b0), c, true); cap(i, ring(a1, b1, a0, b0), c, false);
+    });
+    /* Mucílago: en x = 0 llena hasta el centro (ahí no hay semillas); en z = 0 tiene el hueco del pergamino. */
+    cap(2, new THREE.Shape(halfArc(.8, .9)), '#dfc27c', true);
+    { const s = new THREE.Shape(halfArc(.8, .9)); s.holes.push(new THREE.Path(seedOutline(1.18, 1.14))); cap(2, s, '#dfc27c', false) }
+    /* Pergamino: anillo alrededor de la semilla */
+    { const s = new THREE.Shape(seedOutline(1.18, 1.14)); s.holes.push(new THREE.Path(seedOutline(1, 1))); cap(3, s, '#cbb98c', false) }
+
+    /* Capas separadas: en columna, de la piel (arriba) a las semillas (abajo), como el dibujo. */
+    const SPLIT_Y = [2.4, 1.2, 0, -1.2, -2.4], SPLIT_S = [.42, .42, .44, .5, .6];
+    const st = layers.map(() => ({ y: 0, s: 1, o: 1, glow: 0 }));
+    const names = ['Piel', 'Pulpa', 'Mucílago', 'Pergamino', 'Semillas'].map(n => { const s = document.createElement('span'); s.className = 'note'; s.textContent = n; lbl.append(s); return s });
+
+    /* Girar: solo se balancea mostrando el corte; arrastrando se gira y después vuelve. */
+    let id = null, px = 0, turn = 0, vel = 0;
+    canvas.addEventListener('pointerdown', e => { id = e.pointerId; px = e.clientX; vel = 0; try { canvas.setPointerCapture(id) } catch (_) {} });
+    canvas.addEventListener('pointermove', e => { if (e.pointerId !== id) return; const dx = e.clientX - px; px = e.clientX; turn += dx * .012; vel = dx * .012; moved += Math.abs(dx); kick() });
+    let moved = 0;
+    const up = e => { if (e.pointerId !== id) return; id = null };
+    canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', up);
+    /* Tocar (sin arrastrar) una capa la elige. El corte no cuenta: ahí no hay capa. */
+    const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), tmp = new THREE.Vector3();
+    canvas.addEventListener('pointerdown', () => { moved = 0 });
+    canvas.addEventListener('click', e => {
+      if (moved > 6) return;
+      const b = canvas.getBoundingClientRect();
+      ndc.set((e.clientX - b.left) / b.width * 2 - 1, -((e.clientY - b.top) / b.height) * 2 + 1);
+      ray.setFromCamera(ndc, cam);
+      const hit = ray.intersectObjects(layers, true).find(h => {
+        const m = h.object; if (!m.material.clippingPlanes) return true;
+        tmp.copy(h.point); root.worldToLocal(tmp); return !(tmp.x > 0 && tmp.z > 0);
+      });
+      if (hit && ACTIONS.sel) ACTIONS.sel(String(hit.object.userData.layer));
+    });
+
+    const v = { canvas };
+    let W = 0, H = 0;
+    v.frame = (time, dt) => {
+      const w = box.clientWidth, h = box.clientHeight; if (!w || !h) return false;
+      if (w !== W || h !== H) { W = w; H = h; r.setPixelRatio(dpr()); r.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix() }
+      const anim = !reduce(), k = anim ? 1 - Math.pow(.004, dt) : 1, split = !!S.split, sel = S.sel;
+      let moving = false;
+      layers.forEach((g, i) => {
+        /* Con una capa elegida: ella a todo color y con un brillo que late; las de afuera, casi transparentes
+           (para verla a través); las de adentro, apagadas (grises y semitransparentes). */
+        const pick = sel >= 0 && sel !== i, outer = pick && i < sel;
+        const s = st[i], ty = split ? SPLIT_Y[i] : 0, ts = split ? SPLIT_S[i] : 1;
+        const to = !pick ? 1 : outer ? (split ? .3 : .1) : .35, td = pick ? .85 : 0, tg = sel === i ? 1 : 0;
+        s.y += (ty - s.y) * k; s.s += (ts - s.s) * k; s.o += (to - s.o) * k; s.glow += (tg - s.glow) * k; s.d = (s.d || 0) + (td - (s.d || 0)) * k;
+        if (Math.abs(ty - s.y) + Math.abs(ts - s.s) + Math.abs(to - s.o) + Math.abs(td - s.d) > .002) moving = true;
+        g.position.y = s.y; g.scale.setScalar(s.s);
+        const pulse = s.glow * (anim ? .75 + .25 * Math.sin(time * 3.2) : 1);
+        g.traverse(m => {
+          const mt = m.material; if (!mt) return;
+          const u = mt.userData; if (u.base == null) { u.base = mt.opacity; u.col = mt.color.clone() }
+          /* Gris con el mismo brillo que el color original */
+          const l = u.col.r * .3 + u.col.g * .59 + u.col.b * .11;
+          mt.color.copy(u.col).lerp(new THREE.Color(l, l, l), s.d);
+          mt.opacity = u.base * s.o; mt.depthWrite = s.o > .9 && u.base === 1;
+          if (mt.emissive) mt.emissive.copy(u.col).multiplyScalar(.45 * pulse);
+          /* Se dibuja primero la capa elegida y después las demás, de adentro hacia afuera */
+          m.renderOrder = sel === i ? -1 : 10 - i;
+        });
+      });
+      /* Cámara: más lejos con las capas separadas, para que entren todas. */
+      const dist = split ? 11.5 : 5.6, ty = split ? 0 : -.05;
+      v.dist = v.dist == null ? dist : v.dist + (dist - v.dist) * k; if (Math.abs(dist - v.dist) > .01) moving = true;
+      cam.position.set(v.dist * .66, v.dist * .22, v.dist * .72); cam.lookAt(0, ty, 0);
+      if (id === null) { turn += vel; vel *= .9; turn += (0 - turn) * (1 - Math.pow(.3, dt)) }
+      const th = turn + (anim ? Math.sin(time * .5) * .35 : 0);
+      root.rotation.y = th;
+      /* Los planos del corte están en coordenadas del mundo: giran junto con la fruta, así el corte
+         coincide siempre con las caras del corte (que giran con cada capa). */
+      cut[0].normal.set(-Math.cos(th), 0, Math.sin(th)); cut[1].normal.set(-Math.sin(th), 0, -Math.cos(th));
+      r.render(scene, cam);
+      /* Nombres de las capas al costado, solo con las capas separadas */
+      names.forEach((n, i) => {
+        /* Al lado derecho de cada capa: su centro en pantalla más su radio (en píxeles) y un margen */
+        root.localToWorld(tmp.set(0, st[i].y, 0)); tmp.project(cam);
+        const pxUnit = H / (2 * v.dist * Math.tan(cam.fov * Math.PI / 360)), cx = (tmp.x + 1) / 2 * W, rad = (split ? 1 : 1.02) * st[i].s * pxUnit, y = (1 - tmp.y) / 2 * H;
+        /* Si a la derecha no entra, va a la izquierda de la fruta */
+        let x = cx + rad + 12; if (x + n.offsetWidth > W - 4) x = Math.max(4, cx - rad - 12 - n.offsetWidth);
+        n.style.transform = `translate(${x.toFixed(1)}px,${y.toFixed(1)}px) translate(0,-50%)`;
+        /* Separadas: todos los nombres. Armada: solo el de la capa elegida, al costado de la fruta. */
+        n.style.opacity = split ? Math.min(1, (1 - Math.abs(SPLIT_Y[i] - st[i].y) / 2.4)) * (sel >= 0 && sel !== i ? .45 : 1) : sel === i ? 1 : 0;
+        n.classList.toggle('on', sel === i);
+      });
+      v.dirty = false;
+      return anim || moving || id !== null || Math.abs(turn) > .002;
+    };
+    v.dispose = () => { disposeTree(scene); r.dispose(); r.forceContextLoss && r.forceContextLoss(); box.remove() };
+    return v;
+  };
+
+  /* ============================================================
      Mapa completo
      La cámara ortográfica mira desde el mismo ángulo que el dibujo
      isométrico; por eso los botones de cada estación (HTML encima)
@@ -540,17 +730,23 @@ const T3 = (() => {
      Todo lo que se mueve es chico y queda delante de lo demás, así que no
      hace falta saber qué hay detrás. En cada cuadro solo se dibuja eso.
      ============================================================ */
-  KINDS.map = el => {
-    const svg = el.querySelector('.map-scene'), still = document.createElement('canvas'), canvas = document.createElement('canvas');
+  /* El mapa armado se guarda (MAPC) mientras se navega por otras pantallas: al volver a la Academia se
+     reutiliza y solo se vuelve a dibujar. Si cambió el estado de alguna estación, se arma de nuevo. */
+  let MAPC = null;
+  KINDS.map = el0 => {
+    const curNode = el0.querySelector('.map-node.is-cur'), cur = curNode ? +curNode.dataset.v : -1;
+    const sig = JSON.stringify([cur, MAP_PLACES.map((_, i) => isleState(i, cur)), SC.map((_, i) => stDone(i))]);
+    if (MAPC && MAPC.sig === sig) { MAPC.attach(el0); return MAPC }
+    if (MAPC) { try { MAPC.dispose() } catch (e) {} MAPC = null }
+    let el = el0, svg = el.querySelector('.map-scene');
+    const still = document.createElement('canvas'), canvas = document.createElement('canvas');
     still.className = 't3-canvas t3-map t3-still'; canvas.className = 't3-canvas t3-map';
     still.setAttribute('aria-hidden', 'true'); canvas.setAttribute('aria-hidden', 'true');
-    svg.after(still, canvas);
     const r = new THREE.WebGLRenderer({ canvas: still, antialias: true, alpha: true });
     r.setClearColor(0, 0); r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap; r.shadowMap.autoUpdate = false;
     const r2 = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: true });
     r2.setClearColor(0, 0);
     const K = kit(), scene = new THREE.Scene();
-    const curNode = el.querySelector('.map-node.is-cur'), cur = curNode ? +curNode.dataset.v : -1;
     const isles = MAP_PLACES.map((m, i) => { const g = makeIsland(i, isleState(i, cur)), [ax, ay] = scrToWorld(...mapOrigin(i)); g.position.set(ax, 0, ay); scene.add(g); return g });
     /* Sombra suave debajo de cada isla flotante */
     isles.forEach(g => { const sb = new THREE.Mesh(new THREE.PlaneGeometry(170, 170).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: softTex('shadow', 'rgba(0,0,0,.5)', 'rgba(0,0,0,0)'), transparent: true, opacity: .22, depthWrite: false })); sb.position.set(MAP_IW / 2, -MAP_IH - 170, MAP_ID / 2); g.add(sb) });
@@ -600,8 +796,12 @@ const T3 = (() => {
     canvas.addEventListener('click', e => { const i = isleAt(e); if (i >= 0 && ACTIONS.mapNode) ACTIONS.mapNode(String(i)) });
     canvas.addEventListener('pointermove', e => { if (e.pointerType === 'mouse') canvas.style.cursor = isleAt(e) >= 0 ? 'pointer' : '' });
 
-    const v = { canvas };
+    const v = { canvas, keep: true, sig };
     let W = 0, H = 0, lastT = 0, stillDirty = true;
+    /* Pegar los lienzos en el mapa de la pantalla actual (la primera vez o al volver). */
+    /* Si el tamaño no cambió, el lienzo de lo quieto conserva su imagen: no hace falta volver a dibujarlo. */
+    v.attach = e => { el = e; svg = e.querySelector('.map-scene'); svg.after(still, canvas); v.dirty = true };
+    v.detach = () => { still.remove(); canvas.remove() };
     v.frame = (time) => {
       const w = svg.clientWidth, h = svg.clientHeight; if (!w || !h) return false;
       if (w !== W || h !== H) {
@@ -613,10 +813,8 @@ const T3 = (() => {
         stillDirty = v.dirty = true;
       }
       /* Lo quieto: una sola vez (con sus sombras) */
-      if (stillDirty) {
-        stillDirty = false; r.shadowMap.needsUpdate = true; r.render(scene, cam);
-        el.classList.add('t3-map-on');
-      }
+      if (stillDirty) { stillDirty = false; r.shadowMap.needsUpdate = true; r.render(scene, cam) }
+      if (!el.classList.contains('t3-map-on')) el.classList.add('t3-map-on');
       /* Lo que se mueve: a ~30 cuadros por segundo alcanza y cuida la batería */
       const anim = !reduce();
       if (!v.dirty && (!anim || time - lastT < 1 / 30)) return anim;
@@ -626,9 +824,12 @@ const T3 = (() => {
       return anim;
     };
     v.dispose = () => { disposeTree(scene); [r, r2].forEach(x => { x.dispose(); x.forceContextLoss && x.forceContextLoss() }); still.remove(); canvas.remove() };
+    v.attach(el); MAPC = v;
     return v;
   };
 
   scan();
-  return { scan, get ready() { return state === 'ready' } };
+  /* three.js se baja de antemano, en un momento libre, para que la primera entrada a la Academia sea rápida. */
+  if (webgl()) (window.requestIdleCallback || (f => setTimeout(f, 1500)))(() => load(), { timeout: 4000 });
+  return { scan, poke, get ready() { return state === 'ready' } };
 })();
