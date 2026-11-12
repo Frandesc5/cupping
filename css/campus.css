@@ -1079,6 +1079,7 @@ a.program-item { text-decoration: none }
    El lienzo va justo encima del SVG (que queda de respaldo y se oculta cuando el 3D ya está dibujado);
    los botones de las estaciones siguen arriba de todo. */
 .t3-map { position: absolute; pointer-events: auto }
+.t3-map.t3-still { pointer-events: none }
 .t3-map-on > .map-scene { visibility: hidden }
 /* El mapa grande tiene miles de caras: si algo se anima adentro del SVG, el navegador lo vuelve a pintar entero
    en cada cuadro. Ahí el humo, el barco y el sol quedan quietos (en el mapa 3D sí se mueven). */
