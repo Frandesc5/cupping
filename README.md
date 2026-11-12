@@ -30,6 +30,7 @@ js/laboratorio.js          simulador, anotar una preparación y bitácora
 js/desafios.js             banco de preguntas
 js/capacitarse.js          cursos (para agregar uno, sumarlo a CRS)
 js/portada.js              portada: presentación (quien entra por primera vez) o panel personal (quien vuelve)
+js/tres.js                 mapa de islas en 3D con three.js; si no carga, queda el SVG de mapa.js
 js/app.js                  encabezado, navegación, migas de pan y rutas (#/...)
 ```
 

@@ -1074,3 +1074,9 @@ a.program-item { text-decoration: none }
 #v h1[tabindex="-1"]:focus, #v h2[tabindex="-1"]:focus, #v h3[tabindex="-1"]:focus { outline: none }
 /* El botón dorado de "Continuar" sigue dorado al pasar el mouse (el estilo mínimo lo oscurecía y el texto no se leía) */
 .resume-card .b.p:hover:not(:disabled) { background: #f0dca3; color: var(--ink) }
+
+/* ---------- Mapa en 3D (js/tres.js) ----------
+   El lienzo va justo encima del SVG (que queda de respaldo y se oculta cuando el 3D ya está dibujado);
+   los botones de las estaciones siguen arriba de todo. */
+.t3-map { position: absolute; pointer-events: auto }
+.t3-map-on > .map-scene { visibility: hidden }

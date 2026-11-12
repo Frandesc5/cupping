@@ -3,7 +3,8 @@
    Cada estación es una isla flotante con su lugar construido encima
    (finca, beneficio, puerto, tostadora, barra, mesa de cata), unidas por
    un camino de baldosas. Las insignias se tocan y abren una ficha con
-   los pasos y el botón para seguir. Todo es SVG dibujado con código.
+   los pasos y el botón para seguir. Todo es SVG dibujado con código;
+   js/tres.js lo vuelve a armar en 3D encima (este SVG queda de respaldo).
    Usa SC, stDone, startedSt, curStep, stepIdx, stepDone y stepPath
    (js/academia/estaciones.js) al dibujar; por eso se puede cargar antes.
    ============================================================ */
@@ -336,7 +337,7 @@ function mapWorld(cur, head = '') {
     return `<button type="button" class="map-node ${i % 2 ? '' : 'is-left'} ${ok ? 'is-done' : ''} ${here ? 'is-cur' : ''}" data-a="mapNode" data-v="${i}" style="${pos(i)}" aria-label="Estación ${i + 1}: ${c.t}${ok ? ' (completa)' : here ? ' (estás acá)' : ''}">${here ? '<span class="map-ring"></span>' : ''}<span class="map-badge"><svg viewBox="0 0 24 24" aria-hidden="true">${MAP_PLACES[i].ic}</svg></span>${ok ? '<span class="map-check" aria-hidden="true">✓</span>' : ''}<span class="map-name" aria-hidden="true"><b>${i + 1} · ${c.t}</b><small>${MAP_PLACES[i].place}${MAP_PLACES[i].hint ? ', ' + MAP_PLACES[i].hint : ''}</small></span></button>`;
   }).join('');
   const me = cur >= 0 ? (() => { const f = mapFront(cur); return `<div class="map-me" style="left:${(f[0] / MAP_W * 100).toFixed(2)}%;top:calc(${((f[1] + 10) / MAP_H * 100).toFixed(2)}% - 44px)" aria-hidden="true"><span>Estás acá</span><i></i></div>` })() : '';
-  return `<div class="map-world"><div class="map-sky-head">${head}</div>${mapScene()}${nodes}${me}</div>`;
+  return `<div class="map-world" data-t3="map"><div class="map-sky-head">${head}</div>${mapScene()}${nodes}${me}</div>`;
 }
 
 /* Lo que muestra el panel lateral (computadora) y el botón flotante (celu) sobre la estación actual. */
